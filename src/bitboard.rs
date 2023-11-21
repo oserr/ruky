@@ -2,7 +2,7 @@ use num::PrimInt;
 use std::convert::From;
 use std::ops::Shl;
 
-#[derive(Clone, Copy, Debug, Default, PartialEq)]
+#[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq)]
 pub struct BitBoard {
     /// The raw bits used to represent the BitBoard.
     bits: u64,
@@ -14,14 +14,40 @@ impl From<u64> for BitBoard {
     }
 }
 
+impl From<BitBoard> for Vec<u32> {
+    fn from(bits: BitBoard) -> Vec<u32> {
+        bits.sq_iter().collect()
+    }
+}
+
+impl<T> From<&[T]> for BitBoard
+where
+    T: PrimInt,
+    u64: Shl<T, Output = u64>,
+{
+    fn from(numbers: &[T]) -> BitBoard {
+        let bits = numbers.iter().fold(0u64, |bits, n| bits | (1u64 << *n));
+        BitBoard { bits }
+    }
+}
+
 impl<T, const N: usize> From<&[T; N]> for BitBoard
 where
     T: PrimInt,
     u64: Shl<T, Output = u64>,
 {
     fn from(numbers: &[T; N]) -> BitBoard {
-        let bits = numbers.iter().fold(0u64, |bits, n| bits | (1u64 << *n));
-        BitBoard { bits }
+        BitBoard::from(&numbers[..])
+    }
+}
+
+impl<T> From<&Vec<T>> for BitBoard
+where
+    T: PrimInt,
+    u64: Shl<T, Output = u64>,
+{
+    fn from(numbers: &Vec<T>) -> BitBoard {
+        BitBoard::from(&numbers[..])
     }
 }
 
@@ -29,6 +55,11 @@ impl BitBoard {
     /// Creates a new Bitboard instance with all bits cleared.
     pub fn new() -> BitBoard {
         BitBoard::default()
+    }
+
+    /// Returns true if any bits are set.
+    pub fn any(&self) -> bool {
+        self.bits != 0
     }
 
     /// Clears all the bits.
@@ -84,6 +115,45 @@ impl BitBoard {
     /// Returns the index of the first bit set. If no bit is set, returns 64.
     pub fn first_bit(&self) -> u32 {
         self.bits.trailing_zeros()
+    }
+
+    /// Returns the index of the first bit set and clears it from the bitboard if any bits are set,
+    /// otherwise returns None.
+    pub fn take_first(&mut self) -> Option<u32> {
+        if !self.any() {
+            return None;
+        }
+        let i = self.first_bit();
+        self.bits &= self.bits - 1;
+        Some(i)
+    }
+
+    // Returns an iterator over the squares where the bits are set.
+    pub fn sq_iter(&self) -> impl Iterator<Item = u32> {
+        SquareIter::from(*self)
+    }
+
+    // Returns an iterator over the squares where the bits are set.
+    pub fn to_vec(&self) -> Vec<u32> {
+        self.clone().into()
+    }
+}
+
+#[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq)]
+struct SquareIter {
+    bits: BitBoard,
+}
+
+impl From<BitBoard> for SquareIter {
+    fn from(bits: BitBoard) -> SquareIter {
+        SquareIter { bits }
+    }
+}
+
+impl Iterator for SquareIter {
+    type Item = u32;
+    fn next(&mut self) -> Option<u32> {
+        self.bits.take_first()
     }
 }
 
@@ -180,5 +250,35 @@ mod tests {
             b.set_bits(n);
             assert_eq!(b.first_bit(), i);
         }
+    }
+
+    #[test]
+    fn take_first_bit() {
+        let mut b = BitBoard::from(1u64 << 10);
+        assert_eq!(b.take_first(), Some(10));
+        assert_eq!(b.take_first(), None);
+        assert!(!b.any());
+
+        b.set_bit(30).set_bit(40);
+        assert_eq!(b.take_first(), Some(30));
+        assert_eq!(b.take_first(), Some(40));
+        assert_eq!(b.take_first(), None);
+        assert!(!b.any());
+    }
+
+    #[test]
+    fn iterate_over_squares() {
+        let b = BitBoard::from(&[0, 55, 3, 60, 23, 10, 11, 35]);
+        assert_eq!(
+            b.sq_iter().collect::<Vec<_>>(),
+            vec![0, 3, 10, 11, 23, 35, 55, 60]
+        );
+    }
+
+    #[test]
+    fn into_from_vec() {
+        let v = vec![3, 6, 9];
+        let b = BitBoard::from(&v);
+        assert_eq!(b.to_vec(), v);
     }
 }

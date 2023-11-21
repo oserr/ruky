@@ -9,19 +9,19 @@ pub fn get_full_bmask(square: u32) -> BitBoard {
     let mut bits = BitBoard::new();
     // up-right
     for (r, c) in (row + 1..7).zip(col + 1..7) {
-        bits.set_bit(r * 8 + c);
+        bits.set_bit(from_rc(r, c));
     }
     // down-right
     for (r, c) in (1..row).rev().zip(col + 1..7) {
-        bits.set_bit(r * 8 + c);
+        bits.set_bit(from_rc(r, c));
     }
     // down-left
     for (r, c) in (1..row).rev().zip((1..col).rev()) {
-        bits.set_bit(r * 8 + c);
+        bits.set_bit(from_rc(r, c));
     }
     // up-left
     for (r, c) in (row + 1..7).zip((1..col).rev()) {
-        bits.set_bit(r * 8 + c);
+        bits.set_bit(from_rc(r, c));
     }
     bits
 }
@@ -84,19 +84,19 @@ pub fn get_full_rmask(square: u32) -> BitBoard {
     let mut bits = BitBoard::new();
     // up
     for r in row + 1..7 {
-        bits.set_bit(r * 8 + col);
+        bits.set_bit(from_rc(r, col));
     }
     // right
     for c in col + 1..7 {
-        bits.set_bit(row * 8 + c);
+        bits.set_bit(from_rc(row, c));
     }
     // down
     for r in 1..row {
-        bits.set_bit(r * 8 + col);
+        bits.set_bit(from_rc(r, col));
     }
     // left
     for c in 1..col {
-        bits.set_bit(row * 8 + c);
+        bits.set_bit(from_rc(row, c));
     }
     bits
 }

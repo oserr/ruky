@@ -31,6 +31,50 @@ pub fn get_full_bmasks() -> Vec<BitBoard> {
     (0..64).map(|i| get_full_bmask(i)).collect()
 }
 
+/// Computes the set of squares that are attacked by a bishop from a given square given a set of
+/// blocking pieces.
+pub fn get_battacks(sq: u32, blocking: BitBoard) -> BitBoard {
+    let row = sq / 8;
+    let col = sq % 8;
+    let mut attacks = BitBoard::new();
+    // up-right
+    for i in (row + 1..=7).zip(col + 1..=7).map(|(r, c)| from_rc(r, c)) {
+        attacks.set_bit(i);
+        if blocking.has_bit(i) {
+            break;
+        }
+    }
+    // down-right
+    for i in (0..row).rev().zip(col + 1..=7).map(|(r, c)| from_rc(r, c)) {
+        attacks.set_bit(i);
+        if blocking.has_bit(i) {
+            break;
+        }
+    }
+    // down-left
+    for i in (0..row)
+        .rev()
+        .zip((0..col).rev())
+        .map(|(r, c)| from_rc(r, c))
+    {
+        attacks.set_bit(i);
+        if blocking.has_bit(i) {
+            break;
+        }
+    }
+    // up-left
+    for i in (row + 1..=7)
+        .zip((0..col).rev())
+        .map(|(r, c)| from_rc(r, c))
+    {
+        attacks.set_bit(i);
+        if blocking.has_bit(i) {
+            break;
+        }
+    }
+    attacks
+}
+
 /// Computes a BitBoard with the full rook mask for a given square, but ignores the outer edge
 /// squares and the current square. For example, given square 0, i.e. square a1, it returns a
 /// BitBoard with bits set at (a2, a3, a4, a5, a6, a7, b1, c1, d1, e1, f1, g1).
@@ -60,6 +104,48 @@ pub fn get_full_rmask(square: u32) -> BitBoard {
 /// Computes a vector of 64 BitBoards, each representing the full rook mask for a square.
 pub fn get_full_rmasks() -> Vec<BitBoard> {
     (0..64).map(|i| get_full_rmask(i)).collect()
+}
+
+/// Computes the set of squares that are attacked by a rook from a given square given a set of
+/// blocking pieces.
+pub fn get_rattacks(sq: u32, blocking: BitBoard) -> BitBoard {
+    let row = sq / 8;
+    let col = sq % 8;
+    let mut attacks = BitBoard::new();
+    // up
+    for i in (row + 1..=7).map(|r| from_rc(r, col)) {
+        attacks.set_bit(i);
+        if blocking.has_bit(i) {
+            break;
+        }
+    }
+    // right
+    for i in (col + 1..=7).map(|c| from_rc(row, c)) {
+        attacks.set_bit(i);
+        if blocking.has_bit(i) {
+            break;
+        }
+    }
+    // down
+    for i in (0..row).map(|r| from_rc(r, col)) {
+        attacks.set_bit(i);
+        if blocking.has_bit(i) {
+            break;
+        }
+    }
+    // left
+    for i in (0..col).map(|c| from_rc(row, c)) {
+        attacks.set_bit(i);
+        if blocking.has_bit(i) {
+            break;
+        }
+    }
+    attacks
+}
+
+#[inline(always)]
+fn from_rc(row: u32, col: u32) -> u32 {
+    row * 8 + col
 }
 
 #[cfg(test)]

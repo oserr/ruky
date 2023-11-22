@@ -1,4 +1,23 @@
 use crate::bitboard::BitBoard;
+use rand::RngCore;
+use std::ops::FnMut;
+
+pub fn create_rand_fn() -> impl FnMut() -> u64 {
+    let mut rng = rand::thread_rng();
+    let rand_fn = move || rng.next_u64() & rng.next_u64() & rng.next_u64();
+    rand_fn
+}
+
+/// The bits in bit_selector are used to choose a set of bits from mask.
+pub fn permute_mask(bit_selector: BitBoard, mask: BitBoard) -> BitBoard {
+    let mut bits = BitBoard::new();
+    for (i, index) in mask.sq_iter().enumerate() {
+        if bit_selector.has_bit(i as u32) {
+            bits.set_bit(index);
+        }
+    }
+    bits
+}
 
 /// Computes a BitBoard with the full bishop mask for a given square, but ignores the outer edge
 /// squares and the current square. For example, given square 0, i.e. square a1, it returns a
@@ -240,5 +259,20 @@ mod tests {
             attacks,
             BitBoard::from(&[D3, B4, C4, E4, F4, D5, D6, D7, D8])
         );
+    }
+
+    #[test]
+    fn create_rand_func() {
+        let mut rand_fn = create_rand_fn();
+        assert!(rand_fn() > 0);
+        assert!(rand_fn() > 0);
+        assert!(rand_fn() > 0);
+    }
+
+    #[test]
+    fn permuate_mask() {
+        let bit_selector = BitBoard::from(0b100);
+        let mask = BitBoard::from(0b111000);
+        assert_eq!(permute_mask(bit_selector, mask), BitBoard::from(0b100000));
     }
 }

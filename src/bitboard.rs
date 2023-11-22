@@ -1,11 +1,22 @@
+use crate::sq::sqstr;
 use num::PrimInt;
 use std::convert::From;
+use std::fmt::{self, Debug, Formatter};
 use std::ops::Shl;
 
-#[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq)]
+#[derive(Clone, Copy, Default, Eq, Hash, PartialEq)]
 pub struct BitBoard {
     /// The raw bits used to represent the BitBoard.
     bits: u64,
+}
+
+impl Debug for BitBoard {
+    fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), fmt::Error> {
+        write!(f, "BitBoard")?;
+        f.debug_list()
+            .entries(self.sq_iter().map(|i| sqstr(i).unwrap()))
+            .finish()
+    }
 }
 
 impl From<u64> for BitBoard {

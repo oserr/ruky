@@ -127,14 +127,14 @@ pub fn get_rattacks(sq: u32, blocking: BitBoard) -> BitBoard {
         }
     }
     // down
-    for i in (0..row).map(|r| from_rc(r, col)) {
+    for i in (0..row).rev().map(|r| from_rc(r, col)) {
         attacks.set_bit(i);
         if blocking.has_bit(i) {
             break;
         }
     }
     // left
-    for i in (0..col).map(|c| from_rc(row, c)) {
+    for i in (0..col).rev().map(|c| from_rc(row, c)) {
         attacks.set_bit(i);
         if blocking.has_bit(i) {
             break;
@@ -180,6 +180,23 @@ mod tests {
     }
 
     #[test]
+    fn get_bishop_attacks_from_e4() {
+        let blockers = BitBoard::from(&[D3, D5, F3, F5]);
+        let attacks = get_battacks(E4, blockers);
+        assert_eq!(attacks, blockers);
+    }
+
+    #[test]
+    fn get_bishop_attacks_from_d4() {
+        let blockers = BitBoard::from(&[G7, F2]);
+        let attacks = get_battacks(D4, blockers);
+        assert_eq!(
+            attacks,
+            BitBoard::from(&[A1, B2, C3, E3, F2, C5, E5, B6, F6, A7, G7])
+        );
+    }
+
+    #[test]
     fn get_full_rmask_for_a1() {
         let b = get_full_rmask(A1);
         assert_eq!(
@@ -205,6 +222,23 @@ mod tests {
         assert_eq!(
             masks[E5 as usize],
             BitBoard::from(&[B5, C5, D5, F5, G5, E2, E3, E4, E6, E7])
+        );
+    }
+
+    #[test]
+    fn get_rook_attacks_from_e4() {
+        let blockers = BitBoard::from(&[D4, E5, F4, E3]);
+        let attacks = get_rattacks(E4, blockers);
+        assert_eq!(attacks, blockers);
+    }
+
+    #[test]
+    fn get_rook_attacks_from_d4() {
+        let blockers = BitBoard::from(&[A4, B4, F4, D3]);
+        let attacks = get_rattacks(D4, blockers);
+        assert_eq!(
+            attacks,
+            BitBoard::from(&[D3, B4, C4, E4, F4, D5, D6, D7, D8])
         );
     }
 }

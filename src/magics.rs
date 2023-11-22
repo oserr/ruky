@@ -1,8 +1,9 @@
 use crate::bitboard::BitBoard;
 use rand::RngCore;
-use std::ops::{Fn, FnMut};
+use std::ops::Fn;
 
 enum MagicErr {
+    InvalidSquare,
     NumBits,
     NotFound,
 }
@@ -14,13 +15,24 @@ struct Magic {
     rshift: u32,
 }
 
+/// Finds a Magic for a given square.
+///
+/// # Arguments
+///
+/// * `mask_fn`: A function to compute the full mask for a piece given a square.
+/// * `attacks_fn`: A function to compute the attack mask for a piece given a square and a given
+/// set of blockers.
+/// * `magic_iter`: An iterator over magic numbers.
 fn find_magic(
     sq: u32,
     mask_fn: impl Fn(u32) -> BitBoard,
     attacks_fn: impl Fn(u32, BitBoard) -> BitBoard,
-    gen_magic_fn: &mut impl FnMut() -> u64,
-    nloops: u32,
+    magic_iter: &mut impl Iterator<Item = u64>,
 ) -> Result<Magic, MagicErr> {
+    if sq >= 64 {
+        return Err(MagicErr::InvalidSquare);
+    }
+
     let mask = mask_fn(sq);
     let num_bits = mask.count();
 
@@ -41,9 +53,7 @@ fn find_magic(
 
     let mut attacks = vec![BitBoard::new(); ncombos];
 
-    'mloop: for _ in 0..nloops {
-        let magic = gen_magic_fn();
-
+    'mloop: for magic in magic_iter {
         if ((mask * magic) >> 56).count() < 6 {
             continue;
         }
@@ -80,10 +90,9 @@ fn get_magic_hash(blocking: BitBoard, magic: u64, rshift: u32) -> usize {
     ((blocking * magic) >> rshift).u64() as usize
 }
 
-pub fn create_rand_fn() -> impl FnMut() -> u64 {
+pub fn create_rand_iter() -> impl Iterator<Item = u64> {
     let mut rng = rand::thread_rng();
-    let rand_fn = move || rng.next_u64() & rng.next_u64() & rng.next_u64();
-    rand_fn
+    std::iter::from_fn(move || Some(rng.next_u64() & rng.next_u64() & rng.next_u64()))
 }
 
 /// The bits in bit_selector are used to choose a set of bits from mask.
@@ -340,11 +349,11 @@ mod tests {
     }
 
     #[test]
-    fn create_rand_func() {
-        let mut rand_fn = create_rand_fn();
-        assert!(rand_fn() > 0);
-        assert!(rand_fn() > 0);
-        assert!(rand_fn() > 0);
+    fn create_rand_iterator() {
+        let iter = create_rand_iter();
+        for m in iter.take(3) {
+            assert!(m > 0);
+        }
     }
 
     #[test]

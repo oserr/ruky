@@ -15,6 +15,52 @@ struct Magic {
     rshift: u32,
 }
 
+impl Magic {
+    fn get_hash(&self, blockers: BitBoard) -> usize {
+        let b = blockers & self.mask;
+        get_magic_hash(b, self.magic, self.rshift)
+    }
+
+    fn get_attacks(&self, blockers: BitBoard) -> BitBoard {
+        let h = self.get_hash(blockers);
+        self.attacks[h]
+    }
+}
+
+trait Magics {
+    fn attacks(&self, sq: u32, blockers: BitBoard) -> Option<BitBoard>;
+    fn get(&self, sq: u32) -> Option<&Magic>;
+}
+
+struct MagicAttacks {
+    magics: Vec<Magic>,
+}
+
+impl Magics for MagicAttacks {
+    fn attacks(&self, sq: u32, blockers: BitBoard) -> Option<BitBoard> {
+        let magic = self.magics.get(sq as usize)?;
+        Some(magic.get_attacks(blockers))
+    }
+
+    fn get(&self, sq: u32) -> Option<&Magic> {
+        self.magics.get(sq as usize)
+    }
+}
+
+// Computes magics for all squares.
+fn find_all_magics(
+    mask_fn: &impl Fn(u32) -> BitBoard,
+    attacks_fn: &impl Fn(u32, BitBoard) -> BitBoard,
+    magic_iter: &mut impl Iterator<Item = u64>,
+) -> Result<Vec<Magic>, MagicErr> {
+    let mut magics = Vec::<Magic>::with_capacity(64);
+    for s in 0..64 {
+        let magic = find_magic(s, mask_fn, attacks_fn, magic_iter)?;
+        magics.push(magic);
+    }
+    Ok(magics)
+}
+
 /// Finds a Magic for a given square.
 ///
 /// # Arguments
@@ -25,8 +71,8 @@ struct Magic {
 /// * `magic_iter`: An iterator over magic numbers.
 fn find_magic(
     sq: u32,
-    mask_fn: impl Fn(u32) -> BitBoard,
-    attacks_fn: impl Fn(u32, BitBoard) -> BitBoard,
+    mask_fn: &impl Fn(u32) -> BitBoard,
+    attacks_fn: &impl Fn(u32, BitBoard) -> BitBoard,
     magic_iter: &mut impl Iterator<Item = u64>,
 ) -> Result<Magic, MagicErr> {
     if sq >= 64 {

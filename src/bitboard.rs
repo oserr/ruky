@@ -2,12 +2,19 @@ use crate::sq::sqstr;
 use num::{PrimInt, Unsigned};
 use std::convert::From;
 use std::fmt::{self, Debug, Formatter};
-use std::ops::{Mul, Shl, Shr};
+use std::ops::{BitAnd, Mul, Shl, Shr};
 
 #[derive(Clone, Copy, Default, Eq, Hash, PartialEq)]
 pub struct BitBoard {
     /// The raw bits used to represent the BitBoard.
     bits: u64,
+}
+
+impl BitAnd for BitBoard {
+    type Output = BitBoard;
+    fn bitand(self, rhs: BitBoard) -> BitBoard {
+        BitBoard::from(self.bits & rhs.bits)
+    }
 }
 
 impl<T> Shr<T> for BitBoard

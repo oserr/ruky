@@ -2,17 +2,17 @@ use crate::bitboard::BitBoard;
 use rand::RngCore;
 use std::ops::Fn;
 
-enum MagicErr {
+pub enum MagicErr {
     InvalidSquare,
     NumBits,
     NotFound,
 }
 
-struct Magic {
-    attacks: Vec<BitBoard>,
-    mask: BitBoard,
-    magic: u64,
-    rshift: u32,
+pub struct Magic {
+    pub attacks: Vec<BitBoard>,
+    pub mask: BitBoard,
+    pub magic: u64,
+    pub rshift: u32,
 }
 
 impl Magic {
@@ -27,12 +27,12 @@ impl Magic {
     }
 }
 
-trait Magics {
+pub trait Magics {
     fn attacks(&self, sq: u32, blockers: BitBoard) -> Option<BitBoard>;
     fn get(&self, sq: u32) -> Option<&Magic>;
 }
 
-struct MagicAttacks {
+pub struct MagicAttacks {
     magics: Vec<Magic>,
 }
 

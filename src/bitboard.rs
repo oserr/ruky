@@ -1,13 +1,35 @@
 use crate::sq::sqstr;
-use num::PrimInt;
+use num::{PrimInt, Unsigned};
 use std::convert::From;
 use std::fmt::{self, Debug, Formatter};
-use std::ops::Shl;
+use std::ops::{Mul, Shl, Shr};
 
 #[derive(Clone, Copy, Default, Eq, Hash, PartialEq)]
 pub struct BitBoard {
     /// The raw bits used to represent the BitBoard.
     bits: u64,
+}
+
+impl<T> Shr<T> for BitBoard
+where
+    T: PrimInt,
+    u64: Shr<T, Output = u64>,
+{
+    type Output = BitBoard;
+    fn shr(self, rhs: T) -> BitBoard {
+        BitBoard::from(self.bits >> rhs)
+    }
+}
+
+impl<T> Mul<T> for BitBoard
+where
+    T: Unsigned,
+    u64: Mul<T, Output = u64>,
+{
+    type Output = BitBoard;
+    fn mul(self, rhs: T) -> BitBoard {
+        BitBoard::from(self.bits * rhs)
+    }
 }
 
 impl Debug for BitBoard {
@@ -68,9 +90,19 @@ impl BitBoard {
         BitBoard::default()
     }
 
+    /// Creates a new Bitboard instance with all bits cleared.
+    pub fn u64(&self) -> u64 {
+        self.bits
+    }
+
     /// Returns true if any bits are set.
     pub fn any(&self) -> bool {
         self.bits != 0
+    }
+
+    /// Returns true if no bits are set, or false otherwise.
+    pub fn none(&self) -> bool {
+        !self.any()
     }
 
     /// Clears all the bits.

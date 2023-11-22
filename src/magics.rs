@@ -1,6 +1,84 @@
 use crate::bitboard::BitBoard;
 use rand::RngCore;
-use std::ops::FnMut;
+use std::ops::{Fn, FnMut};
+
+enum MagicErr {
+    NumBits,
+    NotFound,
+}
+
+struct Magic {
+    attacks: Vec<BitBoard>,
+    mask: BitBoard,
+    magic: u64,
+    rshift: u32,
+}
+
+fn find_magic(
+    sq: u32,
+    mask_fn: impl Fn(u32) -> BitBoard,
+    attacks_fn: impl Fn(u32, BitBoard) -> BitBoard,
+    gen_magic_fn: &mut impl FnMut() -> u64,
+    nloops: u32,
+) -> Result<Magic, MagicErr> {
+    let mask = mask_fn(sq);
+    let num_bits = mask.count();
+
+    if num_bits < 5 || num_bits > 12 {
+        return Err(MagicErr::NumBits);
+    }
+
+    let ncombos = 1usize << num_bits;
+    const MAX_COMBOS: usize = 1usize << 12;
+
+    let mut blocking = [BitBoard::new(); MAX_COMBOS];
+    let mut attacking = [BitBoard::new(); MAX_COMBOS];
+
+    for i in 0..ncombos {
+        blocking[i] = permute_mask(BitBoard::from(i as u64), mask);
+        attacking[i] = attacks_fn(sq, blocking[i]);
+    }
+
+    let mut attacks = vec![BitBoard::new(); ncombos];
+
+    'mloop: for _ in 0..nloops {
+        let magic = gen_magic_fn();
+
+        if ((mask * magic) >> 56).count() < 6 {
+            continue;
+        }
+
+        let rshift = 64 - num_bits;
+
+        for i in 0..ncombos {
+            let magic_hash = get_magic_hash(blocking[i], magic, rshift);
+
+            if attacks[magic_hash].none() {
+                attacks[magic_hash] = attacking[i];
+            } else if attacks[magic_hash] != attacking[i] {
+                // Start again if a collision is found.
+                for b in &mut attacks {
+                    b.clear();
+                }
+                continue 'mloop;
+            }
+        }
+
+        return Ok(Magic {
+            attacks,
+            mask,
+            magic,
+            rshift,
+        });
+    }
+
+    Err(MagicErr::NotFound)
+}
+
+#[inline(always)]
+fn get_magic_hash(blocking: BitBoard, magic: u64, rshift: u32) -> usize {
+    ((blocking * magic) >> rshift).u64() as usize
+}
 
 pub fn create_rand_fn() -> impl FnMut() -> u64 {
     let mut rng = rand::thread_rng();

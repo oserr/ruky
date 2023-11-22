@@ -47,6 +47,18 @@ impl Magics for MagicAttacks {
     }
 }
 
+pub fn compute_bmagics() -> Result<MagicAttacks, MagicErr> {
+    let mut rand_iter = create_rand_iter();
+    let magics = find_all_magics(&get_full_bmask, &get_battacks, rand_iter.by_ref())?;
+    Ok(MagicAttacks { magics })
+}
+
+pub fn compute_rmagics() -> Result<MagicAttacks, MagicErr> {
+    let mut rand_iter = create_rand_iter();
+    let magics = find_all_magics(&get_full_bmask, &get_rattacks, rand_iter.by_ref())?;
+    Ok(MagicAttacks { magics })
+}
+
 // Computes magics for all squares.
 fn find_all_magics(
     mask_fn: &impl Fn(u32) -> BitBoard,

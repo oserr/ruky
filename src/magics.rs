@@ -29,7 +29,7 @@ impl Magic {
     }
 }
 
-pub trait Magics {
+pub trait Magics: AsRef<[Magic]> {
     fn attacks(&self, sq: u32, blockers: BitBoard) -> Option<BitBoard>;
     fn get(&self, sq: u32) -> Option<&Magic>;
 }
@@ -46,6 +46,12 @@ impl Magics for MagicAttacks {
 
     fn get(&self, sq: u32) -> Option<&Magic> {
         self.magics.get(sq as usize)
+    }
+}
+
+impl AsRef<[Magic]> for MagicAttacks {
+    fn as_ref(&self) -> &[Magic] {
+        self.magics.as_ref()
     }
 }
 

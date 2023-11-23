@@ -1,6 +1,6 @@
 use crate::sq::sqstr;
 use num::{PrimInt, Unsigned};
-use std::convert::From;
+use std::convert::{From, Into};
 use std::fmt::{self, Debug, Formatter};
 use std::ops::{BitAnd, Mul, Shl, Shr};
 
@@ -31,11 +31,12 @@ where
 impl<T> Mul<T> for BitBoard
 where
     T: Unsigned,
+    T: Into<u64>,
     u64: Mul<T, Output = u64>,
 {
     type Output = BitBoard;
     fn mul(self, rhs: T) -> BitBoard {
-        BitBoard::from(self.bits * rhs)
+        BitBoard::from(self.bits.wrapping_mul(rhs.into()))
     }
 }
 

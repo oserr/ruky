@@ -2,12 +2,14 @@ use crate::bitboard::BitBoard;
 use rand::RngCore;
 use std::ops::Fn;
 
+#[derive(Copy, Clone, Debug)]
 pub enum MagicErr {
     InvalidSquare,
     NumBits,
     NotFound,
 }
 
+#[derive(Clone)]
 pub struct Magic {
     pub attacks: Vec<BitBoard>,
     pub mask: BitBoard,

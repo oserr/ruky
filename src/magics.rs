@@ -51,14 +51,12 @@ impl Magics for MagicAttacks {
 
 pub fn compute_bmagics() -> Result<MagicAttacks, MagicErr> {
     let mut rand_iter = create_rand_iter();
-    let magics = find_all_magics(&get_full_bmask, &get_battacks, rand_iter.by_ref())?;
-    Ok(MagicAttacks { magics })
+    find_all_magics(&get_full_bmask, &get_battacks, rand_iter.by_ref())
 }
 
 pub fn compute_rmagics() -> Result<MagicAttacks, MagicErr> {
     let mut rand_iter = create_rand_iter();
-    let magics = find_all_magics(&get_full_bmask, &get_rattacks, rand_iter.by_ref())?;
-    Ok(MagicAttacks { magics })
+    find_all_magics(&get_full_rmask, &get_rattacks, rand_iter.by_ref())
 }
 
 // Computes magics for all squares.
@@ -66,13 +64,13 @@ fn find_all_magics(
     mask_fn: &impl Fn(u32) -> BitBoard,
     attacks_fn: &impl Fn(u32, BitBoard) -> BitBoard,
     magic_iter: &mut impl Iterator<Item = u64>,
-) -> Result<Vec<Magic>, MagicErr> {
+) -> Result<MagicAttacks, MagicErr> {
     let mut magics = Vec::<Magic>::with_capacity(64);
     for s in 0..64 {
         let magic = find_magic(s, mask_fn, attacks_fn, magic_iter)?;
         magics.push(magic);
     }
-    Ok(magics)
+    Ok(MagicAttacks { magics })
 }
 
 /// Finds a Magic for a given square.

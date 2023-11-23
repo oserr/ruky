@@ -6,6 +6,7 @@ use std::ops::Fn;
 pub enum MagicErr {
     InvalidSquare,
     NumBits,
+    NumMagic,
     NotFound,
 }
 
@@ -53,6 +54,20 @@ impl AsRef<[Magic]> for MagicAttacks {
     fn as_ref(&self) -> &[Magic] {
         self.magics.as_ref()
     }
+}
+
+fn from_bmagics(mut magics: impl Iterator<Item = u64>) -> Result<MagicAttacks, MagicErr> {
+    if magics.size_hint().0 != 64 {
+        return Err(MagicErr::NumMagic);
+    }
+    find_all_magics(&get_full_bmask, &get_battacks, magics.by_ref())
+}
+
+fn from_rmagics(mut magics: impl Iterator<Item = u64>) -> Result<MagicAttacks, MagicErr> {
+    if magics.size_hint().0 != 64 {
+        return Err(MagicErr::NumMagic);
+    }
+    find_all_magics(&get_full_rmask, &get_rattacks, magics.by_ref())
 }
 
 pub fn compute_bmagics() -> Result<MagicAttacks, MagicErr> {

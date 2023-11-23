@@ -32,7 +32,7 @@ fn print_info(magics: &impl Magics, for_rook: bool) {
     );
     for (i, m) in magics.as_ref().iter().enumerate() {
         println!(
-            "\tsquare {i}: magic={:?} mask={:?} rshift={:?} num_attacks={:?}",
+            "\tsquare {i}: magic={} mask={:?} rshift={} num_attacks={}",
             m.magic,
             m.mask,
             m.rshift,

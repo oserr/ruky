@@ -7,8 +7,8 @@ fn main() {
     for i in 0..64 {
         let magic = magics.get(i).expect("Unable to find magic.");
         println!(
-            "Magic for square {i} with magic={:?}, mask={:?} rshift={:?}",
-            magic.magic, magic.mask, magic.rshift
+            "Magic for square {i} with magic={:?}, mask={:?} rshift={:?} num_attacks={:?}",
+            magic.magic, magic.mask, magic.rshift, magic.attacks.len()
         );
     }
 }

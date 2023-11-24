@@ -10,7 +10,7 @@ pub enum MagicErr {
     NotFound,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct Magic {
     pub attacks: Vec<BitBoard>,
     pub mask: BitBoard,
@@ -35,6 +35,7 @@ pub trait Magics: AsRef<[Magic]> {
     fn get(&self, sq: u32) -> Option<&Magic>;
 }
 
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct MagicAttacks {
     magics: Vec<Magic>,
 }
@@ -56,14 +57,14 @@ impl AsRef<[Magic]> for MagicAttacks {
     }
 }
 
-fn from_bmagics(mut magics: impl Iterator<Item = u64>) -> Result<MagicAttacks, MagicErr> {
+pub fn from_bmagics(mut magics: impl Iterator<Item = u64>) -> Result<MagicAttacks, MagicErr> {
     if magics.size_hint().0 != 64 {
         return Err(MagicErr::NumMagic);
     }
     find_all_magics(&get_full_bmask, &get_battacks, magics.by_ref())
 }
 
-fn from_rmagics(mut magics: impl Iterator<Item = u64>) -> Result<MagicAttacks, MagicErr> {
+pub fn from_rmagics(mut magics: impl Iterator<Item = u64>) -> Result<MagicAttacks, MagicErr> {
     if magics.size_hint().0 != 64 {
         return Err(MagicErr::NumMagic);
     }

@@ -1,8 +1,8 @@
-use crate::sq::sqstr;
+use crate::sq::Sq;
 use num::{PrimInt, Unsigned};
 use std::convert::{From, Into};
 use std::fmt::{self, Debug, Formatter};
-use std::ops::{BitAnd, Mul, Shl, Shr};
+use std::ops::{BitAnd, BitOrAssign, Mul, Shl, Shr};
 
 #[derive(Clone, Copy, Default, Eq, Hash, PartialEq)]
 pub struct BitBoard {
@@ -14,6 +14,13 @@ impl BitAnd for BitBoard {
     type Output = BitBoard;
     fn bitand(self, rhs: BitBoard) -> BitBoard {
         BitBoard::from(self.bits & rhs.bits)
+    }
+}
+
+impl BitOrAssign<Sq> for BitBoard {
+    #[inline]
+    fn bitor_assign(&mut self, rhs: Sq) {
+        self.set_bit(rhs.into());
     }
 }
 
@@ -43,9 +50,7 @@ where
 impl Debug for BitBoard {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), fmt::Error> {
         write!(f, "BitBoard")?;
-        f.debug_list()
-            .entries(self.sq_iter().map(|i| sqstr(i).unwrap()))
-            .finish()
+        f.debug_list().entries(self.sq_iter()).finish()
     }
 }
 
@@ -57,7 +62,7 @@ impl From<u64> for BitBoard {
 
 impl From<BitBoard> for Vec<u32> {
     fn from(bits: BitBoard) -> Vec<u32> {
-        bits.sq_iter().collect()
+        bits.sq_iter().map(|s| s.into()).collect()
     }
 }
 
@@ -154,8 +159,8 @@ impl BitBoard {
     }
 
     /// Returns the number of bits set.
-    pub fn count(&self) -> u32 {
-        self.bits.count_ones()
+    pub fn count(&self) -> u8 {
+        self.bits.count_ones() as u8
     }
 
     /// Returns true if only bit is set, false otherwise.
@@ -164,13 +169,13 @@ impl BitBoard {
     }
 
     /// Returns the index of the first bit set. If no bit is set, returns 64.
-    pub fn first_bit(&self) -> u32 {
-        self.bits.trailing_zeros()
+    pub fn first_bit(&self) -> u8 {
+        self.bits.trailing_zeros() as u8
     }
 
     /// Returns the index of the first bit set and clears it from the bitboard if any bits are set,
     /// otherwise returns None.
-    pub fn take_first(&mut self) -> Option<u32> {
+    pub fn take_first(&mut self) -> Option<u8> {
         if !self.any() {
             return None;
         }
@@ -180,7 +185,7 @@ impl BitBoard {
     }
 
     // Returns an iterator over the squares where the bits are set.
-    pub fn sq_iter(&self) -> impl Iterator<Item = u32> {
+    pub fn sq_iter(&self) -> impl Iterator<Item = Sq> {
         SquareIter::from(*self)
     }
 
@@ -191,7 +196,7 @@ impl BitBoard {
 }
 
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq)]
-struct SquareIter {
+pub struct SquareIter {
     bits: BitBoard,
 }
 
@@ -202,9 +207,9 @@ impl From<BitBoard> for SquareIter {
 }
 
 impl Iterator for SquareIter {
-    type Item = u32;
-    fn next(&mut self) -> Option<u32> {
-        self.bits.take_first()
+    type Item = Sq;
+    fn next(&mut self) -> Option<Sq> {
+        self.bits.take_first().map(Sq::from)
     }
 }
 

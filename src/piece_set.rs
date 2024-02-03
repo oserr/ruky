@@ -1,5 +1,6 @@
 use crate::bitboard::BitBoard;
 use crate::piece::{Piece, Piece::*};
+use crate::sq;
 
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 struct PieceSet {
@@ -15,13 +16,25 @@ struct PieceSet {
 impl PieceSet {
     pub fn init_white() -> Self {
         Self {
-            king: BitBoard::from(1 << 4),
-            queen: BitBoard::from(1 << 3),
-            rook: BitBoard::from((1 << 7) | 1),
-            bishop: BitBoard::from((1 << 5) | (1 << 2)),
-            knight: BitBoard::from((1 << 6) | (1 << 1)),
+            king: BitBoard::from(1 << sq::E1),
+            queen: BitBoard::from(1 << sq::D1),
+            rook: BitBoard::from((1 << sq::H1) | (1 << sq::A1)),
+            bishop: BitBoard::from((1 << sq::F1) | (1 << sq::C1)),
+            knight: BitBoard::from((1 << sq::G1) | (1 << sq::B1)),
             pawn: BitBoard::from(0xff00),
             all_bits: BitBoard::from(0xffff),
+        }
+    }
+
+    pub fn init_black() -> Self {
+        Self {
+            king: BitBoard::from(1 << sq::E8),
+            queen: BitBoard::from(1 << sq::D8),
+            rook: BitBoard::from((1 << sq::H8) | (1 << sq::A8)),
+            bishop: BitBoard::from((1 << sq::F8) | (1 << sq::C8)),
+            knight: BitBoard::from((1 << sq::G8) | (1 << sq::B8)),
+            pawn: BitBoard::from(0xff << 48),
+            all_bits: BitBoard::from(0xffff << 48),
         }
     }
 

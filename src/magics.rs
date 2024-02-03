@@ -15,7 +15,7 @@ pub struct Magic {
     pub attacks: Vec<BitBoard>,
     pub mask: BitBoard,
     pub magic: u64,
-    pub rshift: u32,
+    pub rshift: u8,
 }
 
 impl Magic {
@@ -138,7 +138,7 @@ fn find_magic(
             continue;
         }
 
-        let rshift = 64 - num_bits;
+        let rshift: u8 = 64 - num_bits;
 
         for i in 0..ncombos {
             let magic_hash = get_magic_hash(blocking[i], magic, rshift);
@@ -166,7 +166,7 @@ fn find_magic(
 }
 
 #[inline(always)]
-fn get_magic_hash(blocking: BitBoard, magic: u64, rshift: u32) -> usize {
+fn get_magic_hash(blocking: BitBoard, magic: u64, rshift: u8) -> usize {
     ((blocking * magic) >> rshift).u64() as usize
 }
 
@@ -178,9 +178,9 @@ pub fn create_rand_iter() -> impl Iterator<Item = u64> {
 /// The bits in bit_selector are used to choose a set of bits from mask.
 pub fn permute_mask(bit_selector: BitBoard, mask: BitBoard) -> BitBoard {
     let mut bits = BitBoard::new();
-    for (i, index) in mask.sq_iter().enumerate() {
+    for (i, sq) in mask.sq_iter().enumerate() {
         if bit_selector.has_bit(i as u32) {
-            bits.set_bit(index);
+            bits |= sq;
         }
     }
     bits

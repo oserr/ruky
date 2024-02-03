@@ -13,6 +13,18 @@ struct PieceSet {
 }
 
 impl PieceSet {
+    pub fn init_white() -> Self {
+        Self {
+            king: BitBoard::from(1 << 4),
+            queen: BitBoard::from(1 << 3),
+            rook: BitBoard::from((1 << 7) | 1),
+            bishop: BitBoard::from((1 << 5) | (1 << 2)),
+            knight: BitBoard::from((1 << 6) | (1 << 1)),
+            pawn: BitBoard::from(0xff00),
+            all_bits: BitBoard::from(0xffff),
+        }
+    }
+
     pub fn iter(&self) -> PieceIter {
         PieceIter::from(self)
     }

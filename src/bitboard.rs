@@ -121,6 +121,12 @@ impl From<&Vec<Sq>> for BitBoard {
     }
 }
 
+impl From<BitBoard> for Vec<Sq> {
+    fn from(bitboard: BitBoard) -> Vec<Sq> {
+        bitboard.sq_iter().collect()
+    }
+}
+
 impl BitBoard {
     /// Creates a new Bitboard instance with all bits cleared.
     pub fn new() -> BitBoard {

@@ -53,6 +53,7 @@ pub enum PieceMove {
     },
 }
 
+// Represents a move error.
 #[derive(thiserror::Error, Clone, Debug)]
 pub enum MoveErr {
     #[error("cannot promote to {0:?}")]
@@ -63,8 +64,11 @@ pub enum MoveErr {
     BadToSquare(u32),
     #[error("bad move {0:?}")]
     BadMove(Piece<PieceMove>),
+    #[error("move {0:?} does not represent a capture")]
+    NoCapture(PieceMove),
 }
 
+// Conversion from BitErr to MoveErr.
 impl From<BitErr> for MoveErr {
     fn from(err: BitErr) -> MoveErr {
         match err {

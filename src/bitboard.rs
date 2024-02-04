@@ -129,16 +129,34 @@ impl BitBoard {
         self.bits & (1u64 << index) != 0
     }
 
-    /// Checks if a given bit is set. Index is zero based.
+    /// Clears a given bit if set. Index is zero based.
     pub fn clear_bit(&mut self, index: u32) -> &mut Self {
         self.bits &= !(1u64 << index);
         self
     }
 
-    /// Sets a bit
+    /// Clears a given bit if set, otherwise returns an error. Index is zero based.
+    pub fn clear_bit_or(&mut self, index: u32) -> Result<&mut Self, BitErr> {
+        if !self.has_bit(index) {
+            return Err(BitErr::IsNotSet(index));
+        }
+        self.bits &= !(1u64 << index);
+        Ok(self)
+    }
+
+    /// Sets a given bit.
     pub fn set_bit(&mut self, index: u32) -> &mut Self {
         self.bits |= 1u64 << index;
         self
+    }
+
+    /// Sets a given bit if the bit is not set, otherwise returns an error.
+    pub fn set_bit_or(&mut self, index: u32) -> Result<&mut Self, BitErr> {
+        if self.has_bit(index) {
+            return Err(BitErr::IsSetAlready(index));
+        }
+        self.bits |= 1u64 << index;
+        Ok(self)
     }
 
     /// Updates a bit by setting to zero in |from| and setting it in |to|. If |from| is not set or
@@ -217,9 +235,13 @@ impl Iterator for SquareIter {
 
 #[derive(thiserror::Error, Clone, Debug)]
 pub enum BitErr {
-    #[error("from square {0} is not set.")]
+    #[error("bit {0} is not set as expected")]
+    IsNotSet(u32),
+    #[error("bit {0} is already set")]
+    IsSetAlready(u32),
+    #[error("from bit {0} is not set")]
     FromIsNotSet(u32),
-    #[error("to square {0} is already set.")]
+    #[error("to bit {0} is already set")]
     ToIsSetAlready(u32),
 }
 

@@ -134,6 +134,27 @@ impl PieceSet {
         Ok(self)
     }
 
+    // Updates the position for pieces that are captured. If the move is not a capture or the
+    // capture is invalid, then it returns an error.
+    pub fn remove_captured(&mut self, mv: PieceMove) -> Result<&mut Self, MoveErr> {
+        match mv {
+            Capture { to, cap, .. } | PromoCap { to, cap, .. } => {
+                let piece = match cap {
+                    King(_) => &mut self.king,
+                    Queen(_) => &mut self.queen,
+                    Rook(_) => &mut self.rook,
+                    Bishop(_) => &mut self.bishop,
+                    Knight(_) => &mut self.knight,
+                    Pawn(_) => &mut self.pawn,
+                };
+                piece.clear_bit_or(to.into())?
+            }
+            EnPassant { passant, .. } => self.pawn.clear_bit_or(passant.into())?,
+            _ => return Err(MoveErr::NoCapture(mv)),
+        };
+        Ok(self)
+    }
+
     // Returns an iterator to iterate over each piece as a BitBoard.
     pub fn iter(&self) -> PieceIter {
         PieceIter::from(self)

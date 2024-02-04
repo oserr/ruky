@@ -218,20 +218,23 @@ impl BitBoard {
         self.bits.is_power_of_two()
     }
 
-    /// Returns the index of the first bit set. If no bit is set, returns 64.
-    pub fn first_bit(&self) -> Sq {
-        self.bits.trailing_zeros().into()
+    /// Returns the square of the first bit set. If no bit is set, returns None.
+    pub fn first_bit(&self) -> Option<Sq> {
+        if self.any() {
+            Some(self.bits.trailing_zeros().into())
+        } else {
+            None
+        }
     }
 
     /// Returns the index of the first bit set and clears it from the bitboard if any bits are set,
     /// otherwise returns None.
     pub fn take_first(&mut self) -> Option<Sq> {
-        if !self.any() {
-            return None;
-        }
         let s = self.first_bit();
-        self.bits &= self.bits - 1;
-        Some(s)
+        if s.is_some() {
+            self.bits &= self.bits - 1;
+        }
+        s
     }
 
     // Returns an iterator over the squares where the bits are set.

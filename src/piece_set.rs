@@ -1,5 +1,6 @@
 use crate::bitboard::BitBoard;
 use crate::piece::{Piece, Piece::*};
+use crate::piece_move::{MoveErr, PieceMove, PieceMove::*};
 use crate::sq;
 
 /// PieceSet represents the set of pieces for player, with a bitboard for each type of piece.
@@ -39,6 +40,90 @@ impl PieceSet {
             pawn: BitBoard::from(0xff << 48),
             all_bits: BitBoard::from(0xffff << 48),
         }
+    }
+
+    pub fn apply_move(&mut self, piece_move: Piece<PieceMove>) -> Result<&mut Self, MoveErr> {
+        match piece_move {
+            King(mv) => self.update_king(mv),
+            Queen(mv) => self.simple_update(mv, Queen(())),
+            Rook(mv) => self.simple_update(mv, Rook(())),
+            Bishop(mv) => self.simple_update(mv, Bishop(())),
+            Knight(mv) => self.simple_update(mv, Knight(())),
+            Pawn(mv) => self.update_pawn(mv),
+        }
+    }
+
+    fn update_king(&mut self, mv: PieceMove) -> Result<&mut Self, MoveErr> {
+        match mv {
+            Simple { from, to } | Capture { from, to, .. } => {
+                self.king.update_bit(from.into(), to.into())?
+            }
+            Castle {
+                king_from,
+                king_to,
+                rook_from,
+                rook_to,
+            } => {
+                self.king.update_bit(king_from.into(), king_to.into())?;
+                self.rook.update_bit(rook_from.into(), rook_to.into())?
+            }
+            _ => return Err(MoveErr::BadMove(King(mv))),
+        };
+        Ok(self)
+    }
+
+    fn update_pawn(&mut self, mv: PieceMove) -> Result<&mut Self, MoveErr> {
+        match mv {
+            Simple { from, to } | Capture { from, to, .. } | EnPassant { from, to, .. } => {
+                self.pawn.update_bit(from.into(), to.into())?
+            }
+            Promo { from, to, promo }
+            | PromoCap {
+                from, to, promo, ..
+            } => {
+                self.pawn.clear_bit_or(from.into())?;
+                let promo_piece = match promo {
+                    Queen(_) => &mut self.queen,
+                    Rook(_) => &mut self.rook,
+                    Bishop(_) => &mut self.bishop,
+                    Knight(_) => &mut self.knight,
+                    _ => return Err(MoveErr::BadPromo(promo)),
+                };
+                promo_piece.set_bit_or(to.into())?
+            }
+            _ => return Err(MoveErr::BadMove(Pawn(mv))),
+        };
+        Ok(self)
+    }
+
+    fn simple_update(
+        &mut self,
+        mv: PieceMove,
+        piece_type: Piece<()>,
+    ) -> Result<&mut Self, MoveErr> {
+        let piece = match piece_type {
+            Queen(_) => &mut self.queen,
+            Rook(_) => &mut self.rook,
+            Bishop(_) => &mut self.bishop,
+            Knight(_) => &mut self.knight,
+            _ => panic!("Using simple update for {:?}", piece_type),
+        };
+        match mv {
+            Simple { from, to } | Capture { from, to, .. } => {
+                piece.update_bit(from.into(), to.into())?
+            }
+            _ => {
+                let piece_move = match piece_type {
+                    Queen(_) => Queen(mv),
+                    Rook(_) => Rook(mv),
+                    Bishop(_) => Bishop(mv),
+                    Knight(_) => Knight(mv),
+                    _ => panic!("Using simple update for {:?}", piece_type),
+                };
+                return Err(MoveErr::BadMove(piece_move));
+            }
+        };
+        Ok(self)
     }
 
     // Returns an iterator to iterate over each piece as a BitBoard.

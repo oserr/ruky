@@ -2,7 +2,7 @@ use crate::bitboard::BitBoard;
 use crate::piece::{Piece, Piece::*};
 use crate::sq;
 
-//! PieceSet represents the set of pieces for player, with a bitboard for each type of piece.
+/// PieceSet represents the set of pieces for player, with a bitboard for each type of piece.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 struct PieceSet {
     king: BitBoard,
@@ -15,7 +15,7 @@ struct PieceSet {
 }
 
 impl PieceSet {
-    //! Initializes a PieceSet with the initial position for white pieces.
+    // Initializes a PieceSet with the initial position for white pieces.
     pub fn init_white() -> Self {
         Self {
             king: BitBoard::from(1 << sq::E1),
@@ -28,7 +28,7 @@ impl PieceSet {
         }
     }
 
-    //! Initializes a PieceSet with the initial position for black pieces.
+    // Initializes a PieceSet with the initial position for black pieces.
     pub fn init_black() -> Self {
         Self {
             king: BitBoard::from(1 << sq::E8),
@@ -41,7 +41,7 @@ impl PieceSet {
         }
     }
 
-    //! Returns an iterator to iterate over each piece as a BitBoard.
+    // Returns an iterator to iterate over each piece as a BitBoard.
     pub fn iter(&self) -> PieceIter {
         PieceIter::from(self)
     }

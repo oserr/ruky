@@ -143,9 +143,11 @@ impl BitBoard {
 
     /// Updates a bit by setting to zero in |from| and setting it in |to|. If |from| is not set or
     /// |to| is already set, then we return an error.
-    pub fn update_bit(&mut self, from: u32, to: u32) -> Result<&mut Self, &mut Self> {
-        if !self.has_bit(from) || self.has_bit(to) {
-            Err(self)
+    pub fn update_bit(&mut self, from: u32, to: u32) -> Result<&mut Self, BitErr> {
+        if !self.has_bit(from) {
+            Err(BitErr::FromIsNotSet(from))
+        } else if self.has_bit(to) {
+            Err(BitErr::ToIsSetAlready(to))
         } else {
             Ok(self.clear_bit(from).set_bit(to))
         }
@@ -213,6 +215,14 @@ impl Iterator for SquareIter {
     }
 }
 
+#[derive(thiserror::Error, Clone, Debug)]
+pub enum BitErr {
+    #[error("from square {0} is not set.")]
+    FromIsNotSet(u32),
+    #[error("to square {0} is already set.")]
+    ToIsSetAlready(u32),
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -273,10 +283,10 @@ mod tests {
     #[test]
     fn update_bit() {
         let mut b = BitBoard::new();
-        assert_eq!(b.update_bit(5, 7), Err(&mut BitBoard::new()));
+        assert_eq!(b.update_bit(5, 7), Err(BitErr::FromIsNotSet(5)));
         b.set_bit(5);
         b.set_bit(7);
-        assert_eq!(b.update_bit(5, 7), Err(&mut BitBoard::from(&[5, 7])));
+        assert_eq!(b.update_bit(5, 7), Err(BitErr::ToIsSetAlready(7)));
         assert_eq!(b.update_bit(5, 8), Ok(&mut BitBoard::from(&[7, 8])));
     }
 

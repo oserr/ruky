@@ -1,5 +1,7 @@
+use crate::bitboard::{BitErr, BitErr::*};
 use crate::piece::Piece;
 use crate::sq::Sq;
+use std::convert::From;
 
 // An enum for representing the different types of moves for all chess pieces.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
@@ -14,7 +16,8 @@ pub enum PieceMove {
     // For simple captures where the captured piece is on the destination square.
     Capture {
         from: Sq,
-        to: Piece<Sq>,
+        to: Sq,
+        cap: Piece<()>,
     },
 
     // Castling between king and rook, the only type of move where two pieces move simultaneously.
@@ -44,9 +47,29 @@ pub enum PieceMove {
     // Pawn promotion with capture.
     PromoCap {
         from: Sq,
-        // Destination square with captured piece.
-        to: Piece<Sq>,
-        // The piece to which the pawn is promoted.
+        to: Sq,
         promo: Piece<()>,
+        cap: Piece<()>,
     },
+}
+
+#[derive(thiserror::Error, Clone, Debug)]
+pub enum MoveErr {
+    #[error("cannot promote to {0:?}")]
+    BadPromo(Piece<()>),
+    #[error("cannot move from square {0}")]
+    BadFromSquare(u32),
+    #[error("cannot move to square {0}")]
+    BadToSquare(u32),
+    #[error("bad move {0:?}")]
+    BadMove(Piece<PieceMove>),
+}
+
+impl From<BitErr> for MoveErr {
+    fn from(err: BitErr) -> MoveErr {
+        match err {
+            IsNotSet(from) | FromIsNotSet(from) => MoveErr::BadFromSquare(from),
+            IsSetAlready(to) | ToIsSetAlready(to) => MoveErr::BadToSquare(to),
+        }
+    }
 }

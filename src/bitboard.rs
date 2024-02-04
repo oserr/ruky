@@ -101,6 +101,26 @@ where
     }
 }
 
+impl From<&[Sq]> for BitBoard {
+    fn from(squares: &[Sq]) -> BitBoard {
+        squares
+            .iter()
+            .fold(BitBoard::new(), |mut b, s| *b.set_bit(*s))
+    }
+}
+
+impl<const N: usize> From<&[Sq; N]> for BitBoard {
+    fn from(squares: &[Sq; N]) -> BitBoard {
+        BitBoard::from(&squares[..])
+    }
+}
+
+impl From<&Vec<Sq>> for BitBoard {
+    fn from(squares: &Vec<Sq>) -> BitBoard {
+        BitBoard::from(&squares[..])
+    }
+}
+
 impl BitBoard {
     /// Creates a new Bitboard instance with all bits cleared.
     pub fn new() -> BitBoard {

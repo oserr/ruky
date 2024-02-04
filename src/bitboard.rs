@@ -219,19 +219,19 @@ impl BitBoard {
     }
 
     /// Returns the index of the first bit set. If no bit is set, returns 64.
-    pub fn first_bit(&self) -> u8 {
-        self.bits.trailing_zeros() as u8
+    pub fn first_bit(&self) -> Sq {
+        self.bits.trailing_zeros().into()
     }
 
     /// Returns the index of the first bit set and clears it from the bitboard if any bits are set,
     /// otherwise returns None.
-    pub fn take_first(&mut self) -> Option<u8> {
+    pub fn take_first(&mut self) -> Option<Sq> {
         if !self.any() {
             return None;
         }
-        let i = self.first_bit();
+        let s = self.first_bit();
         self.bits &= self.bits - 1;
-        Some(i)
+        Some(s)
     }
 
     // Returns an iterator over the squares where the bits are set.

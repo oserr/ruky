@@ -58,10 +58,10 @@ pub enum PieceMove {
 pub enum MoveErr {
     #[error("cannot promote to {0:?}")]
     BadPromo(Piece<()>),
-    #[error("cannot move from square {0}")]
-    BadFromSquare(u32),
-    #[error("cannot move to square {0}")]
-    BadToSquare(u32),
+    #[error("cannot move from square {0:?}")]
+    BadFromSquare(Sq),
+    #[error("cannot move to square {0:?}")]
+    BadToSquare(Sq),
     #[error("bad move {0:?}")]
     BadMove(Piece<PieceMove>),
     #[error("move {0:?} does not represent a capture")]

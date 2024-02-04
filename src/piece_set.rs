@@ -201,3 +201,29 @@ impl<'a> Iterator for PieceIter<'a> {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn init_white_pieces() {
+        let pieces = PieceSet::init_white();
+        for piece in pieces.iter() {
+            match piece {
+                King(king) => {
+                    assert_eq!(king.count(), 1);
+                    assert_eq!(king.take_first(), Some(sq::E1))
+                }
+                Queen(queen) => {
+                    assert_eq!(queen.count(), 1);
+                    assert_eq!(queen.take_first(), Some(sq::D1))
+                }
+                Rook(rook) => assert_eq!(rook.to_vec::<u8>(), vec![sq::A1, sq::H1]),
+                Bishop(bishop) => assert_eq!(bishop.to_vec::<u8>(), vec![sq::C1, sq::F1]),
+                Knight(knight) => assert_eq!(knight.to_vec::<u8>(), vec![sq::B1, sq::G1]),
+                Pawn(pawn) => assert_eq!(pawn.to_vec::<u8>(), (8..=15).collect()),
+            };
+        }
+    }
+}

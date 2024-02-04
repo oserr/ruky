@@ -1,5 +1,6 @@
 use std::convert::From;
 use std::fmt::{self, Debug, Formatter};
+use std::ops::Shl;
 
 #[derive(Clone, Copy, Default, Eq, Hash, PartialEq)]
 pub struct Sq {
@@ -10,6 +11,14 @@ impl Debug for Sq {
     fn fmt(&self, f: &mut Formatter<'_>) -> Result<(), fmt::Error> {
         // It's safe to unwrap because constructing invalid Square results in panic.
         write!(f, "{}", sqstr(self.val).unwrap())
+    }
+}
+
+impl From<usize> for Sq {
+    fn from(val: usize) -> Sq {
+        let val = (0xff & val) as u8;
+        assert!(val <= H8);
+        Sq { val }
     }
 }
 
@@ -44,6 +53,12 @@ impl From<u8> for Sq {
     }
 }
 
+impl From<Sq> for usize {
+    fn from(sq: Sq) -> usize {
+        sq.val as usize
+    }
+}
+
 impl From<Sq> for u64 {
     fn from(sq: Sq) -> u64 {
         sq.val as u64
@@ -65,6 +80,14 @@ impl From<Sq> for u16 {
 impl From<Sq> for u8 {
     fn from(sq: Sq) -> u8 {
         sq.val as u8
+    }
+}
+
+impl Shl<Sq> for u64 {
+    type Output = u64;
+    #[inline]
+    fn shl(self, sq: Sq) -> u64 {
+        self << sq.val
     }
 }
 

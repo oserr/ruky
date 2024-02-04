@@ -1,4 +1,5 @@
 use crate::bitboard::BitBoard;
+use crate::sq::Sq;
 use rand::RngCore;
 use std::ops::Fn;
 
@@ -83,8 +84,8 @@ pub fn compute_rmagics() -> Result<MagicAttacks, MagicErr> {
 
 // Computes magics for all squares.
 fn find_all_magics(
-    mask_fn: &impl Fn(u32) -> BitBoard,
-    attacks_fn: &impl Fn(u32, BitBoard) -> BitBoard,
+    mask_fn: &impl Fn(u8) -> BitBoard,
+    attacks_fn: &impl Fn(u8, BitBoard) -> BitBoard,
     magic_iter: &mut impl Iterator<Item = u64>,
 ) -> Result<MagicAttacks, MagicErr> {
     let mut magics = Vec::<Magic>::with_capacity(64);
@@ -104,9 +105,9 @@ fn find_all_magics(
 /// set of blockers.
 /// * `magic_iter`: An iterator over magic numbers.
 fn find_magic(
-    sq: u32,
-    mask_fn: &impl Fn(u32) -> BitBoard,
-    attacks_fn: &impl Fn(u32, BitBoard) -> BitBoard,
+    sq: u8,
+    mask_fn: &impl Fn(u8) -> BitBoard,
+    attacks_fn: &impl Fn(u8, BitBoard) -> BitBoard,
     magic_iter: &mut impl Iterator<Item = u64>,
 ) -> Result<Magic, MagicErr> {
     if sq >= 64 {
@@ -179,7 +180,7 @@ pub fn create_rand_iter() -> impl Iterator<Item = u64> {
 pub fn permute_mask(bit_selector: BitBoard, mask: BitBoard) -> BitBoard {
     let mut bits = BitBoard::new();
     for (i, sq) in mask.sq_iter().enumerate() {
-        if bit_selector.has_bit(i as u32) {
+        if bit_selector.has_bit(i.into()) {
             bits |= sq;
         }
     }
@@ -189,7 +190,7 @@ pub fn permute_mask(bit_selector: BitBoard, mask: BitBoard) -> BitBoard {
 /// Computes a BitBoard with the full bishop mask for a given square, but ignores the outer edge
 /// squares and the current square. For example, given square 0, i.e. square a1, it returns a
 /// BitBoard with bits set at (b2, c3, d4, e5, f6, g7).
-pub fn get_full_bmask(square: u32) -> BitBoard {
+pub fn get_full_bmask(square: u8) -> BitBoard {
     let row = square / 8;
     let col = square % 8;
     let mut bits = BitBoard::new();
@@ -219,42 +220,42 @@ pub fn get_full_bmasks() -> Vec<BitBoard> {
 
 /// Computes the set of squares that are attacked by a bishop from a given square given a set of
 /// blocking pieces.
-pub fn get_battacks(sq: u32, blocking: BitBoard) -> BitBoard {
+pub fn get_battacks(sq: u8, blocking: BitBoard) -> BitBoard {
     let row = sq / 8;
     let col = sq % 8;
     let mut attacks = BitBoard::new();
     // up-right
-    for i in (row + 1..=7).zip(col + 1..=7).map(|(r, c)| from_rc(r, c)) {
-        attacks.set_bit(i);
-        if blocking.has_bit(i) {
+    for s in (row + 1..=7).zip(col + 1..=7).map(|(r, c)| from_rc(r, c)) {
+        attacks.set_bit(s);
+        if blocking.has_bit(s) {
             break;
         }
     }
     // down-right
-    for i in (0..row).rev().zip(col + 1..=7).map(|(r, c)| from_rc(r, c)) {
-        attacks.set_bit(i);
-        if blocking.has_bit(i) {
+    for s in (0..row).rev().zip(col + 1..=7).map(|(r, c)| from_rc(r, c)) {
+        attacks.set_bit(s);
+        if blocking.has_bit(s) {
             break;
         }
     }
     // down-left
-    for i in (0..row)
+    for s in (0..row)
         .rev()
         .zip((0..col).rev())
         .map(|(r, c)| from_rc(r, c))
     {
-        attacks.set_bit(i);
-        if blocking.has_bit(i) {
+        attacks.set_bit(s);
+        if blocking.has_bit(s) {
             break;
         }
     }
     // up-left
-    for i in (row + 1..=7)
+    for s in (row + 1..=7)
         .zip((0..col).rev())
         .map(|(r, c)| from_rc(r, c))
     {
-        attacks.set_bit(i);
-        if blocking.has_bit(i) {
+        attacks.set_bit(s);
+        if blocking.has_bit(s) {
             break;
         }
     }
@@ -264,7 +265,7 @@ pub fn get_battacks(sq: u32, blocking: BitBoard) -> BitBoard {
 /// Computes a BitBoard with the full rook mask for a given square, but ignores the outer edge
 /// squares and the current square. For example, given square 0, i.e. square a1, it returns a
 /// BitBoard with bits set at (a2, a3, a4, a5, a6, a7, b1, c1, d1, e1, f1, g1).
-pub fn get_full_rmask(square: u32) -> BitBoard {
+pub fn get_full_rmask(square: u8) -> BitBoard {
     let row = square / 8;
     let col = square % 8;
     let mut bits = BitBoard::new();
@@ -294,35 +295,35 @@ pub fn get_full_rmasks() -> Vec<BitBoard> {
 
 /// Computes the set of squares that are attacked by a rook from a given square given a set of
 /// blocking pieces.
-pub fn get_rattacks(sq: u32, blocking: BitBoard) -> BitBoard {
+pub fn get_rattacks(sq: u8, blocking: BitBoard) -> BitBoard {
     let row = sq / 8;
     let col = sq % 8;
     let mut attacks = BitBoard::new();
     // up
-    for i in (row + 1..=7).map(|r| from_rc(r, col)) {
-        attacks.set_bit(i);
-        if blocking.has_bit(i) {
+    for s in (row + 1..=7).map(|r| from_rc(r, col)) {
+        attacks.set_bit(s);
+        if blocking.has_bit(s) {
             break;
         }
     }
     // right
-    for i in (col + 1..=7).map(|c| from_rc(row, c)) {
-        attacks.set_bit(i);
-        if blocking.has_bit(i) {
+    for s in (col + 1..=7).map(|c| from_rc(row, c)) {
+        attacks.set_bit(s);
+        if blocking.has_bit(s) {
             break;
         }
     }
     // down
-    for i in (0..row).rev().map(|r| from_rc(r, col)) {
-        attacks.set_bit(i);
-        if blocking.has_bit(i) {
+    for s in (0..row).rev().map(|r| from_rc(r, col)) {
+        attacks.set_bit(s);
+        if blocking.has_bit(s) {
             break;
         }
     }
     // left
-    for i in (0..col).rev().map(|c| from_rc(row, c)) {
-        attacks.set_bit(i);
-        if blocking.has_bit(i) {
+    for s in (0..col).rev().map(|c| from_rc(row, c)) {
+        attacks.set_bit(s);
+        if blocking.has_bit(s) {
             break;
         }
     }
@@ -466,8 +467,8 @@ const RMAGICS: [u64; 64] = [
 ];
 
 #[inline(always)]
-fn from_rc(row: u32, col: u32) -> u32 {
-    row * 8 + col
+fn from_rc(row: u8, col: u8) -> Sq {
+    Sq::from(row * 8 + col)
 }
 
 #[cfg(test)]

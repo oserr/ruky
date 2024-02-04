@@ -60,8 +60,12 @@ impl From<u64> for BitBoard {
     }
 }
 
-impl From<BitBoard> for Vec<u32> {
-    fn from(bits: BitBoard) -> Vec<u32> {
+impl<T> From<BitBoard> for Vec<T>
+where
+    T: Unsigned,
+    T: From<Sq>,
+{
+    fn from(bits: BitBoard) -> Vec<T> {
         bits.sq_iter().map(|s| s.into()).collect()
     }
 }
@@ -125,43 +129,43 @@ impl BitBoard {
     }
 
     /// Checks if a given bit is set. Index is zero based.
-    pub fn has_bit(&self, index: u32) -> bool {
-        self.bits & (1u64 << index) != 0
+    pub fn has_bit(&self, sq: Sq) -> bool {
+        self.bits & (1u64 << sq) != 0
     }
 
     /// Clears a given bit if set. Index is zero based.
-    pub fn clear_bit(&mut self, index: u32) -> &mut Self {
-        self.bits &= !(1u64 << index);
+    pub fn clear_bit(&mut self, sq: Sq) -> &mut Self {
+        self.bits &= !(1u64 << sq);
         self
     }
 
     /// Clears a given bit if set, otherwise returns an error. Index is zero based.
-    pub fn clear_bit_or(&mut self, index: u32) -> Result<&mut Self, BitErr> {
-        if !self.has_bit(index) {
-            return Err(BitErr::IsNotSet(index));
+    pub fn clear_bit_or(&mut self, sq: Sq) -> Result<&mut Self, BitErr> {
+        if !self.has_bit(sq) {
+            return Err(BitErr::IsNotSet(sq));
         }
-        self.bits &= !(1u64 << index);
+        self.bits &= !(1u64 << sq);
         Ok(self)
     }
 
     /// Sets a given bit.
-    pub fn set_bit(&mut self, index: u32) -> &mut Self {
-        self.bits |= 1u64 << index;
+    pub fn set_bit(&mut self, sq: Sq) -> &mut Self {
+        self.bits |= 1u64 << sq;
         self
     }
 
     /// Sets a given bit if the bit is not set, otherwise returns an error.
-    pub fn set_bit_or(&mut self, index: u32) -> Result<&mut Self, BitErr> {
-        if self.has_bit(index) {
-            return Err(BitErr::IsSetAlready(index));
+    pub fn set_bit_or(&mut self, sq: Sq) -> Result<&mut Self, BitErr> {
+        if self.has_bit(sq) {
+            return Err(BitErr::IsSetAlready(sq));
         }
-        self.bits |= 1u64 << index;
+        self.bits |= 1u64 << sq;
         Ok(self)
     }
 
     /// Updates a bit by setting to zero in |from| and setting it in |to|. If |from| is not set or
     /// |to| is already set, then we return an error.
-    pub fn update_bit(&mut self, from: u32, to: u32) -> Result<&mut Self, BitErr> {
+    pub fn update_bit(&mut self, from: Sq, to: Sq) -> Result<&mut Self, BitErr> {
         if !self.has_bit(from) {
             Err(BitErr::FromIsNotSet(from))
         } else if self.has_bit(to) {
@@ -210,7 +214,7 @@ impl BitBoard {
     }
 
     // Returns an iterator over the squares where the bits are set.
-    pub fn to_vec(&self) -> Vec<u32> {
+    pub fn to_vec<T: Unsigned + From<Sq>>(&self) -> Vec<T> {
         self.clone().into()
     }
 }
@@ -233,16 +237,16 @@ impl Iterator for SquareIter {
     }
 }
 
-#[derive(thiserror::Error, Clone, Debug)]
+#[derive(thiserror::Error, Clone, Debug, Eq, PartialEq)]
 pub enum BitErr {
-    #[error("bit {0} is not set as expected")]
-    IsNotSet(u32),
-    #[error("bit {0} is already set")]
-    IsSetAlready(u32),
-    #[error("from bit {0} is not set")]
-    FromIsNotSet(u32),
-    #[error("to bit {0} is already set")]
-    ToIsSetAlready(u32),
+    #[error("bit {0:?} is not set")]
+    IsNotSet(Sq),
+    #[error("bit {0:?} is already set")]
+    IsSetAlready(Sq),
+    #[error("from bit {0:?} is not set")]
+    FromIsNotSet(Sq),
+    #[error("to bit {0:?} is already set")]
+    ToIsSetAlready(Sq),
 }
 
 #[cfg(test)]
@@ -257,13 +261,13 @@ mod tests {
     #[test]
     fn from_one_has_first_bit_set() {
         let b = BitBoard::from(1);
-        assert!(b.has_bit(0));
+        assert!(b.has_bit(0.into()));
     }
 
     #[test]
     fn from_two_has_second_bit_set() {
         let b = BitBoard::from(2);
-        assert!(b.has_bit(1));
+        assert!(b.has_bit(1.into()));
     }
 
     #[test]
@@ -274,42 +278,48 @@ mod tests {
     #[test]
     fn clear_first() {
         let mut b = BitBoard::from(1);
-        assert!(!b.clear_bit(0).has_bit(0));
+        assert!(!b.clear_bit(0.into()).has_bit(0.into()));
     }
 
     #[test]
     fn clear_none() {
         let mut b = BitBoard::from(1);
-        assert!(b.clear_bit(1).has_bit(0));
+        assert!(b.clear_bit(1.into()).has_bit(0.into()));
     }
 
     #[test]
     fn set_first_two_bits() {
         let mut b = BitBoard::new();
         b.set_bit(0).set_bit(1);
-        assert!(b.has_bit(0));
-        assert!(b.has_bit(1));
+        assert!(b.has_bit(0.into()));
+        assert!(b.has_bit(1.into()));
     }
 
     #[test]
     fn count() {
         let mut b = BitBoard::new();
-        b.set_bit(0);
+        b.set_bit(0.into());
         assert_eq!(b.count(), 1);
-        b.set_bit(1);
+        b.set_bit(1.into());
         assert_eq!(b.count(), 2);
-        b.set_bit(2);
+        b.set_bit(2.into());
         assert_eq!(b.count(), 3);
     }
 
     #[test]
     fn update_bit() {
+        let five = Square::from(5);
+        let seven = Square::from(7);
+        let eight = Square::from(8);
         let mut b = BitBoard::new();
-        assert_eq!(b.update_bit(5, 7), Err(BitErr::FromIsNotSet(5)));
-        b.set_bit(5);
-        b.set_bit(7);
-        assert_eq!(b.update_bit(5, 7), Err(BitErr::ToIsSetAlready(7)));
-        assert_eq!(b.update_bit(5, 8), Ok(&mut BitBoard::from(&[7, 8])));
+        assert_eq!(b.update_bit(five, seven), Err(BitErr::FromIsNotSet(five)));
+        b.set_bit(five);
+        b.set_bit(seven);
+        assert_eq!(
+            b.update_bit(five, seven),
+            Err(BitErr::ToIsSetAlready(seven))
+        );
+        assert_eq!(b.update_bit(five, eight), Ok(&mut BitBoard::from(&[7, 8])));
     }
 
     #[test]
@@ -347,7 +357,7 @@ mod tests {
         assert_eq!(b.take_first(), None);
         assert!(!b.any());
 
-        b.set_bit(30).set_bit(40);
+        b.set_bit(30.into()).set_bit(40.into());
         assert_eq!(b.take_first(), Some(30));
         assert_eq!(b.take_first(), Some(40));
         assert_eq!(b.take_first(), None);
@@ -358,7 +368,7 @@ mod tests {
     fn iterate_over_squares() {
         let b = BitBoard::from(&[0, 55, 3, 60, 23, 10, 11, 35]);
         assert_eq!(
-            b.sq_iter().collect::<Vec<_>>(),
+            b.sq_iter().map(|s| s.into()).collect::<Vec<u8>>(),
             vec![0, 3, 10, 11, 23, 35, 55, 60]
         );
     }
@@ -367,6 +377,6 @@ mod tests {
     fn into_from_vec() {
         let v = vec![3, 6, 9];
         let b = BitBoard::from(&v);
-        assert_eq!(b.to_vec(), v);
+        assert_eq!(b.to_vec::<u8>(), v);
     }
 }

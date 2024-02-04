@@ -8,6 +8,11 @@ pub struct Sq {
 }
 
 impl Sq {
+    // Returns the row and column for the square as a pair (row, column).
+    pub fn rc(&self) -> (u8, u8) {
+        (self.val / 8, self.val % 8)
+    }
+
     pub fn str(&self) -> &'static str {
         match self.val {
             0 => &"A1",

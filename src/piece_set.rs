@@ -42,6 +42,9 @@ impl PieceSet {
         }
     }
 
+    // Updates the position of a piece after a move is made. This is only for the side making the
+    // move, so captures need to be handled by the PieceSet of the other pieces. Returns an error
+    // if the move is not valid, e.g. the piece being moved is not found on the source square.
     pub fn apply_move(&mut self, piece_move: Piece<PieceMove>) -> Result<&mut Self, MoveErr> {
         match piece_move {
             King(mv) => self.update_king(mv),
@@ -53,6 +56,8 @@ impl PieceSet {
         }
     }
 
+    // Updates the position for the king. Note that this also handles castling. Returns an error if
+    // the move is not valid.
     fn update_king(&mut self, mv: PieceMove) -> Result<&mut Self, MoveErr> {
         match mv {
             Simple { from, to } | Capture { from, to, .. } => {
@@ -72,6 +77,7 @@ impl PieceSet {
         Ok(self)
     }
 
+    // Updates the position a pawn. Returns an error if the move is not valid.
     fn update_pawn(&mut self, mv: PieceMove) -> Result<&mut Self, MoveErr> {
         match mv {
             Simple { from, to } | Capture { from, to, .. } | EnPassant { from, to, .. } => {
@@ -96,6 +102,8 @@ impl PieceSet {
         Ok(self)
     }
 
+    // Updates the position for pieces with simple moves: queens, rooks, bishops, and knights.
+    // Returns an error for invalid moves.
     fn simple_update(
         &mut self,
         mv: PieceMove,

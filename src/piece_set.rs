@@ -223,7 +223,7 @@ mod tests {
                 Bishop(bishop) => assert_eq!(bishop.into(), vec![sq::C1, sq::F1]),
                 Knight(knight) => assert_eq!(knight.into(), vec![sq::B1, sq::G1]),
                 Pawn(pawn) => {
-                    assert_eq!(pawn.into(), (8..=15).map(|i| Sq::from(i)).collect::<Vec<_>())
+                    assert_eq!(pawn.into(), (8..=15).map(Sq::from).collect::<Vec<_>())
                 }
             };
         }

@@ -1,7 +1,7 @@
 use crate::bitboard::BitBoard;
 use crate::piece::{Piece, Piece::*};
 use crate::piece_move::{MoveErr, PieceMove, PieceMove::*};
-use crate::sq;
+use crate::sq::{self, Sq};
 
 /// PieceSet represents the set of pieces for player, with a bitboard for each type of piece.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
@@ -219,11 +219,11 @@ mod tests {
                     assert_eq!(queen.count(), 1);
                     assert_eq!(queen.take_first(), Some(sq::D1))
                 }
-                Rook(rook) => assert_eq!(rook.into(), vec![sq::A1, sq::H1]),
-                Bishop(bishop) => assert_eq!(bishop.into(), vec![sq::C1, sq::F1]),
-                Knight(knight) => assert_eq!(knight.into(), vec![sq::B1, sq::G1]),
+                Rook(rook) => assert_eq!(Vec<Sq>::from(rook), vec![sq::A1, sq::H1]),
+                Bishop(bishop) => assert_eq!(Vec<Sq>::from(bishop), vec![sq::C1, sq::F1]),
+                Knight(knight) => assert_eq!(Vec<Sq>::from(knight), vec![sq::B1, sq::G1]),
                 Pawn(pawn) => {
-                    assert_eq!(pawn.into(), (8..=15).map(Sq::from).collect::<Vec<_>>())
+                    assert_eq!(Vec<Sq>::from(pawn), (8u8..=15).map(Sq::from).collect())
                 }
             };
         }

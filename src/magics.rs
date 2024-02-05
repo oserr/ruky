@@ -84,13 +84,13 @@ pub fn compute_rmagics() -> Result<MagicAttacks, MagicErr> {
 
 // Computes magics for all squares.
 fn find_all_magics(
-    mask_fn: &impl Fn(u8) -> BitBoard,
-    attacks_fn: &impl Fn(u8, BitBoard) -> BitBoard,
+    mask_fn: &impl Fn(Sq) -> BitBoard,
+    attacks_fn: &impl Fn(Sq, BitBoard) -> BitBoard,
     magic_iter: &mut impl Iterator<Item = u64>,
 ) -> Result<MagicAttacks, MagicErr> {
     let mut magics = Vec::<Magic>::with_capacity(64);
-    for s in 0..64 {
-        let magic = find_magic(s, mask_fn, attacks_fn, magic_iter)?;
+    for s in 0u8..64 {
+        let magic = find_magic(s.into(), mask_fn, attacks_fn, magic_iter)?;
         magics.push(magic);
     }
     Ok(MagicAttacks { magics })
@@ -105,15 +105,11 @@ fn find_all_magics(
 /// set of blockers.
 /// * `magic_iter`: An iterator over magic numbers.
 fn find_magic(
-    sq: u8,
-    mask_fn: &impl Fn(u8) -> BitBoard,
-    attacks_fn: &impl Fn(u8, BitBoard) -> BitBoard,
+    sq: Sq,
+    mask_fn: &impl Fn(Sq) -> BitBoard,
+    attacks_fn: &impl Fn(Sq, BitBoard) -> BitBoard,
     magic_iter: &mut impl Iterator<Item = u64>,
 ) -> Result<Magic, MagicErr> {
-    if sq >= 64 {
-        return Err(MagicErr::InvalidSquare);
-    }
-
     let mask = mask_fn(sq);
     let num_bits = mask.count();
 
@@ -190,9 +186,8 @@ pub fn permute_mask(bit_selector: BitBoard, mask: BitBoard) -> BitBoard {
 /// Computes a BitBoard with the full bishop mask for a given square, but ignores the outer edge
 /// squares and the current square. For example, given square 0, i.e. square a1, it returns a
 /// BitBoard with bits set at (b2, c3, d4, e5, f6, g7).
-pub fn get_full_bmask(square: u8) -> BitBoard {
-    let row = square / 8;
-    let col = square % 8;
+pub fn get_full_bmask(sq: Sq) -> BitBoard {
+    let (row, col) = sq.rc();
     let mut bits = BitBoard::new();
     // up-right
     for (r, c) in (row + 1..7).zip(col + 1..7) {
@@ -215,14 +210,13 @@ pub fn get_full_bmask(square: u8) -> BitBoard {
 
 /// Computes a vector of 64 BitBoards, each representing the full bishop mask for a square.
 pub fn get_full_bmasks() -> Vec<BitBoard> {
-    (0..64).map(|i| get_full_bmask(i)).collect()
+    (0u8..64).map(|i| get_full_bmask(i.into())).collect()
 }
 
 /// Computes the set of squares that are attacked by a bishop from a given square given a set of
 /// blocking pieces.
-pub fn get_battacks(sq: u8, blocking: BitBoard) -> BitBoard {
-    let row = sq / 8;
-    let col = sq % 8;
+pub fn get_battacks(sq: Sq, blocking: BitBoard) -> BitBoard {
+    let (row, col) = sq.rc();
     let mut attacks = BitBoard::new();
     // up-right
     for s in (row + 1..=7).zip(col + 1..=7).map(|(r, c)| from_rc(r, c)) {
@@ -265,9 +259,8 @@ pub fn get_battacks(sq: u8, blocking: BitBoard) -> BitBoard {
 /// Computes a BitBoard with the full rook mask for a given square, but ignores the outer edge
 /// squares and the current square. For example, given square 0, i.e. square a1, it returns a
 /// BitBoard with bits set at (a2, a3, a4, a5, a6, a7, b1, c1, d1, e1, f1, g1).
-pub fn get_full_rmask(square: u8) -> BitBoard {
-    let row = square / 8;
-    let col = square % 8;
+pub fn get_full_rmask(sq: Sq) -> BitBoard {
+    let (row, col) = sq.rc();
     let mut bits = BitBoard::new();
     // up
     for r in row + 1..7 {
@@ -290,14 +283,13 @@ pub fn get_full_rmask(square: u8) -> BitBoard {
 
 /// Computes a vector of 64 BitBoards, each representing the full rook mask for a square.
 pub fn get_full_rmasks() -> Vec<BitBoard> {
-    (0..64).map(|i| get_full_rmask(i)).collect()
+    (0u8..64).map(|i| get_full_rmask(i.into())).collect()
 }
 
 /// Computes the set of squares that are attacked by a rook from a given square given a set of
 /// blocking pieces.
-pub fn get_rattacks(sq: u8, blocking: BitBoard) -> BitBoard {
-    let row = sq / 8;
-    let col = sq % 8;
+pub fn get_rattacks(sq: Sq, blocking: BitBoard) -> BitBoard {
+    let (row, col) = sq.rc();
     let mut attacks = BitBoard::new();
     // up
     for s in (row + 1..=7).map(|r| from_rc(r, col)) {

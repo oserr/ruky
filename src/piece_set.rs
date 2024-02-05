@@ -219,11 +219,14 @@ mod tests {
                     assert_eq!(queen.count(), 1);
                     assert_eq!(queen.take_first(), Some(sq::D1))
                 }
-                Rook(rook) => assert_eq!(Vec<Sq>::from(rook), vec![sq::A1, sq::H1]),
-                Bishop(bishop) => assert_eq!(Vec<Sq>::from(bishop), vec![sq::C1, sq::F1]),
-                Knight(knight) => assert_eq!(Vec<Sq>::from(knight), vec![sq::B1, sq::G1]),
+                Rook(rook) => assert_eq!(Vec::<Sq>::from(rook), vec![sq::A1, sq::H1]),
+                Bishop(bishop) => assert_eq!(Vec::<Sq>::from(bishop), vec![sq::C1, sq::F1]),
+                Knight(knight) => assert_eq!(Vec::<Sq>::from(knight), vec![sq::B1, sq::G1]),
                 Pawn(pawn) => {
-                    assert_eq!(Vec<Sq>::from(pawn), (8u8..=15).map(Sq::from).collect())
+                    assert_eq!(
+                        Vec::<Sq>::from(pawn),
+                        (8u8..=15).map(Sq::from).collect::<Vec<_>>()
+                    )
                 }
             };
         }

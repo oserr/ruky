@@ -290,13 +290,13 @@ mod tests {
     #[test]
     fn from_one_has_first_bit_set() {
         let b = BitBoard::from(1);
-        assert!(b.has_bit(0.into()));
+        assert!(b.has_bit(0u8.into()));
     }
 
     #[test]
     fn from_two_has_second_bit_set() {
         let b = BitBoard::from(2);
-        assert!(b.has_bit(1.into()));
+        assert!(b.has_bit(1u8.into()));
     }
 
     #[test]
@@ -307,39 +307,39 @@ mod tests {
     #[test]
     fn clear_first() {
         let mut b = BitBoard::from(1);
-        assert!(!b.clear_bit(0.into()).has_bit(0.into()));
+        assert!(!b.clear_bit(0u8.into()).has_bit(0u8.into()));
     }
 
     #[test]
     fn clear_none() {
         let mut b = BitBoard::from(1);
-        assert!(b.clear_bit(1.into()).has_bit(0.into()));
+        assert!(b.clear_bit(1u8.into()).has_bit(0u8.into()));
     }
 
     #[test]
     fn set_first_two_bits() {
         let mut b = BitBoard::new();
-        b.set_bit(0).set_bit(1);
-        assert!(b.has_bit(0.into()));
-        assert!(b.has_bit(1.into()));
+        b.set_bit(0u8.into()).set_bit(1u8.into());
+        assert!(b.has_bit(0u8.into()));
+        assert!(b.has_bit(1u8.into()));
     }
 
     #[test]
     fn count() {
         let mut b = BitBoard::new();
-        b.set_bit(0.into());
+        b.set_bit(0u8.into());
         assert_eq!(b.count(), 1);
-        b.set_bit(1.into());
+        b.set_bit(1u8.into());
         assert_eq!(b.count(), 2);
-        b.set_bit(2.into());
+        b.set_bit(2u8.into());
         assert_eq!(b.count(), 3);
     }
 
     #[test]
     fn update_bit() {
-        let five = Square::from(5);
-        let seven = Square::from(7);
-        let eight = Square::from(8);
+        let five = Sq::from(5u8);
+        let seven = Sq::from(7u8);
+        let eight = Sq::from(8u8);
         let mut b = BitBoard::new();
         assert_eq!(b.update_bit(five, seven), Err(BitErr::FromIsNotSet(five)));
         b.set_bit(five);
@@ -370,25 +370,25 @@ mod tests {
     #[test]
     fn first_bit() {
         let mut b = BitBoard::new();
-        assert_eq!(b.first_bit(), 64);
+        assert_eq!(b.first_bit(), None);
 
-        for i in 0..=63 {
+        for i in 0u8..=63 {
             let n = 1u64 << i;
             b.set_bits(n);
-            assert_eq!(b.first_bit(), i);
+            assert_eq!(b.first_bit(), Some(i.into()));
         }
     }
 
     #[test]
     fn take_first_bit() {
         let mut b = BitBoard::from(1u64 << 10);
-        assert_eq!(b.take_first(), Some(10));
+        assert_eq!(b.take_first(), Some(10u8.into()));
         assert_eq!(b.take_first(), None);
         assert!(!b.any());
 
-        b.set_bit(30.into()).set_bit(40.into());
-        assert_eq!(b.take_first(), Some(30));
-        assert_eq!(b.take_first(), Some(40));
+        b.set_bit(30u8.into()).set_bit(40u8.into());
+        assert_eq!(b.take_first(), Some(30u8.into()));
+        assert_eq!(b.take_first(), Some(40u8.into()));
         assert_eq!(b.take_first(), None);
         assert!(!b.any());
     }

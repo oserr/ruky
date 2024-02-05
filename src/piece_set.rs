@@ -211,11 +211,11 @@ mod tests {
         let pieces = PieceSet::init_white();
         for piece in pieces.iter() {
             match piece {
-                King(king) => {
+                King(mut king) => {
                     assert_eq!(king.count(), 1);
                     assert_eq!(king.take_first(), Some(sq::E1))
                 }
-                Queen(queen) => {
+                Queen(mut queen) => {
                     assert_eq!(queen.count(), 1);
                     assert_eq!(queen.take_first(), Some(sq::D1))
                 }

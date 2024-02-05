@@ -485,11 +485,11 @@ mod tests {
         let masks = get_full_bmasks();
         assert_eq!(masks.len(), 64);
         assert_eq!(
-            masks[A1 as usize],
+            masks[usize::from(A1)],
             BitBoard::from(&[B2, C3, D4, E5, F6, G7])
         );
         assert_eq!(
-            masks[E5 as usize],
+            masks[usize::from(E5)],
             BitBoard::from(&[B2, C3, D4, F6, G7, D6, C7, F4, G3])
         );
     }
@@ -531,11 +531,11 @@ mod tests {
         let masks = get_full_rmasks();
         assert_eq!(masks.len(), 64);
         assert_eq!(
-            masks[A1 as usize],
+            masks[usize::from(A1)],
             BitBoard::from(&[A2, A3, A4, A5, A6, A7, B1, C1, D1, E1, F1, G1])
         );
         assert_eq!(
-            masks[E5 as usize],
+            masks[usize::from(E5)],
             BitBoard::from(&[B5, C5, D5, F5, G5, E2, E3, E4, E6, E7])
         );
     }

@@ -42,6 +42,10 @@ impl PieceSet {
         }
     }
 
+    pub fn all(&self) -> BitBoard {
+        self.all_bits
+    }
+
     // Updates the position of a piece after a move is made. This is only for the side making the
     // move, so captures need to be handled by the PieceSet of the other pieces. Returns an error
     // if the move is not valid, e.g. the piece being moved is not found on the source square.
@@ -230,5 +234,9 @@ mod tests {
                 }
             };
         }
+        assert_eq!(
+            Vec::<Sq>::from(pieces.all()),
+            (0u8..16).map(Sq::from).collect::<Vec<_>>()
+        );
     }
 }

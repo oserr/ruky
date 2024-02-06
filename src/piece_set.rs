@@ -1,7 +1,7 @@
 use crate::bitboard::BitBoard;
 use crate::piece::{Piece, Piece::*};
 use crate::piece_move::{MoveErr, PieceMove, PieceMove::*};
-use crate::sq::{self, Sq};
+use crate::sq;
 
 /// PieceSet represents the set of pieces for player, with a bitboard for each type of piece.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
@@ -209,6 +209,7 @@ impl<'a> Iterator for PieceIter<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::sq::Sq;
 
     #[test]
     fn init_white_pieces() {
@@ -237,6 +238,36 @@ mod tests {
         assert_eq!(
             Vec::<Sq>::from(pieces.all()),
             (0u8..16).map(Sq::from).collect::<Vec<_>>()
+        );
+    }
+
+    #[test]
+    fn init_black_pieces() {
+        let pieces = PieceSet::init_black();
+        for piece in pieces.iter() {
+            match piece {
+                King(mut king) => {
+                    assert_eq!(king.count(), 1);
+                    assert_eq!(king.take_first(), Some(sq::E8))
+                }
+                Queen(mut queen) => {
+                    assert_eq!(queen.count(), 1);
+                    assert_eq!(queen.take_first(), Some(sq::D8))
+                }
+                Rook(rook) => assert_eq!(Vec::<Sq>::from(rook), vec![sq::A8, sq::H8]),
+                Bishop(bishop) => assert_eq!(Vec::<Sq>::from(bishop), vec![sq::C8, sq::F8]),
+                Knight(knight) => assert_eq!(Vec::<Sq>::from(knight), vec![sq::B8, sq::G8]),
+                Pawn(pawn) => {
+                    assert_eq!(
+                        Vec::<Sq>::from(pawn),
+                        (48u8..=55).map(Sq::from).collect::<Vec<_>>()
+                    )
+                }
+            };
+        }
+        assert_eq!(
+            Vec::<Sq>::from(pieces.all()),
+            (48u8..64).map(Sq::from).collect::<Vec<_>>()
         );
     }
 }

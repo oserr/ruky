@@ -64,7 +64,10 @@ impl PieceSet {
     // the move is not valid.
     fn update_king(&mut self, mv: PieceMove) -> Result<&mut Self, MoveErr> {
         match mv {
-            Simple { from, to } | Capture { from, to, .. } => self.king.update_bit(from, to)?,
+            Simple { from, to } | Capture { from, to, .. } => {
+                self.king.update_bit(from, to)?;
+                self.all_bits.update_bit(from, to)?
+            }
             Castle {
                 king_from,
                 king_to,
@@ -72,7 +75,9 @@ impl PieceSet {
                 rook_to,
             } => {
                 self.king.update_bit(king_from, king_to)?;
-                self.rook.update_bit(rook_from, rook_to)?
+                self.rook.update_bit(rook_from, rook_to)?;
+                self.all_bits.update_bit(king_from, king_to)?;
+                self.all_bits.update_bit(rook_from, rook_to)?
             }
             _ => return Err(MoveErr::BadMove(King(mv))),
         };
@@ -83,7 +88,8 @@ impl PieceSet {
     fn update_pawn(&mut self, mv: PieceMove) -> Result<&mut Self, MoveErr> {
         match mv {
             Simple { from, to } | Capture { from, to, .. } | EnPassant { from, to, .. } => {
-                self.pawn.update_bit(from, to)?
+                self.pawn.update_bit(from, to)?;
+                self.all_bits.update_bit(from, to)?
             }
             Promo { from, to, promo }
             | PromoCap {
@@ -97,7 +103,8 @@ impl PieceSet {
                     Knight(_) => &mut self.knight,
                     _ => return Err(MoveErr::BadPromo(promo)),
                 };
-                promo_piece.set_bit_or(to.into())?
+                promo_piece.set_bit_or(to)?;
+                self.all_bits.update_bit(from, to)?
             }
             _ => return Err(MoveErr::BadMove(Pawn(mv))),
         };
@@ -119,7 +126,10 @@ impl PieceSet {
             _ => panic!("Using simple update for {:?}", piece_type),
         };
         match mv {
-            Simple { from, to } | Capture { from, to, .. } => piece.update_bit(from, to)?,
+            Simple { from, to } | Capture { from, to, .. } => {
+                piece.update_bit(from, to)?;
+                self.all_bits.update_bit(from, to)?
+            }
             _ => {
                 let piece_move = match piece_type {
                     Queen(_) => Queen(mv),
@@ -147,9 +157,13 @@ impl PieceSet {
                     Knight(_) => &mut self.knight,
                     Pawn(_) => &mut self.pawn,
                 };
-                piece.clear_bit_or(to)?
+                piece.clear_bit_or(to)?;
+                self.all_bits.clear_bit_or(to)?
             }
-            EnPassant { passant, .. } => self.pawn.clear_bit_or(passant)?,
+            EnPassant { passant, .. } => {
+                self.pawn.clear_bit_or(passant)?;
+                self.all_bits.clear_bit_or(passant)?
+            }
             _ => return Err(MoveErr::NoCapture(mv)),
         };
         Ok(self)

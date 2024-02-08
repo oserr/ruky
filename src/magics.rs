@@ -4,7 +4,7 @@ use rand::RngCore;
 use std::ops::Fn;
 
 // A wrapper around bishop and rook magics to simplify using magics.
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub struct ChessMagics {
     rook: MagicAttacks,
     bishop: MagicAttacks,
@@ -41,7 +41,7 @@ pub enum MagicErr {
     NotFound,
 }
 
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub struct Magic {
     pub attacks: Vec<BitBoard>,
     pub mask: BitBoard,
@@ -66,7 +66,7 @@ pub trait Magics: AsRef<[Magic]> {
     fn get(&self, sq: Sq) -> Option<&Magic>;
 }
 
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub struct MagicAttacks {
     magics: Vec<Magic>,
 }

@@ -2,7 +2,7 @@ use crate::sq::Sq;
 use num::{PrimInt, Unsigned};
 use std::convert::{From, Into};
 use std::fmt::{self, Debug, Formatter};
-use std::ops::{BitAnd, BitOrAssign, Mul, Shl, Shr};
+use std::ops::{BitAnd, BitOr, BitOrAssign, Mul, Shl, Shr};
 
 #[derive(Clone, Copy, Default, Eq, Hash, PartialEq)]
 pub struct BitBoard {
@@ -14,6 +14,13 @@ impl BitAnd for BitBoard {
     type Output = BitBoard;
     fn bitand(self, rhs: BitBoard) -> BitBoard {
         BitBoard::from(self.bits & rhs.bits)
+    }
+}
+
+impl BitOr for BitBoard {
+    type Output = BitBoard;
+    fn bitor(self, rhs: BitBoard) -> BitBoard {
+        BitBoard::from(self.bits | rhs.bits)
     }
 }
 

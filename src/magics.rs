@@ -3,6 +3,36 @@ use crate::sq::Sq;
 use rand::RngCore;
 use std::ops::Fn;
 
+// A wrapper around bishop and rook magics to simplify using magics.
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct ChessMagics {
+    rook: MagicAttacks,
+    bishop: MagicAttacks,
+}
+
+impl ChessMagics {
+    pub fn from_precomputed() -> Result<Self, MagicErr> {
+        Ok(Self {
+            rook: from_rmagics(RMAGICS.into_iter())?,
+            bishop: from_bmagics(BMAGICS.into_iter())?,
+        })
+    }
+
+    pub fn queen_magic(&self, sq: Sq, blockers: BitBoard) -> Option<BitBoard> {
+        let rm = self.rook.attacks(sq, blockers)?;
+        let bm = self.bishop.attacks(sq, blockers)?;
+        Some(rm | bm)
+    }
+
+    pub fn rook_magic(&self, sq: Sq, blockers: BitBoard) -> Option<BitBoard> {
+        self.rook.attacks(sq, blockers)
+    }
+
+    pub fn bishop_magic(&self, sq: Sq, blockers: BitBoard) -> Option<BitBoard> {
+        self.bishop.attacks(sq, blockers)
+    }
+}
+
 #[derive(Copy, Clone, Debug)]
 pub enum MagicErr {
     InvalidSquare,

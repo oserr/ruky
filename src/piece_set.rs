@@ -5,7 +5,7 @@ use crate::sq;
 
 /// PieceSet represents the set of pieces for player, with a bitboard for each type of piece.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
-struct PieceSet {
+pub(crate) struct PieceSet {
     king: BitBoard,
     queen: BitBoard,
     rook: BitBoard,

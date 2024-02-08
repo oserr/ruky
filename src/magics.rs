@@ -25,15 +25,15 @@ impl Magic {
         get_magic_hash(b, self.magic, self.rshift)
     }
 
-    fn get_attacks(&self, blockers: BitBoard) -> BitBoard {
+    fn get_attacks(&self, blockers: BitBoard) -> Option<BitBoard> {
         let h = self.get_hash(blockers);
-        self.attacks[h]
+        self.attacks.get(h).copied()
     }
 }
 
 pub trait Magics: AsRef<[Magic]> {
-    fn attacks(&self, sq: u32, blockers: BitBoard) -> Option<BitBoard>;
-    fn get(&self, sq: u32) -> Option<&Magic>;
+    fn attacks(&self, sq: Sq, blockers: BitBoard) -> Option<BitBoard>;
+    fn get(&self, sq: Sq) -> Option<&Magic>;
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -42,13 +42,13 @@ pub struct MagicAttacks {
 }
 
 impl Magics for MagicAttacks {
-    fn attacks(&self, sq: u32, blockers: BitBoard) -> Option<BitBoard> {
-        let magic = self.magics.get(sq as usize)?;
-        Some(magic.get_attacks(blockers))
+    fn attacks(&self, sq: Sq, blockers: BitBoard) -> Option<BitBoard> {
+        let magic = self.magics.get(usize::from(sq))?;
+        magic.get_attacks(blockers)
     }
 
-    fn get(&self, sq: u32) -> Option<&Magic> {
-        self.magics.get(sq as usize)
+    fn get(&self, sq: Sq) -> Option<&Magic> {
+        self.magics.get(usize::from(sq))
     }
 }
 

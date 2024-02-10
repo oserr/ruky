@@ -133,6 +133,12 @@ where
     }
 }
 
+impl From<Sq> for BitBoard {
+    fn from(sq: Sq) -> BitBoard {
+        BitBoard::from(u64::from(sq))
+    }
+}
+
 impl From<&[Sq]> for BitBoard {
     fn from(squares: &[Sq]) -> BitBoard {
         squares

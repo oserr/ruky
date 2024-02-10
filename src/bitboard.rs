@@ -1,4 +1,4 @@
-use crate::sq::Sq;
+use crate::sq::{self, Sq};
 use num::{PrimInt, Unsigned};
 use std::convert::{From, Into};
 use std::fmt::{self, Debug, Formatter};
@@ -135,7 +135,7 @@ where
 
 impl From<Sq> for BitBoard {
     fn from(sq: Sq) -> BitBoard {
-        BitBoard::from(u64::from(sq))
+        BitBoard::from(1u64 << sq)
     }
 }
 
@@ -529,5 +529,54 @@ mod tests {
         let v = vec![3, 6, 9];
         let b = BitBoard::from(&v);
         assert_eq!(b.to_vec::<u8>(), v);
+    }
+
+    #[test]
+    fn king_moves_from_a1() {
+        assert_eq!(
+            BitBoard::from(sq::A1).king_moves(),
+            BitBoard::from(&[sq::B1, sq::A2, sq::B2])
+        );
+    }
+
+    #[test]
+    fn king_moves_from_e1() {
+        assert_eq!(
+            BitBoard::from(sq::E1).king_moves(),
+            BitBoard::from(&[sq::D1, sq::D2, sq::E2, sq::F1, sq::F2])
+        );
+    }
+
+    #[test]
+    fn king_moves_from_h5() {
+        assert_eq!(
+            BitBoard::from(sq::H5).king_moves(),
+            BitBoard::from(&[sq::H4, sq::G4, sq::G5, sq::G6, sq::H6])
+        );
+    }
+
+    #[test]
+    fn king_moves_from_e5() {
+        assert_eq!(
+            BitBoard::from(sq::E5).king_moves(),
+            BitBoard::from(&[
+                sq::D4,
+                sq::D5,
+                sq::D6,
+                sq::E4,
+                sq::E6,
+                sq::F4,
+                sq::F5,
+                sq::F6
+            ])
+        );
+    }
+
+    #[test]
+    fn king_moves_from_g8() {
+        assert_eq!(
+            BitBoard::from(sq::G8).king_moves(),
+            BitBoard::from(&[sq::F8, sq::H8, sq::F7, sq::G7, sq::H7])
+        );
     }
 }

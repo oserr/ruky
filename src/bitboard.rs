@@ -2,12 +2,19 @@ use crate::sq::Sq;
 use num::{PrimInt, Unsigned};
 use std::convert::{From, Into};
 use std::fmt::{self, Debug, Formatter};
-use std::ops::{BitAnd, BitOr, BitOrAssign, Mul, Shl, Shr};
+use std::ops::{BitAnd, BitOr, BitOrAssign, Mul, Not, Shl, Shr};
 
 #[derive(Clone, Copy, Default, Eq, Hash, PartialEq)]
 pub struct BitBoard {
     /// The raw bits used to represent the BitBoard.
     bits: u64,
+}
+
+impl Not for BitBoard {
+    type Output = Self;
+    fn not(self) -> BitBoard {
+        BitBoard::from(!self.bits)
+    }
 }
 
 impl BitAnd for BitBoard {
@@ -31,6 +38,13 @@ impl BitOrAssign<Sq> for BitBoard {
     }
 }
 
+impl BitOrAssign for BitBoard {
+    #[inline]
+    fn bitor_assign(&mut self, rhs: BitBoard) {
+        self.bits |= rhs.bits;
+    }
+}
+
 impl<T> Shr<T> for BitBoard
 where
     T: PrimInt,
@@ -39,6 +53,17 @@ where
     type Output = BitBoard;
     fn shr(self, rhs: T) -> BitBoard {
         BitBoard::from(self.bits >> rhs)
+    }
+}
+
+impl<T> Shl<T> for BitBoard
+where
+    T: PrimInt,
+    u64: Shl<T, Output = u64>,
+{
+    type Output = BitBoard;
+    fn shl(self, rhs: T) -> BitBoard {
+        BitBoard::from(self.bits << rhs)
     }
 }
 
@@ -253,6 +278,38 @@ impl BitBoard {
     pub fn to_vec<T: Unsigned + From<Sq>>(&self) -> Vec<T> {
         self.clone().into()
     }
+
+    // Returns a BitBoard with with the bits set to represent the squares where a king would be
+    // able to move.
+    pub fn king_moves(&self) -> BitBoard {
+        let mut k = *self;
+        let left = k.sh_file_a();
+        let right = k.sh_file_h();
+        k |= left | right;
+        let down = k.sh_rank_1();
+        let up = k.sh_rank_8();
+        (k | down | up) & self.not()
+    }
+
+    // Shifts bits toward file A by one bit without wrapping bits already on file A.
+    pub fn sh_file_a(&self) -> BitBoard {
+        (*self & !FILE_A) >> 1
+    }
+
+    // Shifts bits toward file H by one bit without wrapping bits already on file H.
+    pub fn sh_file_h(&self) -> BitBoard {
+        (*self & !FILE_H) << 1
+    }
+
+    // Shifts bits toward rank 1 by one row.
+    pub fn sh_rank_1(&self) -> BitBoard {
+        *self >> 8
+    }
+
+    // Shifts bits toward rank 8 by one row.
+    pub fn sh_rank_8(&self) -> BitBoard {
+        *self << 8
+    }
 }
 
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq)]
@@ -284,6 +341,54 @@ pub enum BitErr {
     #[error("to bit {0:?} is already set")]
     ToIsSetAlready(Sq),
 }
+
+// Files/columns.
+const FILE_A: BitBoard = BitBoard {
+    bits: 0x0101010101010101u64,
+};
+const FILE_B: BitBoard = BitBoard {
+    bits: 0x0101010101010101u64 << 1,
+};
+const FILE_C: BitBoard = BitBoard {
+    bits: 0x0101010101010101u64 << 2,
+};
+const FILE_D: BitBoard = BitBoard {
+    bits: 0x0101010101010101u64 << 3,
+};
+const FILE_E: BitBoard = BitBoard {
+    bits: 0x0101010101010101u64 << 4,
+};
+const FILE_F: BitBoard = BitBoard {
+    bits: 0x0101010101010101u64 << 5,
+};
+const FILE_G: BitBoard = BitBoard {
+    bits: 0x0101010101010101u64 << 6,
+};
+const FILE_H: BitBoard = BitBoard {
+    bits: 0x0101010101010101u64 << 7,
+};
+
+// Ranks/rows.
+const RANK_1: BitBoard = BitBoard { bits: 0xffu64 };
+const RANK_2: BitBoard = BitBoard { bits: 0xffu64 << 8 };
+const RANK_3: BitBoard = BitBoard {
+    bits: 0xffu64 << 16,
+};
+const RANK_4: BitBoard = BitBoard {
+    bits: 0xffu64 << 24,
+};
+const RANK_5: BitBoard = BitBoard {
+    bits: 0xffu64 << 32,
+};
+const RANK_6: BitBoard = BitBoard {
+    bits: 0xffu64 << 40,
+};
+const RANK_7: BitBoard = BitBoard {
+    bits: 0xffu64 << 48,
+};
+const RANK_8: BitBoard = BitBoard {
+    bits: 0xffu64 << 56,
+};
 
 #[cfg(test)]
 mod tests {

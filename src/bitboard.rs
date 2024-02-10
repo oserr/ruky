@@ -320,6 +320,63 @@ impl BitBoard {
         bits1 | bits2 | bits3 | bits4 | bits5 | bits6 | bits7 | bits8
     }
 
+    // Returns a BitBoard with with the bits set to represent the squares for after moving white
+    // pawns forward one square toward rank 8.
+    #[inline]
+    pub fn wp_single(&self, empty: BitBoard) -> BitBoard {
+        self.sh_rank_8() & empty
+    }
+
+    // Returns a BitBoard with with the bits set to represent the squares after moving white
+    // pawns forward two squares toward rank 8. Pawns can only do this on their first move when
+    // moving from the second to the fourth rank.
+    pub fn wp_double(&self, empty: BitBoard) -> BitBoard {
+        (self.sh_rank_8() & empty).sh_rank_8() & empty & RANK_4
+    }
+
+    // Returns a BitBoard with with the bits set to represent the squares after moving a white pawn
+    // across the left diagonal for a capture.
+    #[inline]
+    pub fn wp_left(&self) -> BitBoard {
+        (*self << 7) & !FILE_H
+    }
+
+    // Returns a BitBoard with with the bits set to represent the squares after moving a white pawn
+    // across the right diagonal for a capture.
+    #[inline]
+    pub fn wp_right(&self) -> BitBoard {
+        (*self << 9) & !FILE_A
+    }
+
+    // Returns a BitBoard with with the bits set to represent the squares for after moving black
+    // pawns forward one square toward rank 1.
+    #[inline]
+    pub fn bp_single(&self, empty: BitBoard) -> BitBoard {
+        self.sh_rank_1() & empty
+    }
+
+    // Returns a BitBoard with with the bits set to represent the squares after moving black
+    // pawns forward two squares toward rank 1. Pawns can only do this on their first move when
+    // moving from the 7th to the 5th rank.
+    pub fn bp_double(&self, empty: BitBoard) -> BitBoard {
+        (self.sh_rank_1() & empty).sh_rank_1() & empty & RANK_5
+    }
+
+    // Returns a BitBoard with with the bits set to represent the squares after moving a black pawn
+    // across the left diagonal for a capture. Note that left here is from the perspective of
+    // black, toward file H.
+    #[inline]
+    pub fn bp_left(&self) -> BitBoard {
+        (*self >> 7) & !FILE_A
+    }
+
+    // Returns a BitBoard with with the bits set to represent the squares after moving a black pawn
+    // across the right diagonal, toward file A, for a capture.
+    #[inline]
+    pub fn bp_right(&self) -> BitBoard {
+        (*self >> 9) & !FILE_H
+    }
+
     // Shifts bits toward file A by one bit without wrapping bits already on file A.
     #[inline]
     pub fn sh_file_a(&self) -> BitBoard {
@@ -600,6 +657,47 @@ mod tests {
         assert_eq!(
             BitBoard::from(sq::G8).king_moves(),
             BitBoard::from(&[sq::F8, sq::H8, sq::F7, sq::G7, sq::H7])
+        );
+    }
+
+    #[test]
+    fn knight_moves_from_b1() {
+        assert_eq!(
+            BitBoard::from(sq::B1).knight_moves(),
+            BitBoard::from(&[sq::A3, sq::C3, sq::D2])
+        );
+    }
+
+    #[test]
+    fn knight_moves_from_d4() {
+        assert_eq!(
+            BitBoard::from(sq::D4).knight_moves(),
+            BitBoard::from(&[
+                sq::C2,
+                sq::B3,
+                sq::B5,
+                sq::C6,
+                sq::E6,
+                sq::F5,
+                sq::F3,
+                sq::E2
+            ])
+        );
+    }
+
+    #[test]
+    fn knight_moves_from_g5() {
+        assert_eq!(
+            BitBoard::from(sq::G5).knight_moves(),
+            BitBoard::from(&[sq::F3, sq::E4, sq::E6, sq::F7, sq::H7, sq::H3])
+        );
+    }
+
+    #[test]
+    fn knight_moves_from_a8() {
+        assert_eq!(
+            BitBoard::from(sq::A8).knight_moves(),
+            BitBoard::from(&[sq::B6, sq::C7])
         );
     }
 }

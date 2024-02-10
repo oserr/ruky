@@ -177,7 +177,7 @@ impl PieceSet {
 
 // A helper struct to make it easy to iterate over a PieceSet.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
-struct PieceIter<'a> {
+pub struct PieceIter<'a> {
     pieces: &'a PieceSet,
     current: Option<Piece<BitBoard>>,
 }

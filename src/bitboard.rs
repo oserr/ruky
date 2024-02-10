@@ -292,21 +292,25 @@ impl BitBoard {
     }
 
     // Shifts bits toward file A by one bit without wrapping bits already on file A.
+    #[inline]
     pub fn sh_file_a(&self) -> BitBoard {
         (*self & !FILE_A) >> 1
     }
 
     // Shifts bits toward file H by one bit without wrapping bits already on file H.
+    #[inline]
     pub fn sh_file_h(&self) -> BitBoard {
         (*self & !FILE_H) << 1
     }
 
     // Shifts bits toward rank 1 by one row.
+    #[inline]
     pub fn sh_rank_1(&self) -> BitBoard {
         *self >> 8
     }
 
     // Shifts bits toward rank 8 by one row.
+    #[inline]
     pub fn sh_rank_8(&self) -> BitBoard {
         *self << 8
     }

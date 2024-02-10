@@ -286,7 +286,7 @@ impl BitBoard {
     }
 
     // Returns a BitBoard with with the bits set to represent the squares where a king would be
-    // able to move.
+    // able to move assuming there are no blockers.
     pub fn king_moves(&self) -> BitBoard {
         let mut k = *self;
         let left = k.sh_file_a();
@@ -295,6 +295,29 @@ impl BitBoard {
         let down = k.sh_rank_1();
         let up = k.sh_rank_8();
         (k | down | up) & self.not()
+    }
+
+    // Returns a BitBoard with with the bits set to represent the squares where a knight would be
+    // able to move assuming there are no blockers.
+    pub fn knight_moves(&self) -> BitBoard {
+        // One square up, two right.
+        let bits1 = (*self & !FILE_G & !FILE_H) << 10;
+        // Two square up, one right.
+        let bits2 = (*self & !FILE_H) << 17;
+        // Two square up, one left.
+        let bits3 = (*self & !FILE_A) << 15;
+        // One square up, two left.
+        let bits4 = (*self & !FILE_A & !FILE_B) << 6;
+        // One square down, two left.
+        let bits5 = (*self & !FILE_A & !FILE_B) >> 10;
+        // Two square down, one left.
+        let bits6 = (*self & !FILE_A) >> 17;
+        // Two square down, one right.
+        let bits7 = (*self & !FILE_H) >> 15;
+        // One square down, two right.
+        let bits8 = (*self & !FILE_G & !FILE_H) >> 6;
+
+        bits1 | bits2 | bits3 | bits4 | bits5 | bits6 | bits7 | bits8
     }
 
     // Shifts bits toward file A by one bit without wrapping bits already on file A.

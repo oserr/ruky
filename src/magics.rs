@@ -18,17 +18,17 @@ impl ChessMagics {
         })
     }
 
-    pub fn queen_magic(&self, sq: Sq, blockers: BitBoard) -> Option<BitBoard> {
+    pub fn qmagics(&self, sq: Sq, blockers: BitBoard) -> Option<BitBoard> {
         let rm = self.rook.attacks(sq, blockers)?;
         let bm = self.bishop.attacks(sq, blockers)?;
         Some(rm | bm)
     }
 
-    pub fn rook_magic(&self, sq: Sq, blockers: BitBoard) -> Option<BitBoard> {
+    pub fn rmagics(&self, sq: Sq, blockers: BitBoard) -> Option<BitBoard> {
         self.rook.attacks(sq, blockers)
     }
 
-    pub fn bishop_magic(&self, sq: Sq, blockers: BitBoard) -> Option<BitBoard> {
+    pub fn bmagics(&self, sq: Sq, blockers: BitBoard) -> Option<BitBoard> {
         self.bishop.attacks(sq, blockers)
     }
 }

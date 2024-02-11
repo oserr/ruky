@@ -4,7 +4,8 @@ use crate::piece::{Color, Piece, Piece::*};
 use crate::piece_move::{MoveErr, PieceMove, PieceMove::*};
 use crate::sq;
 
-/// PieceSet represents the set of pieces for player, with a bitboard for each type of piece.
+/// PieceSet represents the set of pieces for player, with a bitboard for each
+/// type of piece.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub(crate) struct PieceSet {
     king: BitBoard,
@@ -129,9 +130,10 @@ impl PieceSet {
         AttackSquares { pieces, no_pieces }
     }
 
-    // Updates the position of a piece after a move is made. This is only for the side making the
-    // move, so captures need to be handled by the PieceSet of the other pieces. Returns an error
-    // if the move is not valid, e.g. the piece being moved is not found on the source square.
+    // Updates the position of a piece after a move is made. This is only for the
+    // side making the move, so captures need to be handled by the PieceSet of
+    // the other pieces. Returns an error if the move is not valid, e.g. the
+    // piece being moved is not found on the source square.
     pub fn apply_move(&mut self, piece_move: Piece<PieceMove>) -> Result<&mut Self, MoveErr> {
         match piece_move {
             King(mv) => self.update_king(mv),
@@ -143,8 +145,8 @@ impl PieceSet {
         }
     }
 
-    // Updates the position for the king. Note that this also handles castling. Returns an error if
-    // the move is not valid.
+    // Updates the position for the king. Note that this also handles castling.
+    // Returns an error if the move is not valid.
     fn update_king(&mut self, mv: PieceMove) -> Result<&mut Self, MoveErr> {
         match mv {
             Simple { from, to } | Capture { from, to, .. } => {
@@ -196,8 +198,8 @@ impl PieceSet {
         Ok(self)
     }
 
-    // Updates the position for pieces with simple moves: queens, rooks, bishops, and knights.
-    // Returns an error for invalid moves.
+    // Updates the position for pieces with simple moves: queens, rooks, bishops,
+    // and knights. Returns an error for invalid moves.
     fn simple_update(
         &mut self,
         mv: PieceMove,
@@ -240,8 +242,8 @@ impl PieceSet {
         Ok(self)
     }
 
-    // Updates the position for pieces that are captured. If the move is not a capture or the
-    // capture is invalid, then it returns an error.
+    // Updates the position for pieces that are captured. If the move is not a
+    // capture or the capture is invalid, then it returns an error.
     pub fn remove_captured(&mut self, mv: PieceMove) -> Result<&mut Self, MoveErr> {
         match mv {
             Capture { to, cap, .. } | PromoCap { to, cap, .. } => {
@@ -276,6 +278,103 @@ impl PieceSet {
             _ => return Err(MoveErr::NoCapture(mv)),
         };
         Ok(self)
+    }
+
+    // Returns a pair of optional moves for king and queen side castling if they are
+    // valid, which means that the king or rook have not lost the right to
+    // castle, there are no pieces between the king and rook, and the squares
+    // between the king and rook are not being attacked.
+    //
+    // @param other The opposing pieces.
+    // @param attacked A BitBoard representing all the squares that are attacked by
+    // the other pieces. @return A pair in the form of (king side castle, queen
+    // side castle). The moves are only set if they are valid.
+    pub fn castling_moves(
+        &self,
+        other: &PieceSet,
+        attacked: BitBoard,
+    ) -> (Option<Piece<PieceMove>>, Option<Piece<PieceMove>>) {
+        assert_ne!(self.color, other.color);
+
+        if !self.king_castle && !self.queen_castle {
+            return (None, None);
+        }
+
+        let mut blocked = self.all() | other.all() | attacked;
+        if self.color == Color::Black {
+            blocked >>= 56;
+        }
+
+        (
+            self.try_king_castle(blocked),
+            self.try_queen_castle(blocked),
+        )
+    }
+
+    // Computes the move for king side castling, if valid, otherwise returns None.
+    //
+    // @param blocked A bitboard represeting all the blocked squares because they
+    // are either occupied or attacked by the other pieces. @return The king
+    // castling move if valid, or None.
+    fn try_king_castle(&self, blocked: BitBoard) -> Option<Piece<PieceMove>> {
+        if !self.king_castle {
+            return None;
+        }
+
+        // The bit pattern representing no pieces between the king and king side rook.
+        let king_bits = BitBoard::from(0b10010000u64);
+
+        // The bit pattern to mask all squares between the king and king side rook.
+        let king_mask = BitBoard::from(0b11110000u64);
+
+        if (blocked & king_mask) != king_bits {
+            None
+        } else {
+            let (king_from, king_to, rook_from, rook_to) = if self.color == Color::White {
+                (sq::E1, sq::G1, sq::H1, sq::F1)
+            } else {
+                (sq::E8, sq::G8, sq::H8, sq::F8)
+            };
+            Some(King(Castle {
+                king_from,
+                king_to,
+                rook_from,
+                rook_to,
+            }))
+        }
+    }
+
+    // Computes the move for queen side castling, if valid, otherwise returns None.
+    //
+    // @param blocked A bitboard represeting all the blocked squares because they
+    // are either occupied or attacked by the other pieces. @return The king
+    // castling move if valid, or None.
+    fn try_queen_castle(&self, blocked: BitBoard) -> Option<Piece<PieceMove>> {
+        if !self.queen_castle {
+            return None;
+        }
+
+        // The bit pattern representing no pieces between the king and queen side rook.
+        let queen_bits = BitBoard::from(0b00010001u64);
+
+        // The bit pattern to mask all squares between the king and queen side rook.
+        let queen_mask = BitBoard::from(0b00011111u64);
+
+        if (blocked & queen_mask) != queen_bits {
+            None
+        } else {
+            let (king_from, king_to, rook_from, rook_to) = if self.color == Color::White {
+                (sq::E1, sq::C1, sq::A1, sq::D1)
+            } else {
+                (sq::E8, sq::C8, sq::A8, sq::D8)
+            };
+            Some(King(Castle {
+                king_from,
+                king_to,
+                rook_from,
+                rook_to,
+            }))
+        }
     }
 
     // Returns an iterator to iterate over each piece as a BitBoard.

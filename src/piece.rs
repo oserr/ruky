@@ -7,3 +7,9 @@ pub enum Piece<T> {
     Knight(T),
     Pawn(T),
 }
+
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+pub enum Color {
+    White,
+    Black,
+}

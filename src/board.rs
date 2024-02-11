@@ -1,5 +1,6 @@
 use crate::bitboard::BitBoard;
 use crate::magics::ChessMagics;
+use crate::piece::Color;
 use crate::piece_set::PieceSet;
 use std::sync::Arc;
 
@@ -23,12 +24,6 @@ struct BoardState {
     wq_castle: bool,
     bk_castle: bool,
     bq_castle: bool,
-}
-
-#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
-pub enum Color {
-    White,
-    Black,
 }
 
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]

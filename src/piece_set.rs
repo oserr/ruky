@@ -1,5 +1,5 @@
 use crate::bitboard::BitBoard;
-use crate::piece::{Piece, Piece::*};
+use crate::piece::{Color, Piece, Piece::*};
 use crate::piece_move::{MoveErr, PieceMove, PieceMove::*};
 use crate::sq;
 
@@ -13,6 +13,7 @@ pub(crate) struct PieceSet {
     knight: BitBoard,
     pawn: BitBoard,
     all_bits: BitBoard,
+    color: Color,
 }
 
 impl PieceSet {
@@ -26,6 +27,7 @@ impl PieceSet {
             knight: BitBoard::from((1 << sq::G1) | (1 << sq::B1)),
             pawn: BitBoard::from(0xff00),
             all_bits: BitBoard::from(0xffff),
+            color: Color::White,
         }
     }
 
@@ -39,11 +41,16 @@ impl PieceSet {
             knight: BitBoard::from((1 << sq::G8) | (1 << sq::B8)),
             pawn: BitBoard::from(0xff << 48),
             all_bits: BitBoard::from(0xffff << 48),
+            color: Color::Black,
         }
     }
 
     pub fn all(&self) -> BitBoard {
         self.all_bits
+    }
+
+    pub fn color(&self) -> Color {
+        self.color
     }
 
     // Updates the position of a piece after a move is made. This is only for the side making the

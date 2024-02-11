@@ -1,4 +1,3 @@
-use crate::bitboard::BitBoard;
 use crate::magics::ChessMagics;
 use crate::piece::Color;
 use crate::piece_set::{AttackSquares, PieceSet};
@@ -24,6 +23,30 @@ struct BoardState {
     wq_castle: bool,
     bk_castle: bool,
     bq_castle: bool,
+}
+
+impl From<&ChessMagics> for BoardState {
+    fn from(magics: &ChessMagics) -> BoardState {
+        let white = Box::new(PieceSet::init_white());
+        let black = Box::new(PieceSet::init_black());
+        let white_attacks = white.attacks(&black, magics);
+        let black_attacks = black.attacks(&white, magics);
+
+        BoardState {
+            mine: white,
+            other: black,
+            my_attacks: white_attacks,
+            other_attacks: black_attacks,
+            game_state: GameState::Next(Color::White),
+            half_move: 0,
+            full_move: 0,
+            passant_file: None,
+            wk_castle: true,
+            wq_castle: true,
+            bk_castle: true,
+            bq_castle: true,
+        }
+    }
 }
 
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]

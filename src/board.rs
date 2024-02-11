@@ -7,7 +7,11 @@ use std::sync::Arc;
 // determining the current game state, e.g. whether the game is drawn.
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub struct Board {
+    // The board state. We use a Box for it because this makes it much cheaper to move a board.
     state: Box<BoardState>,
+
+    // We use an Arc for ChessMagics, because ChessMagics are expensive to compute, and hence we
+    // want to share one instance of chess magics where ever they are needed, and between threads.
     magics: Arc<ChessMagics>,
 }
 
@@ -18,7 +22,9 @@ pub struct Board {
 // Note that castling rights are encoded in the PieceSets.
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
 struct BoardState {
-    // The pieces that are moving next.
+    // The pieces that are moving next. We use a Box for the pieces other because this
+    // makes it much cheaper to swap the pieces after a move is made. This simplifies a lot of code
+    // because we can do things in terms of the player moving next.
     mine: Box<PieceSet>,
 
     // The pieces that are not moving next.

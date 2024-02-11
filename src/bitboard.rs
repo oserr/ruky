@@ -700,4 +700,68 @@ mod tests {
             BitBoard::from(&[sq::B6, sq::C7])
         );
     }
+
+    #[test]
+    fn wp_single() {
+        assert_eq!(
+            BitBoard::from(&[sq::A2, sq::C6, sq::D5, sq::G7, sq::H8]).wp_single(!BitBoard::new()),
+            BitBoard::from(&[sq::A3, sq::C7, sq::D6, sq::G8])
+        );
+    }
+
+    #[test]
+    fn wp_double() {
+        assert_eq!(
+            BitBoard::from(&[sq::A2, sq::C6, sq::D5, sq::G2, sq::H2]).wp_double(!BitBoard::new()),
+            BitBoard::from(&[sq::A4, sq::G4, sq::H4])
+        );
+    }
+
+    #[test]
+    fn wp_left() {
+        assert_eq!(
+            BitBoard::from(&[sq::A2, sq::C6, sq::G2, sq::H4]).wp_left(),
+            BitBoard::from(&[sq::B7, sq::F3, sq::G5])
+        );
+    }
+
+    #[test]
+    fn wp_right() {
+        assert_eq!(
+            BitBoard::from(&[sq::A2, sq::C6, sq::G2, sq::H4]).wp_right(),
+            BitBoard::from(&[sq::B3, sq::D7, sq::H3])
+        );
+    }
+
+    #[test]
+    fn bp_single() {
+        assert_eq!(
+            BitBoard::from(&[sq::B7, sq::C6, sq::D7, sq::G8, sq::H3]).bp_single(!BitBoard::new()),
+            BitBoard::from(&[sq::B6, sq::C5, sq::D6, sq::G7, sq::H2])
+        );
+    }
+
+    #[test]
+    fn bp_double() {
+        assert_eq!(
+            BitBoard::from(&[sq::B7, sq::C6, sq::D7, sq::G8, sq::H3]).bp_double(!BitBoard::new()),
+            BitBoard::from(&[sq::B5, sq::D5])
+        );
+    }
+
+    #[test]
+    fn bp_left() {
+        assert_eq!(
+            BitBoard::from(&[sq::B7, sq::C6, sq::D7, sq::H3]).bp_left(),
+            BitBoard::from(&[sq::C6, sq::D5, sq::E6])
+        );
+    }
+
+    #[test]
+    fn bp_right() {
+        assert_eq!(
+            BitBoard::from(&[sq::A7, sq::C6, sq::D7, sq::H3]).bp_right(),
+            BitBoard::from(&[sq::B5, sq::C6, sq::G2])
+        );
+    }
 }

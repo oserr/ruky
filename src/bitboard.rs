@@ -2,7 +2,7 @@ use crate::sq::{self, Sq};
 use num::{PrimInt, Unsigned};
 use std::convert::{From, Into};
 use std::fmt::{self, Debug, Formatter};
-use std::ops::{BitAnd, BitOr, BitOrAssign, Mul, Not, Shl, Shr};
+use std::ops::{BitAnd, BitOr, BitOrAssign, Mul, Not, Shl, Shr, ShrAssign};
 
 #[derive(Clone, Copy, Default, Eq, Hash, PartialEq)]
 pub struct BitBoard {
@@ -53,6 +53,17 @@ where
     type Output = BitBoard;
     fn shr(self, rhs: T) -> BitBoard {
         BitBoard::from(self.bits >> rhs)
+    }
+}
+
+impl<T> ShrAssign<T> for BitBoard
+where
+    T: PrimInt,
+    u64: Shr<T, Output = u64>,
+    u64: ShrAssign<T>,
+{
+    fn shr_assign(&mut self, rhs: T) {
+        self.bits >>= rhs;
     }
 }
 
@@ -203,7 +214,8 @@ impl BitBoard {
         self
     }
 
-    /// Clears a given bit if set, otherwise returns an error. Index is zero based.
+    /// Clears a given bit if set, otherwise returns an error. Index is zero
+    /// based.
     pub fn clear_bit_or(&mut self, sq: Sq) -> Result<&mut Self, BitErr> {
         if !self.has_bit(sq) {
             return Err(BitErr::IsNotSet(sq));
@@ -227,8 +239,8 @@ impl BitBoard {
         Ok(self)
     }
 
-    /// Updates a bit by setting to zero in |from| and setting it in |to|. If |from| is not set or
-    /// |to| is already set, then we return an error.
+    /// Updates a bit by setting to zero in |from| and setting it in |to|. If
+    /// |from| is not set or |to| is already set, then we return an error.
     pub fn update_bit(&mut self, from: Sq, to: Sq) -> Result<&mut Self, BitErr> {
         if !self.has_bit(from) {
             Err(BitErr::FromIsNotSet(from))
@@ -239,8 +251,8 @@ impl BitBoard {
         }
     }
 
-    /// Updates a bit by setting to zero in |from| and setting it in |to|. If |from| is not set or
-    /// |to| is already set, then we return an error.
+    /// Updates a bit by setting to zero in |from| and setting it in |to|. If
+    /// |from| is not set or |to| is already set, then we return an error.
     pub fn set_bits(&mut self, other_bits: u64) -> &mut Self {
         self.bits = other_bits;
         self
@@ -265,8 +277,8 @@ impl BitBoard {
         }
     }
 
-    /// Returns the index of the first bit set and clears it from the bitboard if any bits are set,
-    /// otherwise returns None.
+    /// Returns the index of the first bit set and clears it from the bitboard
+    /// if any bits are set, otherwise returns None.
     pub fn take_first(&mut self) -> Option<Sq> {
         let s = self.first_bit();
         if s.is_some() {
@@ -285,8 +297,8 @@ impl BitBoard {
         self.clone().into()
     }
 
-    // Returns a BitBoard with with the bits set to represent the squares where a king would be
-    // able to move assuming there are no blockers.
+    // Returns a BitBoard with with the bits set to represent the squares where a
+    // king would be able to move assuming there are no blockers.
     pub fn king_moves(&self) -> BitBoard {
         let mut k = *self;
         let left = k.sh_file_a();
@@ -297,8 +309,8 @@ impl BitBoard {
         (k | down | up) & self.not()
     }
 
-    // Returns a BitBoard with with the bits set to represent the squares where a knight would be
-    // able to move assuming there are no blockers.
+    // Returns a BitBoard with with the bits set to represent the squares where a
+    // knight would be able to move assuming there are no blockers.
     pub fn knight_moves(&self) -> BitBoard {
         // One square up, two right.
         let bits1 = (*self & !FILE_G & !FILE_H) << 10;
@@ -320,58 +332,59 @@ impl BitBoard {
         bits1 | bits2 | bits3 | bits4 | bits5 | bits6 | bits7 | bits8
     }
 
-    // Returns a BitBoard with with the bits set to represent the squares for after moving white
-    // pawns forward one square toward rank 8.
+    // Returns a BitBoard with with the bits set to represent the squares for after
+    // moving white pawns forward one square toward rank 8.
     #[inline]
     pub fn wp_single(&self, empty: BitBoard) -> BitBoard {
         self.sh_rank_8() & empty
     }
 
-    // Returns a BitBoard with with the bits set to represent the squares after moving white
-    // pawns forward two squares toward rank 8. Pawns can only do this on their first move when
-    // moving from the second to the fourth rank.
+    // Returns a BitBoard with with the bits set to represent the squares after
+    // moving white pawns forward two squares toward rank 8. Pawns can only do
+    // this on their first move when moving from the second to the fourth rank.
     pub fn wp_double(&self, empty: BitBoard) -> BitBoard {
         (self.sh_rank_8() & empty).sh_rank_8() & empty & RANK_4
     }
 
-    // Returns a BitBoard with with the bits set to represent the squares after moving a white pawn
-    // across the left diagonal for a capture.
+    // Returns a BitBoard with with the bits set to represent the squares after
+    // moving a white pawn across the left diagonal for a capture.
     #[inline]
     pub fn wp_left(&self) -> BitBoard {
         (*self << 7) & !FILE_H
     }
 
-    // Returns a BitBoard with with the bits set to represent the squares after moving a white pawn
-    // across the right diagonal for a capture.
+    // Returns a BitBoard with with the bits set to represent the squares after
+    // moving a white pawn across the right diagonal for a capture.
     #[inline]
     pub fn wp_right(&self) -> BitBoard {
         (*self << 9) & !FILE_A
     }
 
-    // Returns a BitBoard with with the bits set to represent the squares for after moving black
-    // pawns forward one square toward rank 1.
+    // Returns a BitBoard with with the bits set to represent the squares for after
+    // moving black pawns forward one square toward rank 1.
     #[inline]
     pub fn bp_single(&self, empty: BitBoard) -> BitBoard {
         self.sh_rank_1() & empty
     }
 
-    // Returns a BitBoard with with the bits set to represent the squares after moving black
-    // pawns forward two squares toward rank 1. Pawns can only do this on their first move when
-    // moving from the 7th to the 5th rank.
+    // Returns a BitBoard with with the bits set to represent the squares after
+    // moving black pawns forward two squares toward rank 1. Pawns can only do
+    // this on their first move when moving from the 7th to the 5th rank.
     pub fn bp_double(&self, empty: BitBoard) -> BitBoard {
         (self.sh_rank_1() & empty).sh_rank_1() & empty & RANK_5
     }
 
-    // Returns a BitBoard with with the bits set to represent the squares after moving a black pawn
-    // across the left diagonal for a capture. Note that left here is from the perspective of
-    // black, toward file H.
+    // Returns a BitBoard with with the bits set to represent the squares after
+    // moving a black pawn across the left diagonal for a capture. Note that
+    // left here is from the perspective of black, toward file H.
     #[inline]
     pub fn bp_left(&self) -> BitBoard {
         (*self >> 7) & !FILE_A
     }
 
-    // Returns a BitBoard with with the bits set to represent the squares after moving a black pawn
-    // across the right diagonal, toward file A, for a capture.
+    // Returns a BitBoard with with the bits set to represent the squares after
+    // moving a black pawn across the right diagonal, toward file A, for a
+    // capture.
     #[inline]
     pub fn bp_right(&self) -> BitBoard {
         (*self >> 9) & !FILE_H

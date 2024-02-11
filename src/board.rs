@@ -19,10 +19,6 @@ struct BoardState {
     half_move: u16,
     full_move: u16,
     passant_file: Option<u8>,
-    wk_castle: bool,
-    wq_castle: bool,
-    bk_castle: bool,
-    bq_castle: bool,
 }
 
 impl From<&ChessMagics> for BoardState {
@@ -41,10 +37,6 @@ impl From<&ChessMagics> for BoardState {
             half_move: 0,
             full_move: 0,
             passant_file: None,
-            wk_castle: true,
-            wq_castle: true,
-            bk_castle: true,
-            bq_castle: true,
         }
     }
 }

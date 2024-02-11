@@ -1,3 +1,4 @@
+use crate::bitboard::{BitBoard, RANK_3, RANK_6};
 use crate::magics::ChessMagics;
 use crate::piece::Color;
 use crate::piece_set::{AttackSquares, PieceSet};
@@ -18,7 +19,7 @@ pub struct Board {
 // Converts ChessMagics into a Board.
 impl From<Arc<ChessMagics>> for Board {
     fn from(magics: Arc<ChessMagics>) -> Board {
-        let state = Box::new(BoardState::from(magics.as_ref()));
+        let state = Box::new(BoardState::default());
         Board { state, magics }
     }
 }
@@ -59,21 +60,20 @@ struct BoardState {
     passant_file: Option<u8>,
 }
 
-// Initializes the BoardState for a new game with ChessMagics.
-impl From<&ChessMagics> for BoardState {
-    fn from(magics: &ChessMagics) -> BoardState {
-        let white = Box::new(PieceSet::init_white());
-        let black = Box::new(PieceSet::init_black());
-
-        // TODO: we don't really need magics here to determine the attack squares.
-        let white_attacks = white.attacks(&black, magics);
-        let black_attacks = black.attacks(&white, magics);
-
+// Initializes the BoardState for a new game.
+impl Default for BoardState {
+    fn default() -> Self {
         BoardState {
-            mine: white,
-            other: black,
-            my_attacks: white_attacks,
-            other_attacks: black_attacks,
+            mine: Box::new(PieceSet::init_white()),
+            other: Box::new(PieceSet::init_black()),
+            my_attacks: AttackSquares {
+                pieces: BitBoard::new(),
+                no_pieces: RANK_3,
+            },
+            other_attacks: AttackSquares {
+                pieces: BitBoard::new(),
+                no_pieces: RANK_6,
+            },
             game_state: GameState::Next(Color::White),
             half_move: 0,
             full_move: 0,

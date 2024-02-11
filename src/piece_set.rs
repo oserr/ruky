@@ -496,4 +496,46 @@ mod tests {
         );
         assert_eq!(pieces.color, Color::Black);
     }
+
+    #[test]
+    #[ignore]
+    fn init_attacks() {
+        let white = PieceSet::init_white();
+        let black = PieceSet::init_black();
+        let magics = ChessMagics::from_precomputed().expect("Unable to compute magics.");
+
+        let white_attacks = white.attacks(&black, &magics);
+
+        assert_eq!(white_attacks.pieces, BitBoard::new());
+        assert_eq!(
+            white_attacks.no_pieces,
+            BitBoard::from(&[
+                sq::A3,
+                sq::B3,
+                sq::C3,
+                sq::D3,
+                sq::E3,
+                sq::F3,
+                sq::G3,
+                sq::H3
+            ])
+        );
+
+        let black_attacks = black.attacks(&white, &magics);
+
+        assert_eq!(black_attacks.pieces, BitBoard::new());
+        assert_eq!(
+            black_attacks.no_pieces,
+            BitBoard::from(&[
+                sq::A6,
+                sq::B6,
+                sq::C6,
+                sq::D6,
+                sq::E6,
+                sq::F6,
+                sq::G6,
+                sq::H6
+            ])
+        );
+    }
 }

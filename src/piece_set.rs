@@ -95,29 +95,29 @@ impl PieceSet {
 
         // Bishop attack squares.
         for sq in self.bishop.sq_iter() {
-            let attacks = magics
+            let moves = magics
                 .bmagics(sq, all_blockers)
                 .expect("Unable to compute bishop magics");
-            pieces |= attacks & other.all_bits;
-            no_pieces |= attacks & empty;
+            pieces |= moves & other.all_bits;
+            no_pieces |= moves & empty;
         }
 
         // Rook attack squares.
         for sq in self.rook.sq_iter() {
-            let attacks = magics
+            let moves = magics
                 .rmagics(sq, all_blockers)
                 .expect("Unable to compute rook magics");
-            pieces |= attacks & other.all_bits;
-            no_pieces |= attacks & empty;
+            pieces |= moves & other.all_bits;
+            no_pieces |= moves & empty;
         }
 
         // Queen attack squares.
         for sq in self.queen.sq_iter() {
-            let attacks = magics
+            let moves = magics
                 .qmagics(sq, all_blockers)
                 .expect("Unable to compute queen magics");
-            pieces |= attacks & other.all_bits;
-            no_pieces |= attacks & empty;
+            pieces |= moves & other.all_bits;
+            no_pieces |= moves & empty;
         }
 
         AttackSquares { pieces, no_pieces }

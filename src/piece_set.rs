@@ -289,7 +289,7 @@ impl PieceSet {
     // @param attacked A BitBoard representing all the squares that are attacked by
     // the other pieces. @return A pair in the form of (king side castle, queen
     // side castle). The moves are only set if they are valid.
-    pub fn castling_moves(
+    pub fn castle(
         &self,
         other: &PieceSet,
         attacked: BitBoard,
@@ -463,6 +463,7 @@ mod tests {
             Vec::<Sq>::from(pieces.all()),
             (0u8..16).map(Sq::from).collect::<Vec<_>>()
         );
+        assert_eq!(pieces.color, Color::White);
     }
 
     #[test]
@@ -493,5 +494,6 @@ mod tests {
             Vec::<Sq>::from(pieces.all()),
             (48u8..64).map(Sq::from).collect::<Vec<_>>()
         );
+        assert_eq!(pieces.color, Color::Black);
     }
 }

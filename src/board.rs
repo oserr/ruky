@@ -15,6 +15,14 @@ pub struct Board {
     magics: Arc<ChessMagics>,
 }
 
+// Converts ChessMagics into a Board.
+impl From<Arc<ChessMagics>> for Board {
+    fn from(magics: Arc<ChessMagics>) -> Board {
+        let state = Box::new(BoardState::from(magics.as_ref()));
+        Board { state, magics }
+    }
+}
+
 // BoardState holds all the state needed needed to a play a game of regular
 // chess, including the position of the pieces, position of squares that are
 // attacked, the current game state, the number of half moves, the number of

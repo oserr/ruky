@@ -15,6 +15,8 @@ pub(crate) struct PieceSet {
     pawn: BitBoard,
     all_bits: BitBoard,
     color: Color,
+    king_castle: bool,
+    queen_castle: bool,
 }
 
 impl PieceSet {
@@ -29,6 +31,8 @@ impl PieceSet {
             pawn: BitBoard::from(0xff00),
             all_bits: BitBoard::from(0xffff),
             color: Color::White,
+            king_castle: true,
+            queen_castle: true,
         }
     }
 
@@ -43,6 +47,8 @@ impl PieceSet {
             pawn: BitBoard::from(0xff << 48),
             all_bits: BitBoard::from(0xffff << 48),
             color: Color::Black,
+            king_castle: true,
+            queen_castle: true,
         }
     }
 
@@ -158,6 +164,8 @@ impl PieceSet {
             }
             _ => return Err(MoveErr::BadMove(King(mv))),
         };
+        self.king_castle = false;
+        self.queen_castle = false;
         Ok(self)
     }
 
@@ -204,6 +212,17 @@ impl PieceSet {
         };
         match mv {
             Simple { from, to } | Capture { from, to, .. } => {
+                // TODO: Can this check be removed every time we make a simple update?
+                if piece_type.is_rook() {
+                    // Maybe remove castling right for a specific rook.
+                    match (self.color, from) {
+                        (Color::White, sq::A1) | (Color::Black, sq::A8) => {
+                            self.queen_castle = false
+                        }
+                        (Color::White, sq::H1) | (Color::Black, sq::H8) => self.king_castle = false,
+                        _ => (),
+                    };
+                }
                 piece.update_bit(from, to)?;
                 self.all_bits.update_bit(from, to)?
             }
@@ -229,7 +248,20 @@ impl PieceSet {
                 let piece = match cap {
                     King(_) => &mut self.king,
                     Queen(_) => &mut self.queen,
-                    Rook(_) => &mut self.rook,
+                    Rook(_) => {
+                        // If we are removing a rook that has not moved, then we need to remove the
+                        // the castling right for that side.
+                        match (self.color, to) {
+                            (Color::White, sq::A1) | (Color::Black, sq::A8) => {
+                                self.queen_castle = false
+                            }
+                            (Color::White, sq::H1) | (Color::Black, sq::H8) => {
+                                self.king_castle = false
+                            }
+                            _ => (),
+                        }
+                        &mut self.rook
+                    }
                     Bishop(_) => &mut self.bishop,
                     Knight(_) => &mut self.knight,
                     Pawn(_) => &mut self.pawn,

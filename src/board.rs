@@ -20,8 +20,10 @@ pub struct Board {
 struct BoardState {
     // The pieces that are moving next.
     mine: Box<PieceSet>,
+
     // The pieces that are not moving next.
     other: Box<PieceSet>,
+
     // All positions on the board that are attacked by the pieces moving next.
     my_attacks: AttackSquares,
 

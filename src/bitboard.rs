@@ -446,50 +446,50 @@ pub enum BitErr {
 }
 
 // Files/columns.
-const FILE_A: BitBoard = BitBoard {
+pub const FILE_A: BitBoard = BitBoard {
     bits: 0x0101010101010101u64,
 };
-const FILE_B: BitBoard = BitBoard {
+pub const FILE_B: BitBoard = BitBoard {
     bits: 0x0101010101010101u64 << 1,
 };
-const FILE_C: BitBoard = BitBoard {
+pub const FILE_C: BitBoard = BitBoard {
     bits: 0x0101010101010101u64 << 2,
 };
-const FILE_D: BitBoard = BitBoard {
+pub const FILE_D: BitBoard = BitBoard {
     bits: 0x0101010101010101u64 << 3,
 };
-const FILE_E: BitBoard = BitBoard {
+pub const FILE_E: BitBoard = BitBoard {
     bits: 0x0101010101010101u64 << 4,
 };
-const FILE_F: BitBoard = BitBoard {
+pub const FILE_F: BitBoard = BitBoard {
     bits: 0x0101010101010101u64 << 5,
 };
-const FILE_G: BitBoard = BitBoard {
+pub const FILE_G: BitBoard = BitBoard {
     bits: 0x0101010101010101u64 << 6,
 };
-const FILE_H: BitBoard = BitBoard {
+pub const FILE_H: BitBoard = BitBoard {
     bits: 0x0101010101010101u64 << 7,
 };
 
 // Ranks/rows.
-const RANK_1: BitBoard = BitBoard { bits: 0xffu64 };
-const RANK_2: BitBoard = BitBoard { bits: 0xffu64 << 8 };
-const RANK_3: BitBoard = BitBoard {
+pub const RANK_1: BitBoard = BitBoard { bits: 0xffu64 };
+pub const RANK_2: BitBoard = BitBoard { bits: 0xffu64 << 8 };
+pub const RANK_3: BitBoard = BitBoard {
     bits: 0xffu64 << 16,
 };
-const RANK_4: BitBoard = BitBoard {
+pub const RANK_4: BitBoard = BitBoard {
     bits: 0xffu64 << 24,
 };
-const RANK_5: BitBoard = BitBoard {
+pub const RANK_5: BitBoard = BitBoard {
     bits: 0xffu64 << 32,
 };
-const RANK_6: BitBoard = BitBoard {
+pub const RANK_6: BitBoard = BitBoard {
     bits: 0xffu64 << 40,
 };
-const RANK_7: BitBoard = BitBoard {
+pub const RANK_7: BitBoard = BitBoard {
     bits: 0xffu64 << 48,
 };
-const RANK_8: BitBoard = BitBoard {
+pub const RANK_8: BitBoard = BitBoard {
     bits: 0xffu64 << 56,
 };
 

@@ -385,8 +385,8 @@ impl PieceSet {
 
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub struct AttackSquares {
-    pieces: BitBoard,
-    no_pieces: BitBoard,
+    pub pieces: BitBoard,
+    pub no_pieces: BitBoard,
 }
 
 // A helper struct to make it easy to iterate over a PieceSet.

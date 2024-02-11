@@ -253,13 +253,13 @@ impl PieceSet {
                         // the castling right for that side.
                         match (self.color, to) {
                             (Color::White, sq::A1) | (Color::Black, sq::A8) => {
-                                self.queen_castle = false
+                                self.queen_castle = false;
                             }
                             (Color::White, sq::H1) | (Color::Black, sq::H8) => {
-                                self.king_castle = false
+                                self.king_castle = false;
                             }
                             _ => (),
-                        }
+                        };
                         &mut self.rook
                     }
                     Bishop(_) => &mut self.bishop,

@@ -1,7 +1,7 @@
 use crate::bitboard::BitBoard;
 use crate::magics::ChessMagics;
 use crate::piece::Color;
-use crate::piece_set::PieceSet;
+use crate::piece_set::{AttackSquares, PieceSet};
 use std::sync::Arc;
 
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
@@ -32,10 +32,4 @@ pub enum GameState {
     Check(Color),
     Mate(Color),
     Draw,
-}
-
-#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
-struct AttackSquares {
-    pieces: BitBoard,
-    no_pieces: BitBoard,
 }

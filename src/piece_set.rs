@@ -1,4 +1,5 @@
 use crate::bitboard::BitBoard;
+use crate::magics::ChessMagics;
 use crate::piece::{Color, Piece, Piece::*};
 use crate::piece_move::{MoveErr, PieceMove, PieceMove::*};
 use crate::sq;
@@ -51,6 +52,75 @@ impl PieceSet {
 
     pub fn color(&self) -> Color {
         self.color
+    }
+
+    pub fn attacks(&self, other: &PieceSet, magics: &ChessMagics) -> AttackSquares {
+        assert_ne!(self.color, other.color);
+
+        let all_blockers = self.all_bits | other.all_bits;
+        let empty = !all_blockers;
+
+        let mut pieces = BitBoard::new();
+        let mut no_pieces = BitBoard::new();
+
+        // King attack squares.
+        let moves = self.king.king_moves();
+        pieces |= moves & other.all_bits;
+        no_pieces |= moves & empty;
+
+        // Knight attack squares.
+        let moves = self.knight.knight_moves();
+        pieces |= moves & other.all_bits;
+        no_pieces |= moves & empty;
+
+        if self.color == Color::White {
+            // White pawn attack squares.
+            let moves = self.pawn.wp_left();
+            pieces |= moves & other.all_bits;
+            no_pieces |= moves & empty;
+
+            let moves = self.pawn.wp_right();
+            pieces |= moves & other.all_bits;
+            no_pieces |= moves & empty;
+        } else {
+            // Black pawn attack squares.
+            let moves = self.pawn.bp_left();
+            pieces |= moves & other.all_bits;
+            no_pieces |= moves & empty;
+
+            let moves = self.pawn.bp_right();
+            pieces |= moves & other.all_bits;
+            no_pieces |= moves & empty;
+        }
+
+        // Bishop attack squares.
+        for sq in self.bishop.sq_iter() {
+            let attacks = magics
+                .bmagics(sq, all_blockers)
+                .expect("Unable to compute bishop magics");
+            pieces |= attacks & other.all_bits;
+            no_pieces |= attacks & empty;
+        }
+
+        // Rook attack squares.
+        for sq in self.rook.sq_iter() {
+            let attacks = magics
+                .rmagics(sq, all_blockers)
+                .expect("Unable to compute rook magics");
+            pieces |= attacks & other.all_bits;
+            no_pieces |= attacks & empty;
+        }
+
+        // Queen attack squares.
+        for sq in self.queen.sq_iter() {
+            let attacks = magics
+                .qmagics(sq, all_blockers)
+                .expect("Unable to compute queen magics");
+            pieces |= attacks & other.all_bits;
+            no_pieces |= attacks & empty;
+        }
+
+        AttackSquares { pieces, no_pieces }
     }
 
     // Updates the position of a piece after a move is made. This is only for the side making the
@@ -180,6 +250,12 @@ impl PieceSet {
     pub fn iter(&self) -> PieceIter {
         PieceIter::from(self)
     }
+}
+
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+pub struct AttackSquares {
+    pieces: BitBoard,
+    no_pieces: BitBoard,
 }
 
 // A helper struct to make it easy to iterate over a PieceSet.

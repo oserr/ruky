@@ -2,7 +2,7 @@ use crate::bitboard::BitBoard;
 use crate::magics::ChessMagics;
 use crate::piece::{Color, Piece, Piece::*};
 use crate::piece_move::{MoveErr, PieceMove, PieceMove::*};
-use crate::sq;
+use crate::sq::{self, Sq};
 
 /// PieceSet represents the set of pieces for player, with a bitboard for each
 /// type of piece.
@@ -53,12 +53,20 @@ impl PieceSet {
         }
     }
 
+    pub fn king(&self) -> BitBoard {
+        self.king
+    }
+
     pub fn all(&self) -> BitBoard {
         self.all_bits
     }
 
     pub fn color(&self) -> Color {
         self.color
+    }
+
+    pub fn find_type(&self, sq: Sq) -> Option<Piece<()>> {
+        self.iter().find_map(|pt| Some(pt.with(())))
     }
 
     pub fn attacks(&self, other: &PieceSet, magics: &ChessMagics) -> AttackSquares {

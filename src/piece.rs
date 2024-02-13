@@ -50,6 +50,18 @@ impl<T> Piece<T> {
             _ => false,
         }
     }
+
+    // Maps the self into the same Piece but containing a different value.
+    pub fn with<U>(&self, val: U) -> Piece<U> {
+        match *self {
+            Piece::King(_) => Piece::King(val),
+            Piece::Queen(_) => Piece::Queen(val),
+            Piece::Rook(_) => Piece::Rook(val),
+            Piece::Bishop(_) => Piece::Bishop(val),
+            Piece::Knight(_) => Piece::Knight(val),
+            Piece::Pawn(_) => Piece::Pawn(val),
+        }
+    }
 }
 
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]

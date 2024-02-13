@@ -1,6 +1,7 @@
 use crate::bitboard::{BitBoard, RANK_3, RANK_6};
 use crate::magics::ChessMagics;
-use crate::piece::Color;
+use crate::piece::{Color, Piece, Piece::*};
+use crate::piece_move::{PieceMove, PieceMove::*};
 use crate::piece_set::{AttackSquares, PieceSet};
 use std::sync::Arc;
 
@@ -14,6 +15,31 @@ pub struct Board {
     // We use an Arc for ChessMagics, because ChessMagics are expensive to compute, and hence we
     // want to share one instance of chess magics where ever they are needed, and between threads.
     magics: Arc<ChessMagics>,
+}
+
+impl Board {
+    fn king_moves(&self, moves: &mut Vec<Piece<PieceMove>>) {
+        let king = self.state.mine.king();
+
+        for (from, king_bit) in king.sq_bit_iter() {
+            let king_moves = king_bit.king_moves();
+
+            let non_attacks = king_moves & self.state.none();
+            for to in non_attacks.sq_iter() {
+                moves.push(King(Simple { from, to }));
+            }
+
+            let attacks = king_moves & self.state.other.all();
+            for to in attacks.sq_iter() {
+                let cap = self
+                    .state
+                    .other
+                    .find_type(to)
+                    .expect("Unable to find an attack piece.");
+                moves.push(King(Capture { from, to, cap }));
+            }
+        }
+    }
 }
 
 // Converts ChessMagics into a Board.
@@ -58,6 +84,18 @@ struct BoardState {
 
     // If set, represents the file where capture by en-passant is possible.
     passant_file: Option<u8>,
+}
+
+impl BoardState {
+    // Returns the union of all pieces as a BitBoard.
+    fn all(&self) -> BitBoard {
+        self.mine.all() | self.other.all()
+    }
+
+    // Returns the set of all empty squares.
+    fn none(&self) -> BitBoard {
+        !self.all()
+    }
 }
 
 // Initializes the BoardState for a new game.

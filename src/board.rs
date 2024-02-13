@@ -90,3 +90,14 @@ pub enum GameState {
     Mate(Color),
     Draw,
 }
+
+impl GameState {
+    // Returns true if this GameState reprsesents a terminal game state, i.e. a draw
+    // or check mate.
+    pub fn is_terminal(&self) -> bool {
+        match *self {
+            GameState::Next(_) | GameState::Check(_) => false,
+            _ => true,
+        }
+    }
+}

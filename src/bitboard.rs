@@ -293,6 +293,11 @@ impl BitBoard {
     }
 
     // Returns an iterator over the squares where the bits are set.
+    pub fn sq_bit_iter(&self) -> impl Iterator<Item = (Sq, BitBoard)> {
+        SquareBitIter::from(*self)
+    }
+
+    // Returns an iterator over the squares where the bits are set.
     pub fn to_vec<T: Unsigned + From<Sq>>(&self) -> Vec<T> {
         self.clone().into()
     }
@@ -415,21 +420,49 @@ impl BitBoard {
     }
 }
 
+// A struct to iterate over the set bits of a BitBoard as if they were squares.
 #[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq)]
 pub struct SquareIter {
     bits: BitBoard,
 }
 
+// Converts a BitBoard to a SquareIter.
 impl From<BitBoard> for SquareIter {
     fn from(bits: BitBoard) -> SquareIter {
         SquareIter { bits }
     }
 }
 
+// Mechanics of iterating over BitBoard as squares.
 impl Iterator for SquareIter {
     type Item = Sq;
     fn next(&mut self) -> Option<Sq> {
         self.bits.take_first().map(Sq::from)
+    }
+}
+
+// A struct to iterate over the set bits of a BitBoard as pairs of the form (Sq,
+// BitBoard), where the first item represents the square of a bit that is set,
+// and the second item is the one-bit BitBoard for that square.
+#[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq)]
+pub struct SquareBitIter {
+    it: SquareIter,
+}
+
+// Mechanics of iterating over BitBoard to get the pair (Sq, BitBoard).
+impl Iterator for SquareBitIter {
+    type Item = (Sq, BitBoard);
+    fn next(&mut self) -> Option<(Sq, BitBoard)> {
+        self.it.next().map(|sq| (sq, BitBoard::from(sq)))
+    }
+}
+
+// Converts a BitBoard to a SquareBitIter.
+impl From<BitBoard> for SquareBitIter {
+    fn from(bits: BitBoard) -> SquareBitIter {
+        SquareBitIter {
+            it: SquareIter::from(bits),
+        }
     }
 }
 

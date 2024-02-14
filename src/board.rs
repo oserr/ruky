@@ -85,6 +85,30 @@ impl Board {
             }
         }
     }
+
+    fn simple_moves<F>(&self, piece: Piece<BitBoard>, move_fn: F, moves: &mut Vec<Piece<PieceMove>>)
+    where
+        F: Fn(BitBoard) -> BitBoard,
+    {
+        for (from, bit) in piece.val().sq_bit_iter() {
+            let bit_moves = move_fn(bit);
+
+            let non_attacks = bit_moves & self.state.none();
+            for to in non_attacks.sq_iter() {
+                moves.push(piece.with(Simple { from, to }));
+            }
+
+            let attacks = bit_moves & self.state.other.all();
+            for to in attacks.sq_iter() {
+                let cap = self
+                    .state
+                    .other
+                    .find_type(to)
+                    .expect("Unable to find an attack piece.");
+                moves.push(piece.with(Capture { from, to, cap }));
+            }
+        }
+    }
 }
 
 // Converts ChessMagics into a Board.

@@ -40,6 +40,29 @@ impl Board {
             }
         }
     }
+
+    fn knight_moves(&self, moves: &mut Vec<Piece<PieceMove>>) {
+        let knight = self.state.mine.knight();
+
+        for (from, knight_bit) in knight.sq_bit_iter() {
+            let knight_moves = knight_bit.knight_moves();
+
+            let non_attacks = knight_moves & self.state.none();
+            for to in non_attacks.sq_iter() {
+                moves.push(Knight(Simple { from, to }));
+            }
+
+            let attacks = knight & self.state.other.all();
+            for to in attacks.sq_iter() {
+                let cap = self
+                    .state
+                    .other
+                    .find_type(to)
+                    .expect("Unable to find an attack piece.");
+                moves.push(Knight(Capture { from, to, cap }));
+            }
+        }
+    }
 }
 
 // Converts ChessMagics into a Board.

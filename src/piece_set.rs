@@ -74,7 +74,13 @@ impl PieceSet {
     }
 
     pub fn find_type(&self, sq: Sq) -> Option<Piece<()>> {
-        self.iter().find_map(|pt| Some(pt.with(())))
+        self.iter().find_map(|pt| {
+            if pt.val().has_bit(sq) {
+                Some(pt.with(()))
+            } else {
+                None
+            }
+        })
     }
 
     pub fn attacks(&self, other: &PieceSet, magics: &ChessMagics) -> AttackSquares {

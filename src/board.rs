@@ -22,14 +22,14 @@ impl Board {
         let king = self.state.mine.king();
 
         for (from, king_bit) in king.sq_bit_iter() {
-            let king_moves = king_bit.king_moves();
+            let kmoves = king_bit.king_moves();
 
-            let non_attacks = king_moves & self.state.none();
+            let non_attacks = kmoves & self.state.none();
             for to in non_attacks.sq_iter() {
                 moves.push(King(Simple { from, to }));
             }
 
-            let attacks = king_moves & self.state.other.all();
+            let attacks = kmoves & self.state.other.all();
             for to in attacks.sq_iter() {
                 let cap = self
                     .state
@@ -41,18 +41,45 @@ impl Board {
         }
     }
 
+    fn rook_moves(&self, moves: &mut Vec<Piece<PieceMove>>) {
+        let rooks = self.state.mine.rooks();
+        let blockers = self.state.all();
+
+        for (from, rook_bit) in rooks.sq_bit_iter() {
+            let rmoves = self
+                .magics
+                .rmagics(from, blockers)
+                .expect("Unable to compute rook magics.");
+
+            let non_attacks = rmoves & self.state.none();
+            for to in non_attacks.sq_iter() {
+                moves.push(Rook(Simple { from, to }));
+            }
+
+            let attacks = rmoves & self.state.other.all();
+            for to in attacks.sq_iter() {
+                let cap = self
+                    .state
+                    .other
+                    .find_type(to)
+                    .expect("Unable to find an attack piece.");
+                moves.push(Rook(Capture { from, to, cap }));
+            }
+        }
+    }
+
     fn knight_moves(&self, moves: &mut Vec<Piece<PieceMove>>) {
-        let knight = self.state.mine.knight();
+        let knights = self.state.mine.knights();
 
-        for (from, knight_bit) in knight.sq_bit_iter() {
-            let knight_moves = knight_bit.knight_moves();
+        for (from, knight_bit) in knights.sq_bit_iter() {
+            let kmoves = knight_bit.knight_moves();
 
-            let non_attacks = knight_moves & self.state.none();
+            let non_attacks = kmoves & self.state.none();
             for to in non_attacks.sq_iter() {
                 moves.push(Knight(Simple { from, to }));
             }
 
-            let attacks = knight & self.state.other.all();
+            let attacks = kmoves & self.state.other.all();
             for to in attacks.sq_iter() {
                 let cap = self
                     .state

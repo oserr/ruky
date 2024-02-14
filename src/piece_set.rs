@@ -57,6 +57,10 @@ impl PieceSet {
         self.king
     }
 
+    pub fn knight(&self) -> BitBoard {
+        self.knight
+    }
+
     pub fn all(&self) -> BitBoard {
         self.all_bits
     }

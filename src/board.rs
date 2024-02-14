@@ -19,9 +19,7 @@ pub struct Board {
 
 impl Board {
     fn king_moves(&self, moves: &mut Vec<Piece<PieceMove>>) {
-        let king = self.state.mine.king();
-
-        for (from, king_bit) in king.sq_bit_iter() {
+        for (from, king_bit) in self.state.mine.king().sq_bit_iter() {
             let kmoves = king_bit.king_moves();
 
             let non_attacks = kmoves & self.state.none();
@@ -42,10 +40,9 @@ impl Board {
     }
 
     fn rook_moves(&self, moves: &mut Vec<Piece<PieceMove>>) {
-        let rooks = self.state.mine.rooks();
         let blockers = self.state.all();
 
-        for (from, rook_bit) in rooks.sq_bit_iter() {
+        for (from, rook_bit) in self.state.mine.rooks().sq_bit_iter() {
             let rmoves = self
                 .magics
                 .rmagics(from, blockers)
@@ -69,9 +66,7 @@ impl Board {
     }
 
     fn knight_moves(&self, moves: &mut Vec<Piece<PieceMove>>) {
-        let knights = self.state.mine.knights();
-
-        for (from, knight_bit) in knights.sq_bit_iter() {
+        for (from, knight_bit) in self.state.mine.knights().sq_bit_iter() {
             let kmoves = knight_bit.knight_moves();
 
             let non_attacks = kmoves & self.state.none();

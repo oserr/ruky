@@ -62,6 +62,22 @@ impl<T> Piece<T> {
             Piece::Pawn(_) => Piece::Pawn(val),
         }
     }
+
+    // Returns payload in the Piece.
+    pub fn val(&self) -> T
+    where
+        T: Clone,
+    {
+        let val = match self {
+            Piece::King(ref v) => v,
+            Piece::Queen(ref v) => v,
+            Piece::Rook(ref v) => v,
+            Piece::Bishop(ref v) => v,
+            Piece::Knight(ref v) => v,
+            Piece::Pawn(ref v) => v,
+        };
+        val.clone()
+    }
 }
 
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]

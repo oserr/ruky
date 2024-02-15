@@ -86,10 +86,12 @@ impl Board {
         }
     }
 
-    fn simple_moves<F>(&self, piece: Piece<BitBoard>, move_fn: F, moves: &mut Vec<Piece<PieceMove>>)
-    where
-        F: Fn(BitBoard) -> BitBoard,
-    {
+    fn simple_moves(
+        &self,
+        piece: Piece<BitBoard>,
+        move_fn: impl Fn(BitBoard) -> BitBoard,
+        moves: &mut Vec<Piece<PieceMove>>,
+    ) {
         for (from, bit) in piece.val().sq_bit_iter() {
             let bit_moves = move_fn(bit);
 

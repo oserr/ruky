@@ -66,31 +66,16 @@ impl Board {
     }
 
     fn knight_moves(&self, moves: &mut Vec<Piece<PieceMove>>) {
-        for (from, knight_bit) in self.state.mine.knights().sq_bit_iter() {
-            let kmoves = knight_bit.knight_moves();
-
-            let non_attacks = kmoves & self.state.none();
-            for to in non_attacks.sq_iter() {
-                moves.push(Knight(Simple { from, to }));
-            }
-
-            let attacks = kmoves & self.state.other.all();
-            for to in attacks.sq_iter() {
-                let cap = self
-                    .state
-                    .other
-                    .find_type(to)
-                    .expect("Unable to find an attack piece.");
-                moves.push(Knight(Capture { from, to, cap }));
-            }
-        }
+        self.simple_moves(Knight(self.state.mine.knights()), moves, |b| {
+            b.knight_moves()
+        });
     }
 
     fn simple_moves(
         &self,
         piece: Piece<BitBoard>,
-        move_fn: impl Fn(BitBoard) -> BitBoard,
         moves: &mut Vec<Piece<PieceMove>>,
+        move_fn: impl Fn(BitBoard) -> BitBoard,
     ) {
         for (from, bit) in piece.val().sq_bit_iter() {
             let bit_moves = move_fn(bit);

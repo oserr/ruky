@@ -40,29 +40,12 @@ impl Board {
     }
 
     fn rook_moves(&self, moves: &mut Vec<Piece<PieceMove>>) {
-        let blockers = self.state.all();
-
-        for (from, rook_bit) in self.state.mine.rooks().sq_bit_iter() {
-            let rmoves = self
-                .magics
-                .rmagics(from, blockers)
-                .expect("Unable to compute rook magics.");
-
-            let non_attacks = rmoves & self.state.none();
-            for to in non_attacks.sq_iter() {
-                moves.push(Rook(Simple { from, to }));
-            }
-
-            let attacks = rmoves & self.state.other.all();
-            for to in attacks.sq_iter() {
-                let cap = self
-                    .state
-                    .other
-                    .find_type(to)
-                    .expect("Unable to find an attack piece.");
-                moves.push(Rook(Capture { from, to, cap }));
-            }
-        }
+        self.simple_moves(Rook(self.state.mine.rooks()), moves, |b| {
+            let from = b.first_bit().expect("BitBoard should have a bit set.");
+            self.magics
+                .rmagics(from, self.state.all())
+                .expect("Unable to to compute rook magics")
+        });
     }
 
     fn knight_moves(&self, moves: &mut Vec<Piece<PieceMove>>) {

@@ -19,24 +19,7 @@ pub struct Board {
 
 impl Board {
     fn king_moves(&self, moves: &mut Vec<Piece<PieceMove>>) {
-        for (from, king_bit) in self.state.mine.king().sq_bit_iter() {
-            let kmoves = king_bit.king_moves();
-
-            let non_attacks = kmoves & self.state.none();
-            for to in non_attacks.sq_iter() {
-                moves.push(King(Simple { from, to }));
-            }
-
-            let attacks = kmoves & self.state.other.all();
-            for to in attacks.sq_iter() {
-                let cap = self
-                    .state
-                    .other
-                    .find_type(to)
-                    .expect("Unable to find an attack piece.");
-                moves.push(King(Capture { from, to, cap }));
-            }
-        }
+        self.simple_moves(King(self.state.mine.king()), moves, |b| b.king_moves());
     }
 
     fn rook_moves(&self, moves: &mut Vec<Piece<PieceMove>>) {

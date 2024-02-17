@@ -76,29 +76,10 @@ impl Board {
                 let forward_moves = pawn_bit.wp_single(empty) | pawn_bit.wp_double(empty);
 
                 for to in forward_moves.sq_iter() {
-                    if !to.in_last_rank() {
-                        moves.push(Pawn(Simple { from, to }));
+                    if to.in_last_rank() {
+                        add_promo(from, to, moves);
                     } else {
-                        moves.push(Pawn(Promo {
-                            from,
-                            to,
-                            promo: Queen(()),
-                        }));
-                        moves.push(Pawn(Promo {
-                            from,
-                            to,
-                            promo: Rook(()),
-                        }));
-                        moves.push(Pawn(Promo {
-                            from,
-                            to,
-                            promo: Bishop(()),
-                        }));
-                        moves.push(Pawn(Promo {
-                            from,
-                            to,
-                            promo: Knight(()),
-                        }));
+                        moves.push(Pawn(Simple { from, to }));
                     }
                 }
 
@@ -112,33 +93,10 @@ impl Board {
                         .find_type(to)
                         .expect("Unable to find a piece for capture.");
 
-                    if !to.in_last_rank() {
-                        moves.push(Pawn(Capture { from, to, cap }));
+                    if to.in_last_rank() {
+                        add_promo_with_cap(from, to, cap, moves);
                     } else {
-                        moves.push(Pawn(PromoCap {
-                            from,
-                            to,
-                            promo: Queen(()),
-                            cap,
-                        }));
-                        moves.push(Pawn(PromoCap {
-                            from,
-                            to,
-                            promo: Rook(()),
-                            cap,
-                        }));
-                        moves.push(Pawn(PromoCap {
-                            from,
-                            to,
-                            promo: Bishop(()),
-                            cap,
-                        }));
-                        moves.push(Pawn(PromoCap {
-                            from,
-                            to,
-                            promo: Knight(()),
-                            cap,
-                        }));
+                        moves.push(Pawn(Capture { from, to, cap }));
                     }
                 }
 
@@ -306,4 +264,56 @@ impl PassantSq {
             None
         }
     }
+}
+
+// Utility to add all the different types of promotions.
+fn add_promo(from: Sq, to: Sq, moves: &mut Vec<Piece<PieceMove>>) {
+    moves.push(Pawn(Promo {
+        from,
+        to,
+        promo: Queen(()),
+    }));
+    moves.push(Pawn(Promo {
+        from,
+        to,
+        promo: Rook(()),
+    }));
+    moves.push(Pawn(Promo {
+        from,
+        to,
+        promo: Bishop(()),
+    }));
+    moves.push(Pawn(Promo {
+        from,
+        to,
+        promo: Knight(()),
+    }));
+}
+
+// Utility to add all the different types of promotions.
+fn add_promo_with_cap(from: Sq, to: Sq, cap: Piece<()>, moves: &mut Vec<Piece<PieceMove>>) {
+    moves.push(Pawn(PromoCap {
+        from,
+        to,
+        promo: Queen(()),
+        cap,
+    }));
+    moves.push(Pawn(PromoCap {
+        from,
+        to,
+        promo: Rook(()),
+        cap,
+    }));
+    moves.push(Pawn(PromoCap {
+        from,
+        to,
+        promo: Bishop(()),
+        cap,
+    }));
+    moves.push(Pawn(PromoCap {
+        from,
+        to,
+        promo: Knight(()),
+        cap,
+    }));
 }

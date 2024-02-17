@@ -32,6 +32,15 @@ impl Board {
         }
     }
 
+    fn queen_moves(&self, moves: &mut Vec<Piece<PieceMove>>) {
+        self.simple_moves(Queen(self.state.mine.queens()), moves, |b| {
+            let from = b.first_bit().expect("BitBoard should have a bit set.");
+            self.magics
+                .qmagics(from, self.state.all())
+                .expect("Unable to to compute rook magics")
+        });
+    }
+
     fn rook_moves(&self, moves: &mut Vec<Piece<PieceMove>>) {
         self.simple_moves(Rook(self.state.mine.rooks()), moves, |b| {
             let from = b.first_bit().expect("BitBoard should have a bit set.");

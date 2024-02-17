@@ -2,7 +2,7 @@ use std::convert::From;
 use std::fmt::{self, Debug, Formatter};
 use std::ops::Shl;
 
-#[derive(Clone, Copy, Default, Eq, Hash, PartialEq)]
+#[derive(Clone, Copy, Default, Eq, Hash, PartialEq, PartialOrd)]
 pub struct Sq {
     val: u8,
 }
@@ -11,6 +11,16 @@ impl Sq {
     // Returns the row and column for the square as a pair (row, column).
     pub fn rc(&self) -> (u8, u8) {
         (self.val / 8, self.val % 8)
+    }
+
+    // Returns true if the square is in the last rank, i.e. row 8.
+    pub fn in_last_rank(&self) -> bool {
+        return *self >= A8;
+    }
+
+    // Returns true if the square is in the first rank, i.e. row 1.
+    pub fn in_first_rank(&self) -> bool {
+        return *self <= H1;
     }
 
     pub fn str(&self) -> &'static str {

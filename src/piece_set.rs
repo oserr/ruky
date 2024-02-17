@@ -110,7 +110,7 @@ impl PieceSet {
         pieces |= moves & other.all_bits;
         no_pieces |= moves & empty;
 
-        if self.color == Color::White {
+        if self.color.is_white() {
             // White pawn attack squares.
             let moves = self.pawn.wp_left();
             pieces |= moves & other.all_bits;
@@ -360,7 +360,7 @@ impl PieceSet {
         if (blocked & king_mask) != king_bits {
             None
         } else {
-            let (king_from, king_to, rook_from, rook_to) = if self.color == Color::White {
+            let (king_from, king_to, rook_from, rook_to) = if self.color.is_white() {
                 (sq::E1, sq::G1, sq::H1, sq::F1)
             } else {
                 (sq::E8, sq::G8, sq::H8, sq::F8)
@@ -393,7 +393,7 @@ impl PieceSet {
         if (blocked & queen_mask) != queen_bits {
             None
         } else {
-            let (king_from, king_to, rook_from, rook_to) = if self.color == Color::White {
+            let (king_from, king_to, rook_from, rook_to) = if self.color.is_white() {
                 (sq::E1, sq::C1, sq::A1, sq::D1)
             } else {
                 (sq::E8, sq::C8, sq::A8, sq::D8)

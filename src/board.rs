@@ -132,8 +132,8 @@ struct BoardState {
     // in practice the game is drawn at some point of there is no progress.
     full_move: u16,
 
-    // If set, represents the file where capture by en-passant is possible.
-    passant_file: Option<u8>,
+    // If set, represents the square where capture by en-passant is possible.
+    passant_file: Option<Sq>,
 }
 
 impl BoardState {

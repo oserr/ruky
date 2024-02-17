@@ -66,6 +66,93 @@ impl Board {
         });
     }
 
+    fn pawn_moves(&self, moves: &mut Vec<Piece<PieceMove>>) {
+        let pawns = self.state.mine.pawns();
+        let empty = self.state.none();
+        let other = self.state.other.all();
+
+        if self.state.color().is_white() {
+            for (from, pawn_bit) in pawns.sq_bit_iter() {
+                let forward_moves = pawn_bit.wp_single(empty) | pawn_bit.wp_double(empty);
+
+                for to in forward_moves.sq_iter() {
+                    if !to.in_last_rank() {
+                        moves.push(Pawn(Simple { from, to }));
+                    } else {
+                        moves.push(Pawn(Promo {
+                            from,
+                            to,
+                            promo: Queen(()),
+                        }));
+                        moves.push(Pawn(Promo {
+                            from,
+                            to,
+                            promo: Rook(()),
+                        }));
+                        moves.push(Pawn(Promo {
+                            from,
+                            to,
+                            promo: Bishop(()),
+                        }));
+                        moves.push(Pawn(Promo {
+                            from,
+                            to,
+                            promo: Knight(()),
+                        }));
+                    }
+                }
+
+                let all_attacks = pawn_bit.wp_left() | pawn_bit.wp_right();
+                let attacks = all_attacks & other;
+
+                for to in attacks.sq_iter() {
+                    let cap = self
+                        .state
+                        .other
+                        .find_type(to)
+                        .expect("Unable to find a piece for capture.");
+
+                    if !to.in_last_rank() {
+                        moves.push(Pawn(Capture { from, to, cap }));
+                    } else {
+                        moves.push(Pawn(PromoCap {
+                            from,
+                            to,
+                            promo: Queen(()),
+                            cap,
+                        }));
+                        moves.push(Pawn(PromoCap {
+                            from,
+                            to,
+                            promo: Rook(()),
+                            cap,
+                        }));
+                        moves.push(Pawn(PromoCap {
+                            from,
+                            to,
+                            promo: Bishop(()),
+                            cap,
+                        }));
+                        moves.push(Pawn(PromoCap {
+                            from,
+                            to,
+                            promo: Knight(()),
+                            cap,
+                        }));
+                    }
+                }
+
+                if let Some(passant_cap) = self
+                    .state
+                    .passant_sq
+                    .and_then(|ps| ps.by_enpassant(from, all_attacks))
+                {
+                    moves.push(passant_cap)
+                }
+            }
+        }
+    }
+
     fn simple_moves(
         &self,
         piece: Piece<BitBoard>,
@@ -134,7 +221,7 @@ struct BoardState {
     full_move: u16,
 
     // If set, represents the square where capture by en-passant is possible.
-    passant_file: Option<Sq>,
+    passant_sq: Option<PassantSq>,
 }
 
 impl BoardState {
@@ -146,6 +233,11 @@ impl BoardState {
     // Returns the set of all empty squares.
     fn none(&self) -> BitBoard {
         !self.all()
+    }
+
+    // Returns the color moving next.
+    fn color(&self) -> Color {
+        self.mine.color()
     }
 }
 
@@ -166,7 +258,7 @@ impl Default for BoardState {
             game_state: GameState::Next(Color::White),
             half_move: 0,
             full_move: 0,
-            passant_file: None,
+            passant_sq: None,
         }
     }
 }
@@ -187,6 +279,31 @@ impl GameState {
         match *self {
             GameState::Next(_) | GameState::Check(_) => false,
             _ => true,
+        }
+    }
+}
+
+// A struct to represent the position where en-passant capture is possible.
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+struct PassantSq {
+    // Represents the actual location of the piece. This is a square in either the 4th or 5th rank.
+    actual: Sq,
+
+    // Represents the square where the pawn is captured. This is a square in either the 3rd or 6th
+    // rank.
+    capture: Sq,
+}
+
+impl PassantSq {
+    fn by_enpassant(&self, from: Sq, attacks: BitBoard) -> Option<Piece<PieceMove>> {
+        if attacks.has_bit(self.capture) {
+            Some(Pawn(EnPassant {
+                from,
+                to: self.capture,
+                passant: self.actual,
+            }))
+        } else {
+            None
         }
     }
 }

@@ -37,7 +37,7 @@ impl Board {
             let from = b.first_bit().expect("BitBoard should have a bit set.");
             self.magics
                 .qmagics(from, self.state.all())
-                .expect("Unable to to compute rook magics")
+                .expect("Unable to to compute queen magics")
         });
     }
 
@@ -47,6 +47,15 @@ impl Board {
             self.magics
                 .rmagics(from, self.state.all())
                 .expect("Unable to to compute rook magics")
+        });
+    }
+
+    fn bishop_moves(&self, moves: &mut Vec<Piece<PieceMove>>) {
+        self.simple_moves(Bishop(self.state.mine.bishops()), moves, |b| {
+            let from = b.first_bit().expect("BitBoard should have a bit set.");
+            self.magics
+                .bmagics(from, self.state.all())
+                .expect("Unable to to compute bishop magics")
         });
     }
 

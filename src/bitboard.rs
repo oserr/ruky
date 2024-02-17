@@ -337,6 +337,14 @@ impl BitBoard {
         bits1 | bits2 | bits3 | bits4 | bits5 | bits6 | bits7 | bits8
     }
 
+    // Returns a pair of bitboards in the form of (forward moves, attacks) for white
+    // pawns.
+    pub fn wp_moves(&self, empty: BitBoard) -> (BitBoard, BitBoard) {
+        let forward = self.wp_single(empty) | self.wp_double(empty);
+        let attacks = self.wp_left() | self.wp_right();
+        (forward, attacks)
+    }
+
     // Returns a BitBoard with with the bits set to represent the squares for after
     // moving white pawns forward one square toward rank 8.
     #[inline]
@@ -363,6 +371,14 @@ impl BitBoard {
     #[inline]
     pub fn wp_right(&self) -> BitBoard {
         (*self << 9) & !FILE_A
+    }
+
+    // Returns a pair of bitboards in the form of (forward moves, attacks) for black
+    // pawns.
+    pub fn bp_moves(&self, empty: BitBoard) -> (BitBoard, BitBoard) {
+        let forward = self.bp_single(empty) | self.bp_double(empty);
+        let attacks = self.bp_left() | self.bp_right();
+        (forward, attacks)
     }
 
     // Returns a BitBoard with with the bits set to represent the squares for after

@@ -3,6 +3,7 @@ use crate::magics::ChessMagics;
 use crate::piece::{Color, Piece, Piece::*};
 use crate::piece_move::{PieceMove, PieceMove::*};
 use crate::piece_set::{AttackSquares, PieceSet};
+use crate::sq::Sq;
 use std::sync::Arc;
 
 // Represents a chess board, and encodes the rules for moving pieces and

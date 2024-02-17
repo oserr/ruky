@@ -20,6 +20,16 @@ pub struct Board {
 impl Board {
     fn king_moves(&self, moves: &mut Vec<Piece<PieceMove>>) {
         self.simple_moves(King(self.state.mine.king()), moves, |b| b.king_moves());
+        let (king_castle, queen_castle) = self
+            .state
+            .mine
+            .castle(&self.state.other, self.state.other_attacks.all());
+        if king_castle.is_some() {
+            moves.push(king_castle.unwrap());
+        }
+        if queen_castle.is_some() {
+            moves.push(queen_castle.unwrap());
+        }
     }
 
     fn rook_moves(&self, moves: &mut Vec<Piece<PieceMove>>) {

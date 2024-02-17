@@ -73,7 +73,7 @@ impl Board {
 
         if self.state.color().is_white() {
             for (from, pawn_bit) in pawns.sq_bit_iter() {
-                let forward_moves = pawn_bit.wp_single(empty) | pawn_bit.wp_double(empty);
+                let (forward_moves, all_attacks) = pawn_bit.wp_moves(empty);
 
                 for to in forward_moves.sq_iter() {
                     if to.in_last_rank() {
@@ -83,7 +83,6 @@ impl Board {
                     }
                 }
 
-                let all_attacks = pawn_bit.wp_left() | pawn_bit.wp_right();
                 let attacks = all_attacks & other;
 
                 for to in attacks.sq_iter() {

@@ -67,45 +67,64 @@ impl Board {
     }
 
     fn pawn_moves(&self, moves: &mut Vec<Piece<PieceMove>>) {
+        if self.state.color().is_white() {
+            self.add_pawn_moves(
+                moves,
+                |bits, empty| bits.wp_moves(empty),
+                |s| s.in_last_rank(),
+            );
+        } else {
+            self.add_pawn_moves(
+                moves,
+                |bits, empty| bits.bp_moves(empty),
+                |s| s.in_first_rank(),
+            );
+        }
+    }
+
+    fn add_pawn_moves(
+        &self,
+        moves: &mut Vec<Piece<PieceMove>>,
+        moves_fn: impl Fn(BitBoard, BitBoard) -> (BitBoard, BitBoard),
+        is_promo: impl Fn(Sq) -> bool,
+    ) {
         let pawns = self.state.mine.pawns();
         let empty = self.state.none();
         let other = self.state.other.all();
 
-        if self.state.color().is_white() {
-            for (from, pawn_bit) in pawns.sq_bit_iter() {
-                let (forward_moves, all_attacks) = pawn_bit.wp_moves(empty);
+        for (from, pawn_bit) in pawns.sq_bit_iter() {
+            let (forward_moves, all_attacks) = moves_fn(pawn_bit, empty);
 
-                for to in forward_moves.sq_iter() {
-                    if to.in_last_rank() {
-                        add_promo(from, to, moves);
-                    } else {
-                        moves.push(Pawn(Simple { from, to }));
-                    }
+            for to in forward_moves.sq_iter() {
+                if is_promo(to) {
+                    add_promo(from, to, moves);
+                } else {
+                    moves.push(Pawn(Simple { from, to }));
                 }
+            }
 
-                let attacks = all_attacks & other;
+            let attacks = all_attacks & other;
 
-                for to in attacks.sq_iter() {
-                    let cap = self
-                        .state
-                        .other
-                        .find_type(to)
-                        .expect("Unable to find a piece for capture.");
-
-                    if to.in_last_rank() {
-                        add_promo_with_cap(from, to, cap, moves);
-                    } else {
-                        moves.push(Pawn(Capture { from, to, cap }));
-                    }
-                }
-
-                if let Some(passant_cap) = self
+            for to in attacks.sq_iter() {
+                let cap = self
                     .state
-                    .passant_sq
-                    .and_then(|ps| ps.by_enpassant(from, all_attacks))
-                {
-                    moves.push(passant_cap)
+                    .other
+                    .find_type(to)
+                    .expect("Unable to find a piece for capture.");
+
+                if is_promo(to) {
+                    add_promo_with_cap(from, to, cap, moves);
+                } else {
+                    moves.push(Pawn(Capture { from, to, cap }));
                 }
+            }
+
+            if let Some(passant_cap) = self
+                .state
+                .passant_sq
+                .and_then(|ps| ps.by_enpassant(from, all_attacks))
+            {
+                moves.push(passant_cap)
             }
         }
     }

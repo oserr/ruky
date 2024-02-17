@@ -411,6 +411,14 @@ pub struct AttackSquares {
     pub no_pieces: BitBoard,
 }
 
+impl AttackSquares {
+    // Returns a BitBoard represting all the squares that are attacked, including
+    // squares with and without pieces.
+    pub fn all(&self) -> BitBoard {
+        self.pieces | self.no_pieces
+    }
+}
+
 // A helper struct to make it easy to iterate over a PieceSet.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub struct PieceIter<'a> {

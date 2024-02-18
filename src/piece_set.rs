@@ -53,6 +53,22 @@ impl PieceSet {
         }
     }
 
+    // Initializes a blank PieceSet for pieces to be added on.
+    pub fn blank() -> Self {
+        Self {
+            king: BitBoard::new(),
+            queen: BitBoard::new(),
+            rook: BitBoard::new(),
+            bishop: BitBoard::new(),
+            knight: BitBoard::new(),
+            pawn: BitBoard::new(),
+            all_bits: BitBoard::new(),
+            color: Color::White,
+            king_castle: false,
+            queen_castle: false,
+        }
+    }
+
     pub fn king(&self) -> BitBoard {
         self.king
     }

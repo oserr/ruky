@@ -19,6 +19,30 @@ pub struct Board {
 }
 
 impl Board {
+    // Computes all the moves, including moves that are not legal, e.g. putting
+    // oneself in check. If there are no moves to be made, e.g. we're already in
+    // a terminal state, then it return None.
+    pub fn all_moves(&self) -> Option<Vec<Piece<PieceMove>>> {
+        if self.state.game_state.is_terminal() {
+            return None;
+        }
+
+        let mut moves: Vec<Piece<PieceMove>> = Vec::new();
+
+        self.king_moves(&mut moves);
+        self.queen_moves(&mut moves);
+        self.rook_moves(&mut moves);
+        self.bishop_moves(&mut moves);
+        self.knight_moves(&mut moves);
+        self.pawn_moves(&mut moves);
+
+        if moves.is_empty() {
+            None
+        } else {
+            Some(moves)
+        }
+    }
+
     fn king_moves(&self, moves: &mut Vec<Piece<PieceMove>>) {
         self.simple_moves(King(self.state.mine.king()), moves, |b| b.king_moves());
         let (king_castle, queen_castle) = self

@@ -1,4 +1,4 @@
-use ruky::magics::{compute_bmagics, compute_rmagics, from_bmagics, from_rmagics, Magics};
+use ruky::magics::{compute_bmagics, compute_rmagics, from_bmagics, from_rmagics};
 use std::thread::spawn;
 
 // This is a slow test.

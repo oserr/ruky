@@ -540,7 +540,6 @@ mod tests {
     }
 
     #[test]
-    #[ignore]
     fn init_attacks() {
         let white = PieceSet::init_white();
         let black = PieceSet::init_black();

@@ -3,7 +3,6 @@ use crate::magics::ChessMagics;
 use crate::piece::{Color, Piece, Piece::*};
 use crate::piece_move::{MoveErr, PieceMove, PieceMove::*};
 use crate::sq::{self, Sq};
-use lazy_static::lazy_static;
 
 /// PieceSet represents the set of pieces for player, with a bitboard for each
 /// type of piece.
@@ -476,7 +475,7 @@ impl<'a> Iterator for PieceIter<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::sq::Sq;
+    use lazy_static::lazy_static;
 
     lazy_static! {
         static ref MAGICS: ChessMagics =

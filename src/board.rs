@@ -363,7 +363,9 @@ fn add_promo_with_cap(from: Sq, to: Sq, cap: Piece<()>, moves: &mut Vec<Piece<Pi
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::sq;
     use lazy_static::lazy_static;
+    use std::collections::HashSet;
 
     lazy_static! {
         static ref MAGICS: Arc<ChessMagics> = Arc::new(
@@ -375,11 +377,125 @@ mod tests {
     fn board_init_from_magics() {
         let board = Board::from(MAGICS.clone());
 
+        assert!(board.state.color().is_white());
         assert_eq!(*board.state.mine, PieceSet::init_white());
         assert_eq!(*board.state.other, PieceSet::init_black());
         assert_eq!(board.state.game_state, GameState::Next(Color::White));
         assert_eq!(board.state.half_move, 0);
         assert_eq!(board.state.full_move, 0);
         assert_eq!(board.state.passant_sq, None);
+    }
+
+    #[test]
+    fn moves_from_init() {
+        let board = Board::from(MAGICS.clone());
+        let mut moves: Vec<Piece<PieceMove>> = vec![];
+
+        board.king_moves(&mut moves);
+        assert!(moves.is_empty());
+
+        board.queen_moves(&mut moves);
+        assert!(moves.is_empty());
+
+        board.rook_moves(&mut moves);
+        assert!(moves.is_empty());
+
+        board.bishop_moves(&mut moves);
+        assert!(moves.is_empty());
+
+        board.knight_moves(&mut moves);
+        assert_eq!(
+            HashSet::from_iter(moves.clone()),
+            HashSet::from([
+                Knight(Simple {
+                    from: sq::B1,
+                    to: sq::A3
+                }),
+                Knight(Simple {
+                    from: sq::B1,
+                    to: sq::C3
+                }),
+                Knight(Simple {
+                    from: sq::G1,
+                    to: sq::F3
+                }),
+                Knight(Simple {
+                    from: sq::G1,
+                    to: sq::H3
+                }),
+            ])
+        );
+
+        moves.clear();
+        board.pawn_moves(&mut moves);
+        assert_eq!(
+            HashSet::from_iter(moves),
+            HashSet::from([
+                Pawn(Simple {
+                    from: sq::A2,
+                    to: sq::A3
+                }),
+                Pawn(Simple {
+                    from: sq::A2,
+                    to: sq::A4
+                }),
+                Pawn(Simple {
+                    from: sq::B2,
+                    to: sq::B3
+                }),
+                Pawn(Simple {
+                    from: sq::B2,
+                    to: sq::B4
+                }),
+                Pawn(Simple {
+                    from: sq::C2,
+                    to: sq::C3
+                }),
+                Pawn(Simple {
+                    from: sq::C2,
+                    to: sq::C4
+                }),
+                Pawn(Simple {
+                    from: sq::D2,
+                    to: sq::D3
+                }),
+                Pawn(Simple {
+                    from: sq::D2,
+                    to: sq::D4
+                }),
+                Pawn(Simple {
+                    from: sq::E2,
+                    to: sq::E3
+                }),
+                Pawn(Simple {
+                    from: sq::E2,
+                    to: sq::E4
+                }),
+                Pawn(Simple {
+                    from: sq::F2,
+                    to: sq::F3
+                }),
+                Pawn(Simple {
+                    from: sq::F2,
+                    to: sq::F4
+                }),
+                Pawn(Simple {
+                    from: sq::G2,
+                    to: sq::G3
+                }),
+                Pawn(Simple {
+                    from: sq::G2,
+                    to: sq::G4
+                }),
+                Pawn(Simple {
+                    from: sq::H2,
+                    to: sq::H3
+                }),
+                Pawn(Simple {
+                    from: sq::H2,
+                    to: sq::H4
+                }),
+            ])
+        );
     }
 }

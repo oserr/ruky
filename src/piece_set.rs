@@ -3,6 +3,7 @@ use crate::magics::ChessMagics;
 use crate::piece::{Color, Piece, Piece::*};
 use crate::piece_move::{MoveErr, PieceMove, PieceMove::*};
 use crate::sq::{self, Sq};
+use lazy_static::lazy_static;
 
 /// PieceSet represents the set of pieces for player, with a bitboard for each
 /// type of piece.
@@ -477,6 +478,11 @@ mod tests {
     use super::*;
     use crate::sq::Sq;
 
+    lazy_static! {
+        static ref MAGICS: ChessMagics =
+            ChessMagics::from_precomputed().expect("Unable to compute magics for unit test.");
+    }
+
     #[test]
     fn init_white_pieces() {
         let pieces = PieceSet::init_white();
@@ -543,9 +549,8 @@ mod tests {
     fn init_attacks() {
         let white = PieceSet::init_white();
         let black = PieceSet::init_black();
-        let magics = ChessMagics::from_precomputed().expect("Unable to compute magics.");
 
-        let white_attacks = white.attacks(&black, &magics);
+        let white_attacks = white.attacks(&black, &MAGICS);
 
         assert_eq!(white_attacks.pieces, BitBoard::new());
         assert_eq!(
@@ -562,7 +567,7 @@ mod tests {
             ])
         );
 
-        let black_attacks = black.attacks(&white, &magics);
+        let black_attacks = black.attacks(&white, &MAGICS);
 
         assert_eq!(black_attacks.pieces, BitBoard::new());
         assert_eq!(

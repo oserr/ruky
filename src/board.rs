@@ -359,3 +359,27 @@ fn add_promo_with_cap(from: Sq, to: Sq, cap: Piece<()>, moves: &mut Vec<Piece<Pi
         cap,
     }));
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use lazy_static::lazy_static;
+
+    lazy_static! {
+        static ref MAGICS: Arc<ChessMagics> = Arc::new(
+            ChessMagics::from_precomputed().expect("Unable to compute magics for unit test.")
+        );
+    }
+
+    #[test]
+    fn board_init_from_magics() {
+        let board = Board::from(MAGICS.clone());
+
+        assert_eq!(*board.state.mine, PieceSet::init_white());
+        assert_eq!(*board.state.other, PieceSet::init_black());
+        assert_eq!(board.state.game_state, GameState::Next(Color::White));
+        assert_eq!(board.state.half_move, 0);
+        assert_eq!(board.state.full_move, 0);
+        assert_eq!(board.state.passant_sq, None);
+    }
+}

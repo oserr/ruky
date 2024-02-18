@@ -1,4 +1,4 @@
-use crate::sq::{self, Sq};
+use crate::sq::Sq;
 use num::{PrimInt, Unsigned};
 use std::convert::{From, Into};
 use std::fmt::{self, Debug, Formatter};
@@ -545,6 +545,7 @@ pub const RANK_8: BitBoard = BitBoard {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::sq;
 
     #[test]
     fn new_is_default() {

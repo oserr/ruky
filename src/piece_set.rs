@@ -66,7 +66,7 @@ impl PieceSet {
     }
 
     pub fn bishops(&self) -> BitBoard {
-        self.rook
+        self.bishop
     }
 
     pub fn knights(&self) -> BitBoard {
@@ -74,7 +74,7 @@ impl PieceSet {
     }
 
     pub fn pawns(&self) -> BitBoard {
-        self.knight
+        self.pawn
     }
 
     pub fn all(&self) -> BitBoard {

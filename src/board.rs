@@ -39,11 +39,6 @@ impl Board {
         todo!();
     }
 
-    // TODO: check if other is in check.
-    pub fn is_other_in_check(&self) -> bool {
-        todo!();
-    }
-
     // Returns true if the player moving next is in check.
     #[inline]
     pub fn is_check(&self) -> bool {

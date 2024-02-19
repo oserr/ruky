@@ -44,9 +44,10 @@ impl Board {
         todo!();
     }
 
-    // TODO: check if mine is in check.
-    pub fn is_mine_in_check(&self) -> bool {
-        todo!();
+    // Returns true if the player moving next is in check.
+    #[inline]
+    pub fn is_check(&self) -> bool {
+        self.state.is_mine_in_check()
     }
 
     // Computes all the moves, including moves that are not legal, e.g. putting
@@ -268,6 +269,18 @@ impl BoardState {
     // Returns the color moving next.
     fn color(&self) -> Color {
         self.mine.color()
+    }
+
+    // Returns the true if pieces moving next are in check.
+    fn is_mine_in_check(&self) -> bool {
+        (self.mine.king() & self.other_attacks.pieces).any()
+    }
+
+    // Returns true if the pieces not moving next are are in check. Technically,
+    // this not a a valid state, because a player cannot put themselves in
+    // check, which is exactly the motivation for defining this.
+    fn is_other_in_check(&self) -> bool {
+        (self.other.king() & self.my_attacks.pieces).any()
     }
 }
 

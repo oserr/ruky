@@ -488,6 +488,139 @@ impl<'a> Iterator for PieceIter<'a> {
     }
 }
 
+// A PieceSet builder to make it easier to build a PieceSet.
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+pub(crate) struct PsBuilder {
+    pieces: PieceSet,
+}
+
+impl PsBuilder {
+    #[inline]
+    pub fn new() -> Self {
+        PsBuilder {
+            pieces: PieceSet::blank(),
+        }
+    }
+
+    // Sets the king on the board.
+    pub fn set_king(&mut self, sq: Sq) -> &mut Self {
+        self.pieces.king.clear();
+        self.pieces.king.set_bit(sq);
+        self
+    }
+
+    // Sets the queen on the board.
+    pub fn add_queen(&mut self, sq: Sq) -> &mut Self {
+        self.pieces.queen.set_bit(sq);
+        self
+    }
+
+    // Sets the rook on the board.
+    pub fn add_rook(&mut self, sq: Sq) -> &mut Self {
+        self.pieces.rook.set_bit(sq);
+        self
+    }
+
+    // Sets the bishop on the board.
+    pub fn add_bishop(&mut self, sq: Sq) -> &mut Self {
+        self.pieces.bishop.set_bit(sq);
+        self
+    }
+
+    // Sets the bishop on the board.
+    pub fn add_knight(&mut self, sq: Sq) -> &mut Self {
+        self.pieces.knight.set_bit(sq);
+        self
+    }
+
+    // Sets the bishop on the board.
+    pub fn add_pawn(&mut self, sq: Sq) -> &mut Self {
+        self.pieces.knight.set_bit(sq);
+        self
+    }
+
+    // Sets the bishop on the board.
+    pub fn set_king_castle(&mut self, can_castle: bool) -> &mut Self {
+        self.pieces.king_castle = can_castle;
+        self
+    }
+
+    // Sets the queen castling rights.
+    pub fn set_queen_castle(&mut self, can_castle: bool) -> &mut Self {
+        self.pieces.queen_castle = can_castle;
+        self
+    }
+
+    // Sets the pieces color.
+    pub fn set_color(&mut self, color: Color) -> &mut Self {
+        self.pieces.color = color;
+        self
+    }
+
+    pub fn build(mut self) -> Result<PieceSet, PiecesErr> {
+        if self.pieces.king.count() != 1 {
+            return Err(PiecesErr::NoKing);
+        }
+        if self.pieces.queen.count() > 10 {
+            return Err(PiecesErr::TooManyQueens);
+        }
+        if self.pieces.rook.count() > 10 {
+            return Err(PiecesErr::TooManyRooks);
+        }
+        if self.pieces.bishop.count() > 10 {
+            return Err(PiecesErr::TooManyBishops);
+        }
+        if self.pieces.knight.count() > 10 {
+            return Err(PiecesErr::TooManyKnights);
+        }
+        if self.pieces.pawn.count() > 8 {
+            return Err(PiecesErr::TooManyPawns);
+        }
+        if self.pieces.king_castle || self.pieces.queen_castle {
+            let (king_sq, arook, hrook) = if self.pieces.color.is_white() {
+                (sq::E1, sq::A1, sq::H1)
+            } else {
+                (sq::E8, sq::A8, sq::H8)
+            };
+            if !self.pieces.king.has_bit(king_sq) {
+                return Err(PiecesErr::BadCastle);
+            }
+            if self.pieces.king_castle && !self.pieces.rook.has_bit(hrook) {
+                return Err(PiecesErr::BadCastle);
+            }
+            if self.pieces.queen_castle && !self.pieces.rook.has_bit(arook) {
+                return Err(PiecesErr::BadCastle);
+            }
+        }
+        self.pieces.all_bits = self.pieces.king
+            | self.pieces.queen
+            | self.pieces.rook
+            | self.pieces.bishop
+            | self.pieces.knight
+            | self.pieces.pawn;
+
+        Ok(self.pieces)
+    }
+}
+
+#[derive(thiserror::Error, Clone, Debug)]
+pub enum PiecesErr {
+    #[error("pieces need a king")]
+    NoKing,
+    #[error("too many queens")]
+    TooManyQueens,
+    #[error("too many rooks")]
+    TooManyRooks,
+    #[error("too many bishops")]
+    TooManyBishops,
+    #[error("too many knights")]
+    TooManyKnights,
+    #[error("too many pawns")]
+    TooManyPawns,
+    #[error("invalid castling rights")]
+    BadCastle,
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

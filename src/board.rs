@@ -19,6 +19,36 @@ pub struct Board {
 }
 
 impl Board {
+    // TODO: compute the game state, e.g. are we in a terminal state.
+    fn compute_game_state(&self) -> GameState {
+        todo!();
+    }
+
+    // TODO: Updates some board state.
+    fn quick_update(&mut self, _piece_move: Piece<PieceMove>) {
+        todo!();
+    }
+
+    // TODO: Updates some board state.
+    fn update(&mut self, _piece_move: Piece<PieceMove>) {
+        todo!();
+    }
+
+    // TODO
+    fn is_enough_material(&self) -> bool {
+        todo!();
+    }
+
+    // TODO
+    pub fn is_check_for_other(&self) -> bool {
+        todo!();
+    }
+
+    // TODO
+    pub fn is_check_for_mine(&self) -> bool {
+        todo!();
+    }
+
     // Computes all the moves, including moves that are not legal, e.g. putting
     // oneself in check. If there are no moves to be made, e.g. we're already in
     // a terminal state, then it return None.

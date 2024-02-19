@@ -34,18 +34,18 @@ impl Board {
         todo!();
     }
 
-    // TODO
+    // TODO: check if we have enough material to win.
     fn is_enough_material(&self) -> bool {
         todo!();
     }
 
-    // TODO
-    pub fn is_check_for_other(&self) -> bool {
+    // TODO: check if other is in check.
+    pub fn is_other_in_check(&self) -> bool {
         todo!();
     }
 
-    // TODO
-    pub fn is_check_for_mine(&self) -> bool {
+    // TODO: check if mine is in check.
+    pub fn is_mine_in_check(&self) -> bool {
         todo!();
     }
 

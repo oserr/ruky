@@ -603,7 +603,7 @@ impl PsBuilder {
     }
 }
 
-#[derive(thiserror::Error, Clone, Debug)]
+#[derive(thiserror::Error, Clone, Debug, PartialEq)]
 pub enum PiecesErr {
     #[error("pieces need a king")]
     NoKing,
@@ -731,5 +731,83 @@ mod tests {
                 sq::H6
             ])
         );
+    }
+
+    #[test]
+    fn ps_builder_no_king() {
+        let ps_builder = PsBuilder::new();
+        assert_eq!(ps_builder.build(), Err(PiecesErr::NoKing));
+    }
+
+    #[test]
+    fn ps_builder_castling_for_white() {
+        let mut ps_builder = PsBuilder::new();
+        assert_eq!(
+            ps_builder.set_king(sq::E1).set_king_castle(true).build(),
+            Err(PiecesErr::BadCastle)
+        );
+
+        let mut ps_builder = PsBuilder::new();
+        assert_eq!(
+            ps_builder.set_king(sq::E1).set_queen_castle(true).build(),
+            Err(PiecesErr::BadCastle)
+        );
+
+        let mut ps_builder = PsBuilder::new();
+        assert!(ps_builder
+            .set_king(sq::E1)
+            .add_rook(sq::H1)
+            .set_king_castle(true)
+            .build()
+            .is_ok());
+
+        let mut ps_builder = PsBuilder::new();
+        assert!(ps_builder
+            .set_king(sq::E1)
+            .add_rook(sq::A1)
+            .set_queen_castle(true)
+            .build()
+            .is_ok());
+    }
+
+    #[test]
+    fn ps_builder_castling_for_black() {
+        let mut ps_builder = PsBuilder::new();
+        assert_eq!(
+            ps_builder
+                .set_color(Color::Black)
+                .set_king(sq::E8)
+                .set_king_castle(true)
+                .build(),
+            Err(PiecesErr::BadCastle)
+        );
+
+        let mut ps_builder = PsBuilder::new();
+        assert_eq!(
+            ps_builder
+                .set_color(Color::Black)
+                .set_king(sq::E8)
+                .set_queen_castle(true)
+                .build(),
+            Err(PiecesErr::BadCastle)
+        );
+
+        let mut ps_builder = PsBuilder::new();
+        assert!(ps_builder
+            .set_color(Color::Black)
+            .set_king(sq::E8)
+            .add_rook(sq::H8)
+            .set_king_castle(true)
+            .build()
+            .is_ok());
+
+        let mut ps_builder = PsBuilder::new();
+        assert!(ps_builder
+            .set_color(Color::Black)
+            .set_king(sq::E8)
+            .add_rook(sq::A8)
+            .set_queen_castle(true)
+            .build()
+            .is_ok());
     }
 }

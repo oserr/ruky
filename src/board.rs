@@ -34,11 +34,6 @@ impl Board {
         todo!();
     }
 
-    // TODO: check if we have enough material to win.
-    fn is_enough_material(&self) -> bool {
-        todo!();
-    }
-
     // Returns true if the player moving next is in check.
     #[inline]
     pub fn is_check(&self) -> bool {
@@ -276,6 +271,34 @@ impl BoardState {
     // check, which is exactly the motivation for defining this.
     fn is_other_in_check(&self) -> bool {
         (self.other.king() & self.my_attacks.pieces).any()
+    }
+
+    // Returns true if there is enough material on either side for a win, or false
+    // if neither side can win given the material. The
+    // following scenarios are a draw:
+    // - only king per side
+    // - bishop or knight vs bishop or knight
+    fn is_enough_material(&self) -> bool {
+        assert!(self.mine.king().any());
+        assert!(self.other.king().any());
+
+        let my_count = self.mine.all().count();
+        let other_count = self.other.all().count();
+
+        if my_count > 2 || other_count > 2 {
+            return true;
+        }
+
+        if my_count == 1 && other_count == 1 {
+            return false;
+        }
+
+        if my_count <= 2 && other_count <= 2 {
+            return !(self.mine.bishops().count() == 1 || self.mine.knights().count() == 1)
+                && !(self.other.bishops().count() == 1 || self.other.knights().count() == 1);
+        }
+
+        return true;
     }
 }
 

@@ -24,6 +24,47 @@ impl Board {
         todo!();
     }
 
+    // Updates the game state.
+    fn update_game_state(&mut self, piece_move: PieceMove) {
+        if piece_move.is_king_capture() {
+            self.state.game_state = GameState::Mate(self.state.color());
+            return;
+        }
+
+        if self.state.half_move >= 50 || !self.state.is_enough_material() {
+            self.state.game_state = GameState::Draw;
+            return;
+        }
+
+        let moves = self.all_moves();
+        if moves.is_none() {
+            self.state.game_state = GameState::Draw;
+            return;
+        }
+
+        // We want to verify that we have some move such that we are not in check.
+        for pmv in moves.unwrap() {
+            let mut board = self.clone();
+            board.state.partial_update(pmv, self.magics.as_ref());
+            if !board.state.is_other_in_check() {
+                self.state.game_state = if self.is_check() {
+                    GameState::Check(self.state.color())
+                } else {
+                    GameState::Next(self.state.color())
+                };
+                return;
+            }
+        }
+
+        // If we don't have moves without check, but are not currently in check, then we
+        // are in stalemate.
+        if !self.is_check() {
+            self.state.game_state = GameState::Draw;
+        }
+
+        self.state.game_state = GameState::Mate(self.state.color());
+    }
+
     // TODO: Updates some board state.
     fn update(&mut self, _piece_move: Piece<PieceMove>) {
         todo!();
@@ -299,7 +340,8 @@ impl BoardState {
     }
 
     // Handles all of the state update after a move is made, except setting the
-    // GameState. Some of the state change is subsequently used to compute the final game state.
+    // GameState. Some of the state change is subsequently used to compute the final
+    // game state.
     fn partial_update(&mut self, piece_move: Piece<PieceMove>, magics: &ChessMagics) {
         let mv = piece_move.val();
         let is_pawn = piece_move.is_pawn();
@@ -392,8 +434,8 @@ struct PassantSq {
 }
 
 impl PassantSq {
-    // Creates a capture by en passant if the set of pawn attacks contains the square where the
-    // pawn is captured by en passant, otherwise returns None.
+    // Creates a capture by en passant if the set of pawn attacks contains the
+    // square where the pawn is captured by en passant, otherwise returns None.
     fn by_enpassant(&self, from: Sq, attacks: BitBoard) -> Option<Piece<PieceMove>> {
         if attacks.has_bit(self.capture) {
             Some(Pawn(EnPassant {
@@ -406,12 +448,14 @@ impl PassantSq {
         }
     }
 
-    // Takes a pair in the form of (from, to) representing the source and destination squares for a
-    // pawn move, and the color of the player moving. If move represents a 2-square forward move,
-    // then it returns a PassantSq to represent the fact that capture by en-passant is possible.
-    // This may not actually be the case if there are no pawns in right square, but should not be
-    // an issue.
-    // TODO: need to check the locations of the other pawns to see en passant is possible.
+    // Takes a pair in the form of (from, to) representing the source and
+    // destination squares for a pawn move, and the color of the player moving.
+    // If move represents a 2-square forward move, then it returns a PassantSq
+    // to represent the fact that capture by en-passant is possible.
+    // This may not actually be the case if there are no pawns in right square, but
+    // should not be an issue.
+    // TODO: need to check the locations of the other pawns to see en passant is
+    // possible.
     fn try_passant(from: Sq, to: Sq, color: Color) -> Option<PassantSq> {
         let (from_row, from_col) = from.rc();
         let (to_row, _) = to.rc();

@@ -8,6 +8,15 @@ pub struct Sq {
 }
 
 impl Sq {
+    // Creats a Sq from a row and col if the row and col are valid.
+    pub fn from_rc(row: u8, col: u8) -> Option<Self> {
+        if row < 8 && col < 8 {
+            Some(Sq::from(row * 8 + col))
+        } else {
+            None
+        }
+    }
+
     // Returns the row and column for the square as a pair (row, column).
     pub fn rc(&self) -> (u8, u8) {
         (self.val / 8, self.val % 8)

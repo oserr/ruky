@@ -63,6 +63,14 @@ impl PieceMove {
             _ => false,
         }
     }
+
+    // Returns true if the move represents a capture for a king.
+    pub fn is_king_capture(&self) -> bool {
+        match *self {
+            PieceMove::Capture { cap, .. } | PieceMove::PromoCap { cap, .. } => cap.is_king(),
+            _ => false,
+        }
+    }
 }
 
 // Represents a move error.

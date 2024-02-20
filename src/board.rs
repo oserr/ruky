@@ -274,9 +274,6 @@ impl BoardState {
     // - only king per side
     // - bishop or knight vs bishop or knight
     fn is_enough_material(&self) -> bool {
-        assert!(self.mine.king().any());
-        assert!(self.other.king().any());
-
         let my_count = self.mine.all().count();
         let other_count = self.other.all().count();
 

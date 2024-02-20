@@ -19,11 +19,6 @@ pub struct Board {
 }
 
 impl Board {
-    // TODO: compute the game state, e.g. are we in a terminal state.
-    fn compute_game_state(&self) -> GameState {
-        todo!();
-    }
-
     // Updates the game state.
     fn update_game_state(&mut self, piece_move: PieceMove) {
         if piece_move.is_king_capture() {

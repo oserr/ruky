@@ -53,6 +53,18 @@ pub enum PieceMove {
     },
 }
 
+impl PieceMove {
+    // Returns true if the PieceMove represents a capture.
+    pub fn is_capture(&self) -> bool {
+        match *self {
+            PieceMove::Capture { .. }
+            | PieceMove::EnPassant { .. }
+            | PieceMove::PromoCap { .. } => true,
+            _ => false,
+        }
+    }
+}
+
 // Represents a move error.
 #[derive(thiserror::Error, Clone, Debug)]
 pub enum MoveErr {

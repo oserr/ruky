@@ -25,11 +25,6 @@ impl Board {
     }
 
     // TODO: Updates some board state.
-    fn quick_update(&mut self, _piece_move: Piece<PieceMove>) {
-        todo!();
-    }
-
-    // TODO: Updates some board state.
     fn update(&mut self, _piece_move: Piece<PieceMove>) {
         todo!();
     }
@@ -300,6 +295,50 @@ impl BoardState {
 
         return true;
     }
+
+    fn update_attacks(&mut self, magics: &ChessMagics) {
+        self.my_attacks = self.mine.attacks(&self.other, magics);
+        self.other_attacks = self.other.attacks(&self.mine, magics);
+    }
+
+    // Handles all of the state update after a move is made, except setting the
+    // GameState. Some of the state change is subsequently used to compute the final game state.
+    fn partial_update(&mut self, piece_move: Piece<PieceMove>, magics: &ChessMagics) {
+        let mv = piece_move.val();
+        let is_pawn = piece_move.is_pawn();
+        let is_cap = mv.is_capture();
+
+        self.mine
+            .apply_move(piece_move)
+            .expect("Unable to update mine with move.");
+
+        if is_pawn || is_cap {
+            self.half_move = 0;
+            if is_cap {
+                self.other
+                    .remove_captured(mv)
+                    .expect("Unable to remove captured piece.");
+            }
+        } else {
+            self.half_move += 1;
+        }
+
+        if self.color().is_black() {
+            self.full_move += 1;
+        }
+
+        self.passant_sq = if is_pawn {
+            match mv {
+                Simple { from, to } => PassantSq::try_passant(from, to, self.color()),
+                _ => None,
+            }
+        } else {
+            None
+        };
+
+        std::mem::swap(&mut self.mine, &mut self.other);
+        self.update_attacks(magics);
+    }
 }
 
 // Initializes the BoardState for a new game.
@@ -356,6 +395,8 @@ struct PassantSq {
 }
 
 impl PassantSq {
+    // Creates a capture by en passant if the set of pawn attacks contains the square where the
+    // pawn is captured by en passant, otherwise returns None.
     fn by_enpassant(&self, from: Sq, attacks: BitBoard) -> Option<Piece<PieceMove>> {
         if attacks.has_bit(self.capture) {
             Some(Pawn(EnPassant {
@@ -365,6 +406,28 @@ impl PassantSq {
             }))
         } else {
             None
+        }
+    }
+
+    // Takes a pair in the form of (from, to) representing the source and destination squares for a
+    // pawn move, and the color of the player moving. If move represents a 2-square forward move,
+    // then it returns a PassantSq to represent the fact that capture by en-passant is possible.
+    // This may not actually be the case if there are no pawns in right square, but should not be
+    // an issue.
+    // TODO: need to check the locations of the other pawns to see en passant is possible.
+    fn try_passant(from: Sq, to: Sq, color: Color) -> Option<PassantSq> {
+        let (from_row, from_col) = from.rc();
+        let (to_row, _) = to.rc();
+        match (color, from_row, to_row) {
+            (Color::White, 1, 3) => Some(PassantSq {
+                actual: to,
+                capture: Sq::from_rc(2, from_col).unwrap(),
+            }),
+            (Color::Black, 6, 4) => Some(PassantSq {
+                actual: to,
+                capture: Sq::from_rc(5, from_col).unwrap(),
+            }),
+            _ => None,
         }
     }
 }

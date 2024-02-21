@@ -67,6 +67,33 @@ impl Board {
         self.state.prev_moves.push(piece_move);
     }
 
+    // Returns boards reprsenting all the valid positions that are reachable from
+    // the current position. If this is a terminal state, then it returns None.
+    pub fn next_boards(&self) -> Option<Vec<Board>> {
+        if self.is_terminal() {
+            return None;
+        }
+
+        Some(
+            self.all_moves()
+                .expect("Unable to compute any moves in a non-terminal state.")
+                .into_iter()
+                .map(|piece_move| {
+                    let mut board = self.clone();
+                    board.update(piece_move);
+                    board
+                })
+                .filter(|board| !board.state.is_other_in_check())
+                .collect(),
+        )
+    }
+
+    // Returns true if the current position represents a terminal state.
+    #[inline]
+    pub fn is_terminal(&self) -> bool {
+        self.state.game_state.is_terminal()
+    }
+
     // Returns true if the player moving next is in check.
     #[inline]
     pub fn is_check(&self) -> bool {

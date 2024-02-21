@@ -60,9 +60,11 @@ impl Board {
         self.state.game_state = GameState::Mate(self.state.color());
     }
 
-    // TODO: Updates some board state.
-    fn update(&mut self, _piece_move: Piece<PieceMove>) {
-        todo!();
+    // Updates the board state after a move is made.
+    fn update(&mut self, piece_move: Piece<PieceMove>) {
+        self.state.partial_update(piece_move, self.magics.as_ref());
+        self.update_game_state(piece_move.val());
+        self.state.prev_moves.push(piece_move);
     }
 
     // Returns true if the player moving next is in check.
@@ -274,6 +276,9 @@ struct BoardState {
 
     // If set, represents the square where capture by en-passant is possible.
     passant_sq: Option<PassantSq>,
+
+    // The previous moves leading up to the current board state.
+    prev_moves: Vec<Piece<PieceMove>>,
 }
 
 impl BoardState {
@@ -393,6 +398,7 @@ impl Default for BoardState {
             half_move: 0,
             full_move: 0,
             passant_sq: None,
+            prev_moves: Vec::new(),
         }
     }
 }
@@ -544,6 +550,7 @@ mod tests {
         assert_eq!(board.state.half_move, 0);
         assert_eq!(board.state.full_move, 0);
         assert_eq!(board.state.passant_sq, None);
+        assert!(board.state.prev_moves.is_empty());
     }
 
     #[test]

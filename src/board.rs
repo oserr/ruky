@@ -444,6 +444,21 @@ pub struct BoardBuilder {
     passant_sq: Option<PassantSq>,
 }
 
+// Converts ChessMagics into a BoardBuilder.
+impl From<Arc<ChessMagics>> for BoardBuilder {
+    fn from(magics: Arc<ChessMagics>) -> Self {
+        Self {
+            white_builder: *PsBuilder::new().set_color(Color::White),
+            black_builder: *PsBuilder::new().set_color(Color::Black),
+            magics,
+            color: Color::White,
+            half_move: 0,
+            full_move: 0,
+            passant_sq: None,
+        }
+    }
+}
+
 // Represents the current game state. Mate and Draw are final game state.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub enum GameState {

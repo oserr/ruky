@@ -444,6 +444,100 @@ pub struct BoardBuilder {
     passant_sq: Option<PassantSq>,
 }
 
+impl BoardBuilder {
+    ////////////////////////////
+    // Setters for white pieces.
+    ////////////////////////////
+
+    pub fn white_king(&mut self, sq: Sq) -> &mut Self {
+        self.white_builder.set_king(sq);
+        self
+    }
+
+    pub fn white_queen(&mut self, sq: Sq) -> &mut Self {
+        self.white_builder.add_queen(sq);
+        self
+    }
+
+    pub fn white_rook(&mut self, sq: Sq) -> &mut Self {
+        self.white_builder.add_rook(sq);
+        self
+    }
+
+    pub fn white_bishop(&mut self, sq: Sq) -> &mut Self {
+        self.white_builder.add_bishop(sq);
+        self
+    }
+
+    pub fn white_knight(&mut self, sq: Sq) -> &mut Self {
+        self.white_builder.add_knight(sq);
+        self
+    }
+
+    pub fn white_pawn(&mut self, sq: Sq) -> &mut Self {
+        self.white_builder.add_pawn(sq);
+        self
+    }
+
+    ////////////////////////////
+    // Setters for black pieces.
+    ////////////////////////////
+
+    pub fn black_king(&mut self, sq: Sq) -> &mut Self {
+        self.black_builder.set_king(sq);
+        self
+    }
+
+    pub fn black_queen(&mut self, sq: Sq) -> &mut Self {
+        self.black_builder.add_queen(sq);
+        self
+    }
+
+    pub fn black_rook(&mut self, sq: Sq) -> &mut Self {
+        self.black_builder.add_rook(sq);
+        self
+    }
+
+    pub fn black_bishop(&mut self, sq: Sq) -> &mut Self {
+        self.black_builder.add_bishop(sq);
+        self
+    }
+
+    pub fn black_knight(&mut self, sq: Sq) -> &mut Self {
+        self.black_builder.add_knight(sq);
+        self
+    }
+
+    pub fn black_pawn(&mut self, sq: Sq) -> &mut Self {
+        self.black_builder.add_pawn(sq);
+        self
+    }
+
+    ////////////////////////////
+    // Setters for shared state.
+    ////////////////////////////
+
+    pub fn set_color(&mut self, color: Color) -> &mut Self {
+        self.color = color;
+        self
+    }
+
+    pub fn set_half_move(&mut self, half_move: u16) -> &mut Self {
+        self.half_move = half_move;
+        self
+    }
+
+    pub fn set_full_move(&mut self, full_move: u16) -> &mut Self {
+        self.full_move = full_move;
+        self
+    }
+
+    pub fn set_passant(&mut self, target: Sq) -> &mut Self {
+        self.passant_sq = PassantSq::from_target(target);
+        self
+    }
+}
+
 // Converts ChessMagics into a BoardBuilder.
 impl From<Arc<ChessMagics>> for BoardBuilder {
     fn from(magics: Arc<ChessMagics>) -> Self {
@@ -527,6 +621,21 @@ impl PassantSq {
             }),
             _ => None,
         }
+    }
+
+    // Builds a PassantSq from the target square if the target square is a valid
+    // square, otherwise returns None.
+    fn from_target(target: Sq) -> Option<PassantSq> {
+        let (row, col) = target.rc();
+        let actual = match row {
+            2 => Sq::from_rc(3, col),
+            5 => Sq::from_rc(4, col),
+            _ => None,
+        };
+        actual.map(|a| PassantSq {
+            actual: a,
+            capture: target,
+        })
     }
 }
 

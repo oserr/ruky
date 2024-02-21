@@ -2,7 +2,7 @@ use crate::bitboard::{BitBoard, RANK_3, RANK_6};
 use crate::magics::ChessMagics;
 use crate::piece::{Color, Piece, Piece::*};
 use crate::piece_move::{PieceMove, PieceMove::*};
-use crate::piece_set::{AttackSquares, PieceSet};
+use crate::piece_set::{AttackSquares, PieceSet, PsBuilder};
 use crate::sq::Sq;
 use std::sync::Arc;
 
@@ -428,6 +428,20 @@ impl Default for BoardState {
             prev_moves: Vec::new(),
         }
     }
+}
+
+// A helper class to build chess boards.
+#[derive(Clone, Debug, Eq, Hash, PartialEq)]
+pub struct BoardBuilder {
+    // A piece set builder for white pieces.
+    white_builder: PsBuilder,
+    // A piece set builder for black pieces.
+    black_builder: PsBuilder,
+    magics: Arc<ChessMagics>,
+    color: Color,
+    half_move: u16,
+    full_move: u16,
+    passant_sq: Option<PassantSq>,
 }
 
 // Represents the current game state. Mate and Draw are final game state.

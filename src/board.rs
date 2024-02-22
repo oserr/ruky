@@ -2,7 +2,7 @@ use crate::bitboard::{BitBoard, RANK_3, RANK_6};
 use crate::magics::ChessMagics;
 use crate::piece::{Color, Piece, Piece::*};
 use crate::piece_move::{PieceMove, PieceMove::*};
-use crate::piece_set::{AttackSquares, PieceSet, PsBuilder};
+use crate::piece_set::{AttackSquares, PieceSet, PiecesErr, PsBuilder};
 use crate::sq::Sq;
 use std::sync::Arc;
 
@@ -20,8 +20,8 @@ pub struct Board {
 
 impl Board {
     // Updates the game state.
-    fn update_game_state(&mut self, piece_move: PieceMove) {
-        if piece_move.is_king_capture() {
+    fn update_game_state(&mut self, piece_move: Option<PieceMove>) {
+        if piece_move.is_some() && piece_move.unwrap().is_king_capture() {
             self.state.game_state = GameState::Mate(self.state.color());
             return;
         }
@@ -63,7 +63,7 @@ impl Board {
     // Updates the board state after a move is made.
     fn update(&mut self, piece_move: Piece<PieceMove>) {
         self.state.partial_update(piece_move, self.magics.as_ref());
-        self.update_game_state(piece_move.val());
+        self.update_game_state(Some(piece_move.val()));
         self.state.prev_moves.push(piece_move);
     }
 
@@ -555,6 +555,42 @@ impl BoardBuilder {
     pub fn set_passant(&mut self, target: Sq) -> &mut Self {
         self.passant_sq = PassantSq::from_target(target);
         self
+    }
+
+    pub fn build(self) -> Result<Board, PiecesErr> {
+        let (mine, other) = if self.color.is_white() {
+            (
+                Box::new(self.white_builder.build()?),
+                Box::new(self.black_builder.build()?),
+            )
+        } else {
+            (
+                Box::new(self.black_builder.build()?),
+                Box::new(self.white_builder.build()?),
+            )
+        };
+
+        let my_attacks = mine.attacks(&other, self.magics.as_ref());
+        let other_attacks = other.attacks(&mine, self.magics.as_ref());
+
+        let mut board = Board {
+            state: Box::new(BoardState {
+                mine,
+                other,
+                my_attacks,
+                other_attacks,
+                game_state: GameState::Next(self.color),
+                half_move: self.half_move,
+                full_move: self.full_move,
+                passant_sq: self.passant_sq,
+                prev_moves: Vec::new(),
+            }),
+            magics: self.magics,
+        };
+
+        board.update_game_state(None);
+
+        Ok(board)
     }
 }
 

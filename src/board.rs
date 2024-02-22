@@ -479,6 +479,16 @@ impl BoardBuilder {
         self
     }
 
+    pub fn white_king_castle(&mut self, can_castle: bool) -> &mut Self {
+        self.white_builder.set_king_castle(can_castle);
+        self
+    }
+
+    pub fn white_queen_castle(&mut self, can_castle: bool) -> &mut Self {
+        self.white_builder.set_queen_castle(can_castle);
+        self
+    }
+
     ////////////////////////////
     // Setters for black pieces.
     ////////////////////////////
@@ -510,6 +520,16 @@ impl BoardBuilder {
 
     pub fn black_pawn(&mut self, sq: Sq) -> &mut Self {
         self.black_builder.add_pawn(sq);
+        self
+    }
+
+    pub fn black_king_castle(&mut self, can_castle: bool) -> &mut Self {
+        self.black_builder.set_king_castle(can_castle);
+        self
+    }
+
+    pub fn black_queen_castle(&mut self, can_castle: bool) -> &mut Self {
+        self.black_builder.set_queen_castle(can_castle);
         self
     }
 

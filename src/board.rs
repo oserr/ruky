@@ -357,12 +357,12 @@ impl BoardState {
 
         if my_count == 1 && other_count == 1 {
             return false;
+        } else if my_count == 2 && other_count == 1 {
+            return self.mine.bishops().count() != 1 && self.mine.knights().count() != 1;
+        } else if my_count == 1 && other_count == 2 {
+            return self.other.bishops().count() != 1 && self.other.knights().count() != 1;
         }
-
-        if my_count <= 2 && other_count <= 2 {
-            return !(self.mine.bishops().count() == 1 || self.mine.knights().count() == 1)
-                && !(self.other.bishops().count() == 1 || self.other.knights().count() == 1);
-        }
+        // TODO: king + bishop vs king + bishop is draw if bishops are same color.
 
         return true;
     }
@@ -909,7 +909,40 @@ mod tests {
 
         let board = board.unwrap();
         assert!(board.is_terminal());
-        assert_eq!(board.game_state(), GameState::Draw);
+        assert_eq!(board.game_state(), GameState::Mate(Color::Black));
         assert_eq!(board.next_boards(), None);
+    }
+
+    #[test]
+    fn not_enough_material() {
+        // Bishop + king vs king.
+        let mut builder = BoardBuilder::from(MAGICS.clone());
+
+        let board = builder
+            .set_color(Color::White)
+            .black_king(sq::A8)
+            .black_bishop(sq::A7)
+            .white_king(sq::C8)
+            .build();
+
+        assert!(board.is_ok());
+
+        let board = board.unwrap();
+        assert_eq!(board.game_state(), GameState::Draw);
+
+        // Knight + king vs king.
+        let mut builder = BoardBuilder::from(MAGICS.clone());
+
+        let board = builder
+            .set_color(Color::White)
+            .black_king(sq::A8)
+            .black_knight(sq::A7)
+            .white_king(sq::C8)
+            .build();
+
+        assert!(board.is_ok());
+
+        let board = board.unwrap();
+        assert_eq!(board.game_state(), GameState::Draw);
     }
 }

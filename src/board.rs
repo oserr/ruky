@@ -894,7 +894,7 @@ mod tests {
     }
 
     #[test]
-    fn draw_by_stalemate() {
+    fn checkmate() {
         let mut builder = BoardBuilder::from(MAGICS.clone());
 
         let board = builder

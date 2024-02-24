@@ -100,6 +100,12 @@ impl Board {
         self.state.is_mine_in_check()
     }
 
+    // Getter for the game state.
+    #[inline]
+    pub fn game_state(&self) -> GameState {
+        self.state.game_state
+    }
+
     // Computes all the moves, including moves that are not legal, e.g. putting
     // oneself in check. If there are no moves to be made, e.g. we're already in
     // a terminal state, then it return None.
@@ -557,7 +563,7 @@ impl BoardBuilder {
         self
     }
 
-    pub fn build(self) -> Result<Board, PiecesErr> {
+    pub fn build(&mut self) -> Result<Board, PiecesErr> {
         let (mine, other) = if self.color.is_white() {
             (
                 Box::new(self.white_builder.build()?),
@@ -585,7 +591,7 @@ impl BoardBuilder {
                 passant_sq: self.passant_sq,
                 prev_moves: Vec::new(),
             }),
-            magics: self.magics,
+            magics: self.magics.clone(),
         };
 
         board.update_game_state(None);
@@ -885,5 +891,24 @@ mod tests {
                 }),
             ])
         );
+    }
+
+    #[test]
+    fn draw_by_stalemate() {
+        let mut builder = BoardBuilder::from(MAGICS.clone());
+
+        let board = builder
+            .set_color(Color::Black)
+            .black_king(sq::A8)
+            .black_pawn(sq::A7)
+            .white_king(sq::C8)
+            .white_knight(sq::C7)
+            .build();
+
+        assert!(board.is_ok());
+
+        let board = board.unwrap();
+        assert!(board.is_terminal());
+        assert_eq!(board.game_state(), GameState::Draw);
     }
 }

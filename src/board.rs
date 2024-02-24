@@ -910,5 +910,6 @@ mod tests {
         let board = board.unwrap();
         assert!(board.is_terminal());
         assert_eq!(board.game_state(), GameState::Draw);
+        assert_eq!(board.next_boards(), None);
     }
 }

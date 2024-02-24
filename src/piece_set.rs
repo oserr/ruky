@@ -535,7 +535,7 @@ impl PsBuilder {
 
     // Sets the bishop on the board.
     pub fn add_pawn(&mut self, sq: Sq) -> &mut Self {
-        self.pieces.knight.set_bit(sq);
+        self.pieces.pawn.set_bit(sq);
         self
     }
 

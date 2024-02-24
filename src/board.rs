@@ -358,9 +358,9 @@ impl BoardState {
         if my_count == 1 && other_count == 1 {
             return false;
         } else if my_count == 2 && other_count == 1 {
-            return self.mine.bishops().count() != 1 && self.mine.knights().count() != 1;
+            return self.mine.bishops().count() == 0 && self.mine.knights().count() == 0;
         } else if my_count == 1 && other_count == 2 {
-            return self.other.bishops().count() != 1 && self.other.knights().count() != 1;
+            return self.other.bishops().count() == 0 && self.other.knights().count() == 0;
         }
         // TODO: king + bishop vs king + bishop is draw if bishops are same color.
 
@@ -930,6 +930,23 @@ mod tests {
         let board = board.unwrap();
         assert!(board.is_terminal());
         assert_eq!(board.game_state(), GameState::Mate(Color::Black));
+    }
+
+    #[test]
+    fn check1() {
+        let mut builder = BoardBuilder::from(MAGICS.clone());
+
+        let board = builder
+            .set_color(Color::Black)
+            .black_king(sq::E4)
+            .white_king(sq::D2)
+            .white_pawn(sq::D3)
+            .build();
+
+        assert!(board.is_ok());
+
+        let board = board.unwrap();
+        assert_eq!(board.game_state(), GameState::Check(Color::Black));
     }
 
     #[test]

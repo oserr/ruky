@@ -894,7 +894,7 @@ mod tests {
     }
 
     #[test]
-    fn checkmate() {
+    fn checkmate1() {
         let mut builder = BoardBuilder::from(MAGICS.clone());
 
         let board = builder
@@ -911,6 +911,25 @@ mod tests {
         assert!(board.is_terminal());
         assert_eq!(board.game_state(), GameState::Mate(Color::Black));
         assert_eq!(board.next_boards(), None);
+    }
+
+    #[test]
+    fn checkmate2() {
+        let mut builder = BoardBuilder::from(MAGICS.clone());
+
+        let board = builder
+            .set_color(Color::Black)
+            .black_king(sq::A8)
+            .black_bishop(sq::A7)
+            .white_king(sq::C7)
+            .white_bishop(sq::H1)
+            .build();
+
+        assert!(board.is_ok());
+
+        let board = board.unwrap();
+        assert!(board.is_terminal());
+        assert_eq!(board.game_state(), GameState::Mate(Color::Black));
     }
 
     #[test]

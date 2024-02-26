@@ -459,7 +459,7 @@ impl<'a> From<&'a PieceSet> for PieceIter<'a> {
     // The iterator always starts with the King.
     fn from(pieces: &'a PieceSet) -> PieceIter<'a> {
         PieceIter {
-            pieces: pieces,
+            pieces,
             current: Some(King(pieces.king)),
         }
     }

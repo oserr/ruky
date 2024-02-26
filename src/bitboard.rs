@@ -34,7 +34,7 @@ impl BitOr for BitBoard {
 impl BitOrAssign<Sq> for BitBoard {
     #[inline]
     fn bitor_assign(&mut self, rhs: Sq) {
-        self.set_bit(rhs.into());
+        self.set_bit(rhs);
     }
 }
 
@@ -298,8 +298,9 @@ impl BitBoard {
     }
 
     // Returns an iterator over the squares where the bits are set.
+    #[inline]
     pub fn to_vec<T: Unsigned + From<Sq>>(&self) -> Vec<T> {
-        self.clone().into()
+        (*self).into()
     }
 
     // Returns a BitBoard with with the bits set to represent the squares where a

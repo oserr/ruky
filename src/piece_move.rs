@@ -56,12 +56,10 @@ pub enum PieceMove {
 impl PieceMove {
     // Returns true if the PieceMove represents a capture.
     pub fn is_capture(&self) -> bool {
-        match *self {
-            PieceMove::Capture { .. }
-            | PieceMove::EnPassant { .. }
-            | PieceMove::PromoCap { .. } => true,
-            _ => false,
-        }
+        matches!(
+            *self,
+            PieceMove::Capture { .. } | PieceMove::EnPassant { .. } | PieceMove::PromoCap { .. }
+        )
     }
 
     // Returns true if the move represents a capture for a king.

@@ -7,7 +7,7 @@ use std::thread::spawn;
 fn main() {
     println!("Beginning to compute magics...");
 
-    let t = spawn(|| compute_bmagics());
+    let t = spawn(compute_bmagics);
     let r = compute_rmagics();
 
     let br = t.join();
@@ -28,7 +28,7 @@ fn process_magics(bmagics: &impl Magics, rmagics: &impl Magics) {
     print_info(rmagics, true);
 
     if let Some(fname) = env::args_os().nth(1) {
-        match File::create(&fname) {
+        match File::create(fname) {
             Err(_) => exit_with_err("Unable to open file for writing."),
             Ok(mut file) => {
                 fwrite(
@@ -47,17 +47,17 @@ fn process_magics(bmagics: &impl Magics, rmagics: &impl Magics) {
 }
 
 fn fwrite(ofile: &mut File, name: &str, magics: impl Iterator<Item = u64>) {
-    if let Err(_) = write!(ofile, "const {}: [u64: 64] = [\n", name) {
+    if writeln!(ofile, "const {}: [u64: 64] = [", name).is_err() {
         exit_with_err(format!("Unable to write magics for {}", name).as_ref());
     }
 
     for m in magics {
-        if let Err(_) = write!(ofile, "{:#x},\n", m) {
+        if writeln!(ofile, "{:#x}", m).is_err() {
             exit_with_err(format!("Unable to write magics for {}", name).as_ref());
         }
     }
 
-    if let Err(_) = write!(ofile, "];\n") {
+    if writeln!(ofile, "];").is_err() {
         exit_with_err(format!("Unable to write magics for {}", name).as_ref());
     }
 }

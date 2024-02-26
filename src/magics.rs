@@ -144,7 +144,7 @@ fn find_magic(
     let mask = mask_fn(sq);
     let num_bits = mask.count();
 
-    if num_bits < 5 || num_bits > 12 {
+    if !(5..=12).contains(&num_bits) {
         return Err(MagicErr::NumBits);
     }
 

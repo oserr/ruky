@@ -136,11 +136,11 @@ impl Board {
             .state
             .mine
             .castle(&self.state.other, self.state.other_attacks.all());
-        if king_castle.is_some() {
-            moves.push(king_castle.unwrap());
+        if let Some(mv) = king_castle {
+            moves.push(mv);
         }
-        if queen_castle.is_some() {
-            moves.push(queen_castle.unwrap());
+        if let Some(mv) = queen_castle {
+            moves.push(mv);
         }
     }
 
@@ -270,7 +270,7 @@ impl Board {
 // Converts ChessMagics into a Board.
 impl From<Arc<ChessMagics>> for Board {
     fn from(magics: Arc<ChessMagics>) -> Board {
-        let state = Box::new(BoardState::default());
+        let state = Box::<BoardState>::default();
         Board { state, magics }
     }
 }
@@ -364,7 +364,7 @@ impl BoardState {
         }
         // TODO: king + bishop vs king + bishop is draw if bishops are same color.
 
-        return true;
+        true
     }
 
     fn update_attacks(&mut self, magics: &ChessMagics) {
@@ -628,10 +628,7 @@ impl GameState {
     // Returns true if this GameState reprsesents a terminal game state, i.e. a draw
     // or check mate.
     pub fn is_terminal(&self) -> bool {
-        match *self {
-            GameState::Next(_) | GameState::Check(_) => false,
-            _ => true,
-        }
+        !matches!(*self, GameState::Next(_) | GameState::Check(_))
     }
 }
 

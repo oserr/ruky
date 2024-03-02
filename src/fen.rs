@@ -58,6 +58,9 @@ pub(crate) fn from_fen(fen: &str, mut builder: BoardBuilder) -> Result<Board, Fe
                 let half_move = field
                     .parse::<u16>()
                     .map_err(|_| FenErr::BadHalfMove(field.to_string()))?;
+                if half_move > 50 {
+                    return Err(FenErr::BadHalfMove(field.to_string()));
+                }
                 builder.set_half_move(half_move);
             }
             5 => {
@@ -401,6 +404,24 @@ mod tests {
                 BoardBuilder::from(MAGICS.clone())
             ),
             Err(FenErr::BadPassant("e9".into()))
+        );
+    }
+
+    #[test]
+    fn bad_half_move() {
+        assert_eq!(
+            from_fen(
+                "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - half 1",
+                BoardBuilder::from(MAGICS.clone())
+            ),
+            Err(FenErr::BadHalfMove("half".into()))
+        );
+        assert_eq!(
+            from_fen(
+                "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 55 1",
+                BoardBuilder::from(MAGICS.clone())
+            ),
+            Err(FenErr::BadHalfMove("55".into()))
         );
     }
 }

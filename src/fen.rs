@@ -81,7 +81,7 @@ pub(crate) fn from_fen(fen: &str, mut builder: BoardBuilder) -> Result<Board, Fe
 // pieces field.
 fn parse_pieces(field: &str, builder: &mut BoardBuilder) -> Result<(), FenErr> {
     // A counter for the current square.
-    let mut s = 0;
+    let mut s = 0u32;
 
     // Reverse the rows so we can start at 0.
     for row in field.split('/').rev() {
@@ -115,7 +115,7 @@ fn parse_pieces(field: &str, builder: &mut BoardBuilder) -> Result<(), FenErr> {
 
     // We should have 64 total squares when we are done processing the pieces.
     if s != 64 {
-        return Err(FenErr::NotEnoughSquares);
+        return Err(FenErr::BadSqCount(s));
     }
 
     Ok(())
@@ -191,8 +191,8 @@ pub enum FenErr {
     NotEnoughFields,
     #[error("too many fields")]
     TooManyFields,
-    #[error("not enough squares")]
-    NotEnoughSquares,
+    #[error("invalid square count {0}")]
+    BadSqCount(u32),
     #[error("piece {0} is not valid")]
     BadPiece(char),
     #[error("half move count {0} is not valid")]
@@ -311,6 +311,24 @@ mod tests {
                 BoardBuilder::from(MAGICS.clone())
             ),
             Err(FenErr::TooManyFields)
+        );
+    }
+
+    #[test]
+    fn bad_square_count() {
+        assert_eq!(
+            from_fen(
+                "r/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+                BoardBuilder::from(MAGICS.clone())
+            ),
+            Err(FenErr::BadSqCount(57))
+        );
+        assert_eq!(
+            from_fen(
+                "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/NBQKBNR w KQkq - 0 1",
+                BoardBuilder::from(MAGICS.clone())
+            ),
+            Err(FenErr::BadSqCount(63))
         );
     }
 }

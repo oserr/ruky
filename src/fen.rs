@@ -11,6 +11,8 @@ pub enum FenErr {
     BadFullMove(String),
     BadSetup,
     BadColor(String),
+    BadCastling,
+    BadCastlingToken(char),
 }
 
 const NUM_FIELDS: usize = 6;
@@ -93,8 +95,26 @@ fn parse_pieces(field: &str, builder: &mut BoardBuilder) -> Result<(), FenErr> {
     Ok(())
 }
 
-fn parse_castling(_field: &str, _builder: &mut BoardBuilder) -> Result<(), FenErr> {
-    todo!();
+fn parse_castling(field: &str, builder: &mut BoardBuilder) -> Result<(), FenErr> {
+    if field == "-" {
+        return Ok(());
+    }
+
+    if field.chars().count() > 4 {
+        return Err(FenErr::BadCastling);
+    }
+
+    for letter in field.chars() {
+        match letter {
+            'K' => builder.white_king_castle(true),
+            'Q' => builder.white_queen_castle(true),
+            'k' => builder.black_king_castle(true),
+            'q' => builder.black_queen_castle(true),
+            _ => return Err(FenErr::BadCastlingToken(letter)),
+        };
+    }
+
+    Ok(())
 }
 
 fn parse_passant(_field: &str, _builder: &mut BoardBuilder) -> Result<(), FenErr> {

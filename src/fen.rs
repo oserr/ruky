@@ -360,4 +360,22 @@ mod tests {
             Err(FenErr::BadColor("wb".into()))
         );
     }
+
+    #[test]
+    fn bad_castling() {
+        assert_eq!(
+            from_fen(
+                "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkqKQ - 0 1",
+                BoardBuilder::from(MAGICS.clone())
+            ),
+            Err(FenErr::BadCastling("KQkqKQ".into()))
+        );
+        assert_eq!(
+            from_fen(
+                "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w zQkq - 0 1",
+                BoardBuilder::from(MAGICS.clone())
+            ),
+            Err(FenErr::BadCastlingToken('z'))
+        );
+    }
 }

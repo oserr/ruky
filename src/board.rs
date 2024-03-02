@@ -8,7 +8,7 @@ use std::sync::Arc;
 
 // Represents a chess board, and encodes the rules for moving pieces and
 // determining the current game state, e.g. whether the game is drawn.
-#[derive(Clone, Debug, Eq, Hash, PartialEq)]
+#[derive(Clone, Debug, Hash)]
 pub struct Board {
     // The board state. We use a Box for it because this makes it much cheaper to move a board.
     state: Box<BoardState>,
@@ -275,6 +275,15 @@ impl From<Arc<ChessMagics>> for Board {
     }
 }
 
+// When comparing boards, we don't care about the magics.
+impl PartialEq for Board {
+    fn eq(&self, other: &Self) -> bool {
+        self.state == other.state
+    }
+}
+
+impl Eq for Board {}
+
 // BoardState holds all the state needed needed to a play a game of regular
 // chess, including the position of the pieces, position of squares that are
 // attacked, the current game state, the number of half moves, the number of
@@ -429,7 +438,7 @@ impl Default for BoardState {
             },
             game_state: GameState::Next(Color::White),
             half_move: 0,
-            full_move: 0,
+            full_move: 1,
             passant_sq: None,
             prev_moves: Vec::new(),
         }
@@ -609,7 +618,7 @@ impl From<Arc<ChessMagics>> for BoardBuilder {
             magics,
             color: Color::White,
             half_move: 0,
-            full_move: 0,
+            full_move: 1,
             passant_sq: None,
         }
     }
@@ -772,7 +781,7 @@ mod tests {
         assert_eq!(*board.state.other, PieceSet::init_black());
         assert_eq!(board.state.game_state, GameState::Next(Color::White));
         assert_eq!(board.state.half_move, 0);
-        assert_eq!(board.state.full_move, 0);
+        assert_eq!(board.state.full_move, 1);
         assert_eq!(board.state.passant_sq, None);
         assert!(board.state.prev_moves.is_empty());
     }

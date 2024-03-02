@@ -445,4 +445,15 @@ mod tests {
             Err(FenErr::BadFullMove("111111111111".into()))
         );
     }
+
+    #[test]
+    fn init_position() {
+        assert_eq!(
+            from_fen(
+                "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+                BoardBuilder::from(MAGICS.clone())
+            ),
+            Ok(Board::from(MAGICS.clone()))
+        );
+    }
 }

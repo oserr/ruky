@@ -1,3 +1,4 @@
+use crate::board::Board;
 use crate::magics::ChessMagics;
 use std::sync::Arc;
 
@@ -13,5 +14,10 @@ impl Ruky {
                 ChessMagics::from_precomputed().expect("Unable to create precomputed ChessMagics."),
             ),
         }
+    }
+
+    #[inline]
+    pub fn new_board(&self) -> Board {
+        Board::from(self.magics.clone())
     }
 }

@@ -1,3 +1,24 @@
+// This module contains code to parse FEN strings, i.e. strings in
+// Forsyth-Edwards Notation, which is used to encode the state of a chess
+// position in a one-line ascii string. A fen string consists of 6 fields
+// separated by a whitespace:
+// - the piece placment
+// - the side to move
+// - castling rights
+// - en passant target square
+// - the half move clock
+// - the full move counter
+//
+// For example:
+// - [rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1] describes the
+//   starting position.
+// - [rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1] after 1. e4.
+// - [rnbqkbnr/pp1ppppp/8/2p5/4P3/8/PPPP1PPP/RNBQKBNR w KQkq c6 0 2] after 1. e4
+//   c5.
+// - [rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2] after 1.
+//   e4 c5 2. Nf3.
+//
+// For more background, see https://www.chessprogramming.org/Forsyth-Edwards_Notation.
 use crate::board::{Board, BoardBuilder};
 use crate::piece::Color;
 use crate::piece_set::PiecesErr;
@@ -5,6 +26,12 @@ use crate::sq::Sq;
 
 const NUM_FIELDS: usize = 6;
 
+// from_fen constructs a Board from a fen string.
+//
+// @param fen The fen string.
+// @param builder A board builder for building the board.
+// @return a Result with a Board or a FenErr if there is an error either parsing
+// the string or building the board.
 pub(crate) fn from_fen(fen: &str, mut builder: BoardBuilder) -> Result<Board, FenErr> {
     let split_iter = fen.trim().split(' ');
     let (num_fields, _) = split_iter.size_hint();
@@ -37,7 +64,7 @@ pub(crate) fn from_fen(fen: &str, mut builder: BoardBuilder) -> Result<Board, Fe
                 let full_move = field
                     .parse::<u16>()
                     .map_err(|_| FenErr::BadFullMove(field.to_string()))?;
-                builder.set_full_move(full_move);
+                builder.set_full_move(std::cmp::max(full_move, 1));
             }
             _ => panic!("Should never get here."),
         };
@@ -46,10 +73,20 @@ pub(crate) fn from_fen(fen: &str, mut builder: BoardBuilder) -> Result<Board, Fe
     builder.build().map_err(From::<PiecesErr>::from)
 }
 
+// parse_pieces parses the pieces field in a FEN string.
+//
+// @param field The field containing the pieces.
+// @param builder A board builder to set the pieces.
+// @return a Result with a unit or a FenErr if there is an error parsing the
+// pieces field.
 fn parse_pieces(field: &str, builder: &mut BoardBuilder) -> Result<(), FenErr> {
+    // A counter for the current square.
     let mut s = 0;
+
+    // Reverse the rows so we can start at 0.
     for row in field.split('/').rev() {
         for letter in row.chars() {
+            // Numbers indicate empty squares.
             if ('1'..='8').contains(&letter) {
                 s += letter.to_digit(10).unwrap();
                 continue;
@@ -76,6 +113,7 @@ fn parse_pieces(field: &str, builder: &mut BoardBuilder) -> Result<(), FenErr> {
         }
     }
 
+    // We should have 64 total squares when we are done processing the pieces.
     if s != 64 {
         return Err(FenErr::NotEnoughSquares);
     }
@@ -83,6 +121,12 @@ fn parse_pieces(field: &str, builder: &mut BoardBuilder) -> Result<(), FenErr> {
     Ok(())
 }
 
+// parse_castling parses the castling rights field in a FEN string.
+//
+// @param field The field containing the castling rights.
+// @param builder A board builder to set the castling rights.
+// @return a Result with a unit or a FenErr if there is an error parsing the
+// pieces field.
 fn parse_castling(field: &str, builder: &mut BoardBuilder) -> Result<(), FenErr> {
     if field == "-" {
         return Ok(());
@@ -105,6 +149,12 @@ fn parse_castling(field: &str, builder: &mut BoardBuilder) -> Result<(), FenErr>
     Ok(())
 }
 
+// parse_passant parses the en-passant field in a FEN string.
+//
+// @param field The field containing the en-passant target square.
+// @param builder A board builder to set the en-passant.
+// @return a Result with a unit or a FenErr if there is an error parsing the
+// pieces field.
 fn parse_passant(field: &str, builder: &mut BoardBuilder) -> Result<(), FenErr> {
     match field.chars().count() {
         1 => {
@@ -136,6 +186,7 @@ fn parse_passant(field: &str, builder: &mut BoardBuilder) -> Result<(), FenErr> 
 
 #[derive(thiserror::Error, Clone, Debug, PartialEq)]
 pub enum FenErr {
+    // These represent format errors in the FEN string.
     #[error("not enough fields")]
     NotEnoughFields,
     #[error("too many fields")]
@@ -157,7 +208,7 @@ pub enum FenErr {
     #[error("en-passant square {0} is not valid")]
     BadPassant(String),
 
-    // From PiecesErr
+    // These represent logical errors in Board position, and map one-to-one to PiecesErr.
     #[error("pieces need a king")]
     NoKing,
     #[error("too many queens")]

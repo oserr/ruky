@@ -1,4 +1,5 @@
 use crate::board::{Board, BoardBuilder};
+use crate::piece::Color;
 use crate::sq::Sq;
 
 pub enum FenErr {
@@ -9,6 +10,7 @@ pub enum FenErr {
     BadHalfMove(String),
     BadFullMove(String),
     BadSetup,
+    BadColor(String),
 }
 
 const NUM_FIELDS: usize = 6;
@@ -26,7 +28,13 @@ pub(crate) fn from_fen(fen: &str, mut builder: BoardBuilder) -> Result<Board, Fe
     for (i, field) in split_iter.enumerate() {
         match i {
             0 => parse_pieces(field, &mut builder)?,
-            1 => parse_color(field, &mut builder)?,
+            1 => {
+                match field {
+                    "w" => builder.set_color(Color::White),
+                    "b" => builder.set_color(Color::Black),
+                    _ => return Err(FenErr::BadColor(field.to_string())),
+                };
+            }
             2 => parse_castling(field, &mut builder)?,
             3 => parse_passant(field, &mut builder)?,
             4 => {
@@ -83,10 +91,6 @@ fn parse_pieces(field: &str, builder: &mut BoardBuilder) -> Result<(), FenErr> {
     }
 
     Ok(())
-}
-
-fn parse_color(_field: &str, _builder: &mut BoardBuilder) -> Result<(), FenErr> {
-    todo!();
 }
 
 fn parse_castling(_field: &str, _builder: &mut BoardBuilder) -> Result<(), FenErr> {

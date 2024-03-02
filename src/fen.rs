@@ -400,7 +400,7 @@ mod tests {
                 "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq e9 0 1",
                 BoardBuilder::from(MAGICS.clone())
             ),
-            Err(FenErr::BadPassant("e3".into()))
+            Err(FenErr::BadPassant("e9".into()))
         );
     }
 }

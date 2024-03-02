@@ -43,7 +43,7 @@ pub(crate) fn from_fen(fen: &str, mut builder: BoardBuilder) -> Result<Board, Fe
         };
     }
 
-    Ok(builder.build()?)
+    builder.build().map_err(From::<PiecesErr>::from)
 }
 
 fn parse_pieces(field: &str, builder: &mut BoardBuilder) -> Result<(), FenErr> {

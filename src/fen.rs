@@ -34,7 +34,7 @@ const NUM_FIELDS: usize = 6;
 // the string or building the board.
 pub(crate) fn from_fen(fen: &str, mut builder: BoardBuilder) -> Result<Board, FenErr> {
     let split_iter = fen.trim().split(' ');
-    let (num_fields, _) = split_iter.size_hint();
+    let num_fields = split_iter.clone().count();
 
     if num_fields < NUM_FIELDS {
         return Err(FenErr::NotEnoughFields);
@@ -255,7 +255,6 @@ mod tests {
 
     #[test]
     fn not_enough_fields() {
-        // "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
         assert_eq!(
             from_fen("", BoardBuilder::from(MAGICS.clone())),
             Err(FenErr::NotEnoughFields)
@@ -294,6 +293,24 @@ mod tests {
                 BoardBuilder::from(MAGICS.clone())
             ),
             Err(FenErr::NotEnoughFields)
+        );
+    }
+
+    #[test]
+    fn too_many_fields() {
+        assert_eq!(
+            from_fen(
+                "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 x",
+                BoardBuilder::from(MAGICS.clone())
+            ),
+            Err(FenErr::TooManyFields)
+        );
+        assert_eq!(
+            from_fen(
+                "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1 x y",
+                BoardBuilder::from(MAGICS.clone())
+            ),
+            Err(FenErr::TooManyFields)
         );
     }
 }

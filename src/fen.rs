@@ -378,4 +378,29 @@ mod tests {
             Err(FenErr::BadCastlingToken('z'))
         );
     }
+
+    #[test]
+    fn bad_passant() {
+        assert_eq!(
+            from_fen(
+                "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq e33 0 1",
+                BoardBuilder::from(MAGICS.clone())
+            ),
+            Err(FenErr::BadPassant("e33".into()))
+        );
+        assert_eq!(
+            from_fen(
+                "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq x3 0 1",
+                BoardBuilder::from(MAGICS.clone())
+            ),
+            Err(FenErr::BadPassant("x3".into()))
+        );
+        assert_eq!(
+            from_fen(
+                "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq e9 0 1",
+                BoardBuilder::from(MAGICS.clone())
+            ),
+            Err(FenErr::BadPassant("e3".into()))
+        );
+    }
 }

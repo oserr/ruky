@@ -331,4 +331,15 @@ mod tests {
             Err(FenErr::BadSqCount(63))
         );
     }
+
+    #[test]
+    fn bad_piece() {
+        assert_eq!(
+            from_fen(
+                "Y7/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+                BoardBuilder::from(MAGICS.clone())
+            ),
+            Err(FenErr::BadPiece('Y'))
+        );
+    }
 }

@@ -1,4 +1,4 @@
-use crate::board::Board;
+use crate::board::{Board, BoardBuilder};
 use crate::magics::ChessMagics;
 use std::sync::Arc;
 
@@ -19,5 +19,10 @@ impl Ruky {
     #[inline]
     pub fn new_board(&self) -> Board {
         Board::from(self.magics.clone())
+    }
+
+    #[inline]
+    pub fn board_builder(&self) -> BoardBuilder {
+        BoardBuilder::from(self.magics.clone())
     }
 }

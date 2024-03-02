@@ -424,4 +424,25 @@ mod tests {
             Err(FenErr::BadHalfMove("55".into()))
         );
     }
+
+    #[test]
+    fn bad_full_move() {
+        assert_eq!(
+            from_fen(
+                "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 full",
+                BoardBuilder::from(MAGICS.clone())
+            ),
+            Err(FenErr::BadFullMove("full".into()))
+        );
+
+        // Technially, a chess game can go on forever with infinite moves, but we assume
+        // that no game lasts more than u16::MAX moves.
+        assert_eq!(
+            from_fen(
+                "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 111111111111",
+                BoardBuilder::from(MAGICS.clone())
+            ),
+            Err(FenErr::BadFullMove("111111111111".into()))
+        );
+    }
 }

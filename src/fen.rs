@@ -11,7 +11,7 @@ pub enum FenErr {
     BadFullMove(String),
     BadSetup,
     BadColor(String),
-    BadCastling,
+    BadCastling(String),
     BadCastlingToken(char),
 }
 
@@ -100,8 +100,8 @@ fn parse_castling(field: &str, builder: &mut BoardBuilder) -> Result<(), FenErr>
         return Ok(());
     }
 
-    if field.chars().count() > 4 {
-        return Err(FenErr::BadCastling);
+    if field.len() > 4 {
+        return Err(FenErr::BadCastling(field.to_string()));
     }
 
     for letter in field.chars() {

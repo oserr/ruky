@@ -63,7 +63,7 @@ fn parse_pieces(field: &str, builder: &mut BoardBuilder) -> Result<(), FenErr> {
     let mut s = 0;
     for row in field.split('/').rev() {
         for letter in row.chars() {
-            if ('1'..'8').contains(&letter) {
+            if ('1'..='8').contains(&letter) {
                 s += letter.to_digit(10).unwrap();
                 continue;
             }

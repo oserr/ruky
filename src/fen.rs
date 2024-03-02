@@ -3,61 +3,6 @@ use crate::piece::Color;
 use crate::piece_set::PiecesErr;
 use crate::sq::Sq;
 
-#[derive(thiserror::Error, Clone, Debug, PartialEq)]
-pub enum FenErr {
-    #[error("not enough fields")]
-    NotEnoughFields,
-    #[error("too many fields")]
-    TooManyFields,
-    #[error("not enough squares")]
-    NotEnoughSquares,
-    #[error("piece {0} is not valid")]
-    BadPiece(char),
-    #[error("half move count {0} is not valid")]
-    BadHalfMove(String),
-    #[error("full move count {0} is not valid")]
-    BadFullMove(String),
-    #[error("color {0} is not valid")]
-    BadColor(String),
-    #[error("castling {0} is not valid")]
-    BadCastling(String),
-    #[error("castling token {0} is not valid")]
-    BadCastlingToken(char),
-    #[error("en-passant square {0} is not valid")]
-    BadPassant(String),
-
-    // From PiecesErr
-    #[error("pieces need a king")]
-    NoKing,
-    #[error("too many queens")]
-    TooManyQueens,
-    #[error("too many rooks")]
-    TooManyRooks,
-    #[error("too many bishops")]
-    TooManyBishops,
-    #[error("too many knights")]
-    TooManyKnights,
-    #[error("too many pawns")]
-    TooManyPawns,
-    #[error("invalid castling rights")]
-    BadCastle,
-}
-
-// Conversion from PiecesErr to FenErr.
-impl From<PiecesErr> for FenErr {
-    fn from(err: PiecesErr) -> FenErr {
-        match err {
-            PiecesErr::NoKing => FenErr::NoKing,
-            PiecesErr::TooManyQueens => FenErr::TooManyQueens,
-            PiecesErr::TooManyRooks => FenErr::TooManyRooks,
-            PiecesErr::TooManyBishops => FenErr::TooManyBishops,
-            PiecesErr::TooManyKnights => FenErr::TooManyKnights,
-            PiecesErr::TooManyPawns => FenErr::TooManyPawns,
-            PiecesErr::BadCastle => FenErr::BadCastle,
-        }
-    }
-}
-
 const NUM_FIELDS: usize = 6;
 
 pub(crate) fn from_fen(fen: &str, mut builder: BoardBuilder) -> Result<Board, FenErr> {
@@ -186,5 +131,60 @@ fn parse_passant(field: &str, builder: &mut BoardBuilder) -> Result<(), FenErr> 
             Ok(())
         }
         _ => Err(FenErr::BadPassant(field.to_string())),
+    }
+}
+
+#[derive(thiserror::Error, Clone, Debug, PartialEq)]
+pub enum FenErr {
+    #[error("not enough fields")]
+    NotEnoughFields,
+    #[error("too many fields")]
+    TooManyFields,
+    #[error("not enough squares")]
+    NotEnoughSquares,
+    #[error("piece {0} is not valid")]
+    BadPiece(char),
+    #[error("half move count {0} is not valid")]
+    BadHalfMove(String),
+    #[error("full move count {0} is not valid")]
+    BadFullMove(String),
+    #[error("color {0} is not valid")]
+    BadColor(String),
+    #[error("castling {0} is not valid")]
+    BadCastling(String),
+    #[error("castling token {0} is not valid")]
+    BadCastlingToken(char),
+    #[error("en-passant square {0} is not valid")]
+    BadPassant(String),
+
+    // From PiecesErr
+    #[error("pieces need a king")]
+    NoKing,
+    #[error("too many queens")]
+    TooManyQueens,
+    #[error("too many rooks")]
+    TooManyRooks,
+    #[error("too many bishops")]
+    TooManyBishops,
+    #[error("too many knights")]
+    TooManyKnights,
+    #[error("too many pawns")]
+    TooManyPawns,
+    #[error("invalid castling rights")]
+    BadCastle,
+}
+
+// Conversion from PiecesErr to FenErr.
+impl From<PiecesErr> for FenErr {
+    fn from(err: PiecesErr) -> FenErr {
+        match err {
+            PiecesErr::NoKing => FenErr::NoKing,
+            PiecesErr::TooManyQueens => FenErr::TooManyQueens,
+            PiecesErr::TooManyRooks => FenErr::TooManyRooks,
+            PiecesErr::TooManyBishops => FenErr::TooManyBishops,
+            PiecesErr::TooManyKnights => FenErr::TooManyKnights,
+            PiecesErr::TooManyPawns => FenErr::TooManyPawns,
+            PiecesErr::BadCastle => FenErr::BadCastle,
+        }
     }
 }

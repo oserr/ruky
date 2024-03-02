@@ -239,3 +239,61 @@ impl From<PiecesErr> for FenErr {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::magics::ChessMagics;
+    use lazy_static::lazy_static;
+    use std::sync::Arc;
+
+    lazy_static! {
+        static ref MAGICS: Arc<ChessMagics> = Arc::new(
+            ChessMagics::from_precomputed().expect("Unable to compute magics for unit test.")
+        );
+    }
+
+    #[test]
+    fn not_enough_fields() {
+        // "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+        assert_eq!(
+            from_fen("", BoardBuilder::from(MAGICS.clone())),
+            Err(FenErr::NotEnoughFields)
+        );
+        assert_eq!(
+            from_fen(
+                "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR",
+                BoardBuilder::from(MAGICS.clone())
+            ),
+            Err(FenErr::NotEnoughFields)
+        );
+        assert_eq!(
+            from_fen(
+                "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w",
+                BoardBuilder::from(MAGICS.clone())
+            ),
+            Err(FenErr::NotEnoughFields)
+        );
+        assert_eq!(
+            from_fen(
+                "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq",
+                BoardBuilder::from(MAGICS.clone())
+            ),
+            Err(FenErr::NotEnoughFields)
+        );
+        assert_eq!(
+            from_fen(
+                "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -",
+                BoardBuilder::from(MAGICS.clone())
+            ),
+            Err(FenErr::NotEnoughFields)
+        );
+        assert_eq!(
+            from_fen(
+                "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0",
+                BoardBuilder::from(MAGICS.clone())
+            ),
+            Err(FenErr::NotEnoughFields)
+        );
+    }
+}

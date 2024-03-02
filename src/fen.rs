@@ -6,7 +6,7 @@ use crate::sq::Sq;
 const NUM_FIELDS: usize = 6;
 
 pub(crate) fn from_fen(fen: &str, mut builder: BoardBuilder) -> Result<Board, FenErr> {
-    let split_iter = fen.split(' ');
+    let split_iter = fen.trim().split(' ');
     let (num_fields, _) = split_iter.size_hint();
 
     if num_fields < NUM_FIELDS {

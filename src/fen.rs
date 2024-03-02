@@ -13,6 +13,7 @@ pub enum FenErr {
     BadColor(String),
     BadCastling(String),
     BadCastlingToken(char),
+    BadPassant(String),
 }
 
 const NUM_FIELDS: usize = 6;
@@ -117,6 +118,31 @@ fn parse_castling(field: &str, builder: &mut BoardBuilder) -> Result<(), FenErr>
     Ok(())
 }
 
-fn parse_passant(_field: &str, _builder: &mut BoardBuilder) -> Result<(), FenErr> {
-    todo!();
+fn parse_passant(field: &str, builder: &mut BoardBuilder) -> Result<(), FenErr> {
+    match field.chars().count() {
+        1 => {
+            if field != "-" {
+                return Err(FenErr::BadPassant(field.to_string()));
+            }
+            Ok(())
+        }
+        2 => {
+            let mut citer = field.chars();
+            let col_letter = citer.next().unwrap();
+            let row_letter = citer.next().unwrap();
+
+            if !('a'..='h').contains(&col_letter) || !('1'..='8').contains(&row_letter) {
+                return Err(FenErr::BadPassant(field.to_string()));
+            }
+
+            let col = col_letter as u8 - 'a' as u8;
+            let row = row_letter as u8 - '1' as u8;
+
+            let target = Sq::from_rc(row, col).unwrap();
+
+            builder.set_passant(target);
+            Ok(())
+        }
+        _ => Err(FenErr::BadPassant(field.to_string())),
+    }
 }

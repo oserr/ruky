@@ -342,4 +342,22 @@ mod tests {
             Err(FenErr::BadPiece('Y'))
         );
     }
+
+    #[test]
+    fn bad_color() {
+        assert_eq!(
+            from_fen(
+                "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR White KQkq - 0 1",
+                BoardBuilder::from(MAGICS.clone())
+            ),
+            Err(FenErr::BadColor("White".into()))
+        );
+        assert_eq!(
+            from_fen(
+                "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR wb KQkq - 0 1",
+                BoardBuilder::from(MAGICS.clone())
+            ),
+            Err(FenErr::BadColor("wb".into()))
+        );
+    }
 }

@@ -8,7 +8,7 @@ use std::sync::Arc;
 
 // Represents a chess board, and encodes the rules for moving pieces and
 // determining the current game state, e.g. whether the game is drawn.
-#[derive(Clone, Debug, Hash)]
+#[derive(Clone, Debug)]
 pub struct Board {
     // The board state. We use a Box for it because this makes it much cheaper to move a board.
     state: Box<BoardState>,
@@ -283,6 +283,13 @@ impl PartialEq for Board {
 }
 
 impl Eq for Board {}
+
+// Only hash the BoardState, not the magics.
+impl std::hash::Hash for Board {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.state.hash(state);
+    }
+}
 
 // BoardState holds all the state needed needed to a play a game of regular
 // chess, including the position of the pieces, position of squares that are

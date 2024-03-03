@@ -1,4 +1,5 @@
 use crate::board::{Board, BoardBuilder};
+use crate::fen::{from_fen, FenErr};
 use crate::magics::ChessMagics;
 use std::sync::Arc;
 
@@ -24,5 +25,10 @@ impl Ruky {
     #[inline]
     pub fn board_builder(&self) -> BoardBuilder {
         BoardBuilder::from(self.magics.clone())
+    }
+
+    #[inline]
+    pub fn from_fen(&self, fen: &str) -> Result<Board, FenErr> {
+        from_fen(fen, BoardBuilder::from(self.magics.clone()))
     }
 }

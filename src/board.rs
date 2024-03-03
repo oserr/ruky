@@ -187,7 +187,7 @@ impl Board {
         self.state.prev_moves.push(piece_move);
     }
 
-    // Returns boards reprsenting all the valid positions that are reachable from
+    // Returns boards representing all the valid positions that are reachable from
     // the current position. If this is a terminal state, then it returns None.
     pub fn next_boards(&self) -> Option<Vec<Board>> {
         if self.is_terminal() {
@@ -204,6 +204,26 @@ impl Board {
                     board
                 })
                 .filter(|board| !board.state.is_other_in_check())
+                .collect(),
+        )
+    }
+
+    // Returns the legal moves from the current position. If the board is in a
+    // terminal state, then it returns None.
+    pub fn next_moves(&self) -> Option<Vec<Piece<PieceMove>>> {
+        if self.is_terminal() {
+            return None;
+        }
+
+        Some(
+            self.all_moves()
+                .expect("Unable to compute any moves in a non-terminal state.")
+                .into_iter()
+                .filter(|piece_move| {
+                    let mut board = self.clone();
+                    board.update(*piece_move);
+                    !board.state.is_other_in_check()
+                })
                 .collect(),
         )
     }

@@ -431,6 +431,18 @@ impl PieceSet {
     pub fn iter(&self) -> PieceIter {
         PieceIter::from(self)
     }
+
+    // Returns true if the pieces have castling rights on the king side.
+    #[inline]
+    pub fn has_king_castle(&self) -> bool {
+        self.king_castle
+    }
+
+    // Returns true if the pieces have castling rights on the queen side.
+    #[inline]
+    pub fn has_queen_castle(&self) -> bool {
+        self.queen_castle
+    }
 }
 
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]

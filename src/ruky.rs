@@ -1,6 +1,8 @@
 use crate::board::{Board, BoardBuilder};
 use crate::fen::{from_fen, FenErr};
 use crate::magics::ChessMagics;
+use crate::piece::Piece;
+use crate::piece_move::PieceMove;
 use std::sync::Arc;
 
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
@@ -30,5 +32,10 @@ impl Ruky {
     #[inline]
     pub fn from_fen(&self, fen: &str) -> Result<Board, FenErr> {
         from_fen(fen, BoardBuilder::from(self.magics.clone()))
+    }
+
+    #[inline]
+    pub fn moves_from_fen(&self, fen: &str) -> Result<Option<Vec<Piece<PieceMove>>>, FenErr> {
+        self.from_fen(fen).map(|board| board.next_moves())
     }
 }

@@ -84,6 +84,26 @@ impl Board {
     }
 
     #[inline]
+    pub fn has_wk_castle(&self) -> bool {
+        self.white().has_king_castle()
+    }
+
+    #[inline]
+    pub fn has_wq_castle(&self) -> bool {
+        self.white().has_queen_castle()
+    }
+
+    #[inline]
+    pub fn has_bk_castle(&self) -> bool {
+        self.black().has_king_castle()
+    }
+
+    #[inline]
+    pub fn has_bq_castle(&self) -> bool {
+        self.black().has_queen_castle()
+    }
+
+    #[inline]
     fn white(&self) -> &PieceSet {
         match self.color() {
             Color::White => &self.state.mine,

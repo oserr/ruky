@@ -246,7 +246,9 @@ impl From<PiecesErr> for FenErr {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::bitboard::BitBoard;
     use crate::magics::ChessMagics;
+    use crate::sq;
     use lazy_static::lazy_static;
     use std::sync::Arc;
 
@@ -455,5 +457,40 @@ mod tests {
             ),
             Ok(Board::from(MAGICS.clone()))
         );
+    }
+
+    #[test]
+    fn pawns_and_kings_fen() {
+        let board = from_fen(
+            "8/5k2/3p4/1p1Pp2p/pP2Pp1P/P4P1K/8/8 b - - 40 50",
+            BoardBuilder::from(MAGICS.clone()),
+        )
+        .unwrap();
+
+        let zero = BitBoard::new();
+
+        assert!(board.color().is_black());
+        assert_eq!(board.half_moves(), 40);
+        assert_eq!(board.full_moves(), 50);
+
+        assert_eq!(
+            board.white_pawns(),
+            BitBoard::from(&[sq::A3, sq::F3, sq::B4, sq::E4, sq::H4, sq::D5])
+        );
+        assert_eq!(board.white_king(), BitBoard::from(sq::H3));
+        assert_eq!(board.white_queens(), zero);
+        assert_eq!(board.white_rooks(), zero);
+        assert_eq!(board.white_bishops(), zero);
+        assert_eq!(board.white_knights(), zero);
+
+        assert_eq!(
+            board.black_pawns(),
+            BitBoard::from(&[sq::A4, sq::F4, sq::B5, sq::E5, sq::H5, sq::D6])
+        );
+        assert_eq!(board.black_king(), BitBoard::from(&[sq::F7]));
+        assert_eq!(board.black_queens(), zero);
+        assert_eq!(board.black_rooks(), zero);
+        assert_eq!(board.black_bishops(), zero);
+        assert_eq!(board.black_knights(), zero);
     }
 }

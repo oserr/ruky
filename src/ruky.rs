@@ -772,4 +772,59 @@ mod tests {
         let actual = HashSet::from_iter(moves);
         assert_eq!(actual, expected_moves);
     }
+
+    #[test]
+    fn moves_from_fen7() {
+        let moves = RUKY
+            .moves_from_fen("3k4/2p5/8/1pP5/8/8/4K3/8 w - b6 0 1")
+            .expect("Fen is OK")
+            .expect("Moves are OK");
+
+        let expected_moves = HashSet::from([
+            Pawn(Simple {
+                from: sq::C5,
+                to: sq::C6,
+            }),
+            Pawn(EnPassant {
+                from: sq::C5,
+                to: sq::B6,
+                passant: sq::B5,
+            }),
+            King(Simple {
+                from: sq::E2,
+                to: sq::D1,
+            }),
+            King(Simple {
+                from: sq::E2,
+                to: sq::E1,
+            }),
+            King(Simple {
+                from: sq::E2,
+                to: sq::F1,
+            }),
+            King(Simple {
+                from: sq::E2,
+                to: sq::D2,
+            }),
+            King(Simple {
+                from: sq::E2,
+                to: sq::F2,
+            }),
+            King(Simple {
+                from: sq::E2,
+                to: sq::D3,
+            }),
+            King(Simple {
+                from: sq::E2,
+                to: sq::E3,
+            }),
+            King(Simple {
+                from: sq::E2,
+                to: sq::F3,
+            }),
+        ]);
+
+        let actual = HashSet::from_iter(moves);
+        assert_eq!(actual, expected_moves);
+    }
 }

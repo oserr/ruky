@@ -536,4 +536,185 @@ mod tests {
         let actual = HashSet::from_iter(moves);
         assert_eq!(actual, expected_moves);
     }
+
+    #[test]
+    fn moves_from_fen5() {
+        let moves = RUKY
+            .moves_from_fen("r3k2r/1ppqbppp/p1np1n2/4p3/2B1PPb1/2NP1N2/PPPBQ1PP/2KR3R b kq - 0 1")
+            .expect("Fen is OK")
+            .expect("Moves are OK");
+
+        let expected_moves = HashSet::from([
+            Pawn(Simple {
+                from: sq::A6,
+                to: sq::A5,
+            }),
+            Pawn(Simple {
+                from: sq::B7,
+                to: sq::B6,
+            }),
+            Pawn(Simple {
+                from: sq::B7,
+                to: sq::B5,
+            }),
+            Pawn(Simple {
+                from: sq::D6,
+                to: sq::D5,
+            }),
+            Pawn(Capture {
+                from: sq::E5,
+                to: sq::F4,
+                cap: Pawn(()),
+            }),
+            Pawn(Simple {
+                from: sq::G7,
+                to: sq::G6,
+            }),
+            Pawn(Simple {
+                from: sq::G7,
+                to: sq::G5,
+            }),
+            Pawn(Simple {
+                from: sq::H7,
+                to: sq::H6,
+            }),
+            Pawn(Simple {
+                from: sq::H7,
+                to: sq::H5,
+            }),
+            Knight(Simple {
+                from: sq::C6,
+                to: sq::D8,
+            }),
+            Knight(Simple {
+                from: sq::C6,
+                to: sq::B8,
+            }),
+            Knight(Simple {
+                from: sq::C6,
+                to: sq::A7,
+            }),
+            Knight(Simple {
+                from: sq::C6,
+                to: sq::A5,
+            }),
+            Knight(Simple {
+                from: sq::C6,
+                to: sq::B4,
+            }),
+            Knight(Simple {
+                from: sq::C6,
+                to: sq::D4,
+            }),
+            Knight(Simple {
+                from: sq::F6,
+                to: sq::D5,
+            }),
+            Knight(Capture {
+                from: sq::F6,
+                to: sq::E4,
+                cap: Pawn(()),
+            }),
+            Knight(Simple {
+                from: sq::F6,
+                to: sq::H5,
+            }),
+            Knight(Simple {
+                from: sq::F6,
+                to: sq::G8,
+            }),
+            Bishop(Simple {
+                from: sq::E7,
+                to: sq::D8,
+            }),
+            Bishop(Simple {
+                from: sq::E7,
+                to: sq::F8,
+            }),
+            Bishop(Capture {
+                from: sq::G4,
+                to: sq::F3,
+                cap: Knight(()),
+            }),
+            Bishop(Simple {
+                from: sq::G4,
+                to: sq::H3,
+            }),
+            Bishop(Simple {
+                from: sq::G4,
+                to: sq::H5,
+            }),
+            Bishop(Simple {
+                from: sq::G4,
+                to: sq::F5,
+            }),
+            Bishop(Simple {
+                from: sq::G4,
+                to: sq::E6,
+            }),
+            Rook(Simple {
+                from: sq::A8,
+                to: sq::A7,
+            }),
+            Rook(Simple {
+                from: sq::A8,
+                to: sq::B8,
+            }),
+            Rook(Simple {
+                from: sq::A8,
+                to: sq::C8,
+            }),
+            Rook(Simple {
+                from: sq::A8,
+                to: sq::D8,
+            }),
+            Rook(Simple {
+                from: sq::H8,
+                to: sq::F8,
+            }),
+            Rook(Simple {
+                from: sq::H8,
+                to: sq::G8,
+            }),
+            Queen(Simple {
+                from: sq::D7,
+                to: sq::C8,
+            }),
+            Queen(Simple {
+                from: sq::D7,
+                to: sq::D8,
+            }),
+            Queen(Simple {
+                from: sq::D7,
+                to: sq::E6,
+            }),
+            Queen(Simple {
+                from: sq::D7,
+                to: sq::F5,
+            }),
+            King(Simple {
+                from: sq::E8,
+                to: sq::D8,
+            }),
+            King(Simple {
+                from: sq::E8,
+                to: sq::F8,
+            }),
+            King(Castle {
+                king_from: sq::E8,
+                king_to: sq::G8,
+                rook_from: sq::H8,
+                rook_to: sq::F8,
+            }),
+            King(Castle {
+                king_from: sq::E8,
+                king_to: sq::C8,
+                rook_from: sq::A8,
+                rook_to: sq::D8,
+            }),
+        ]);
+
+        let actual = HashSet::from_iter(moves);
+        assert_eq!(actual, expected_moves);
+    }
 }

@@ -85,7 +85,7 @@ impl Board {
 
     #[inline]
     fn white(&self) -> &PieceSet {
-        match self.state.color() {
+        match self.color() {
             Color::White => &self.state.mine,
             Color::Black => &self.state.other,
         }
@@ -93,19 +93,24 @@ impl Board {
 
     #[inline]
     fn black(&self) -> &PieceSet {
-        match self.state.color() {
+        match self.color() {
             Color::Black => &self.state.mine,
             Color::White => &self.state.other,
         }
     }
 
     #[inline]
-    fn half_move(&self) -> u16 {
+    pub fn color(&self) -> Color {
+        self.state.color()
+    }
+
+    #[inline]
+    pub fn half_moves(&self) -> u16 {
         self.state.half_move
     }
 
     #[inline]
-    fn full_move(&self) -> u16 {
+    pub fn full_moves(&self) -> u16 {
         self.state.full_move
     }
 

@@ -470,6 +470,10 @@ mod tests {
         let zero = BitBoard::new();
 
         assert!(board.color().is_black());
+        assert!(!board.has_wk_castle());
+        assert!(!board.has_wq_castle());
+        assert!(!board.has_bk_castle());
+        assert!(!board.has_bq_castle());
         assert_eq!(board.half_moves(), 40);
         assert_eq!(board.full_moves(), 50);
 

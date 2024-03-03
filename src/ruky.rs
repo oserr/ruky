@@ -199,4 +199,151 @@ mod tests {
         ]);
         assert_eq!(HashSet::from_iter(moves), expected_moves);
     }
+
+    #[test]
+    fn moves_from_fen3() {
+        let moves = RUKY
+            .moves_from_fen("2B2b1K/p7/8/n2Q1p2/8/8/3P4/5k2 w - - 0 1")
+            .expect("Fen is OK")
+            .expect("Moves are OK");
+
+        let expected_moves = HashSet::from([
+            Pawn(Simple {
+                from: sq::D2,
+                to: sq::D3,
+            }),
+            Pawn(Simple {
+                from: sq::D2,
+                to: sq::D4,
+            }),
+            Bishop(Simple {
+                from: sq::C8,
+                to: sq::B7,
+            }),
+            Bishop(Simple {
+                from: sq::C8,
+                to: sq::A6,
+            }),
+            Bishop(Simple {
+                from: sq::C8,
+                to: sq::D7,
+            }),
+            Bishop(Simple {
+                from: sq::C8,
+                to: sq::E6,
+            }),
+            Bishop(Capture {
+                from: sq::C8,
+                to: sq::F5,
+                cap: Pawn(()),
+            }),
+            King(Simple {
+                from: sq::H8,
+                to: sq::G8,
+            }),
+            King(Simple {
+                from: sq::H8,
+                to: sq::H7,
+            }),
+            Queen(Simple {
+                from: sq::D5,
+                to: sq::A2,
+            }),
+            Queen(Simple {
+                from: sq::D5,
+                to: sq::B3,
+            }),
+            Queen(Simple {
+                from: sq::D5,
+                to: sq::C4,
+            }),
+            Queen(Simple {
+                from: sq::D5,
+                to: sq::E4,
+            }),
+            Queen(Simple {
+                from: sq::D5,
+                to: sq::F3,
+            }),
+            Queen(Simple {
+                from: sq::D5,
+                to: sq::G2,
+            }),
+            Queen(Simple {
+                from: sq::D5,
+                to: sq::H1,
+            }),
+            Queen(Simple {
+                from: sq::D5,
+                to: sq::D4,
+            }),
+            Queen(Simple {
+                from: sq::D5,
+                to: sq::D3,
+            }),
+            Queen(Simple {
+                from: sq::D5,
+                to: sq::D6,
+            }),
+            Queen(Simple {
+                from: sq::D5,
+                to: sq::D7,
+            }),
+            Queen(Simple {
+                from: sq::D5,
+                to: sq::D8,
+            }),
+            Queen(Simple {
+                from: sq::D5,
+                to: sq::C5,
+            }),
+            Queen(Simple {
+                from: sq::D5,
+                to: sq::B5,
+            }),
+            Queen(Simple {
+                from: sq::D5,
+                to: sq::E5,
+            }),
+            Queen(Simple {
+                from: sq::D5,
+                to: sq::G8,
+            }),
+            Queen(Simple {
+                from: sq::D5,
+                to: sq::C6,
+            }),
+            Queen(Simple {
+                from: sq::D5,
+                to: sq::B7,
+            }),
+            Queen(Simple {
+                from: sq::D5,
+                to: sq::A8,
+            }),
+            Queen(Simple {
+                from: sq::D5,
+                to: sq::E6,
+            }),
+            Queen(Simple {
+                from: sq::D5,
+                to: sq::F7,
+            }),
+            Queen(Simple {
+                from: sq::D5,
+                to: sq::G8,
+            }),
+            Queen(Capture {
+                from: sq::D5,
+                to: sq::A5,
+                cap: Knight(()),
+            }),
+            Queen(Capture {
+                from: sq::D5,
+                to: sq::F5,
+                cap: Pawn(()),
+            }),
+        ]);
+        assert_eq!(HashSet::from_iter(moves), expected_moves);
+    }
 }

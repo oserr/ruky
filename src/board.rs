@@ -171,13 +171,13 @@ impl Board {
             }
         }
 
-        // If we don't have moves without check, but are not currently in check, then we
-        // are in stalemate.
-        if !self.is_check() {
-            self.state.game_state = GameState::Draw;
-        }
-
-        self.state.game_state = GameState::Mate(self.state.color());
+        self.state.game_state = if self.is_check() {
+            GameState::Mate(self.state.color())
+        } else {
+            // If we don't have moves without check, but are not currently in check, then we
+            // are in stalemate.
+            GameState::Draw
+        };
     }
 
     // Updates the board state after a move is made.

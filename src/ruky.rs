@@ -122,4 +122,81 @@ mod tests {
         ]);
         assert_eq!(HashSet::from_iter(moves), expected_moves);
     }
+
+    #[test]
+    fn moves_from_fen2() {
+        let moves = RUKY
+            .moves_from_fen("8/8/7k/1K6/3b4/R1PP2n1/8/8 w - - 0 1")
+            .expect("Fen is OK")
+            .expect("Moves are OK");
+
+        let expected_moves = HashSet::from([
+            Pawn(Simple {
+                from: sq::C3,
+                to: sq::C4,
+            }),
+            Pawn(Capture {
+                from: sq::C3,
+                to: sq::D4,
+                cap: Bishop(()),
+            }),
+            Rook(Simple {
+                from: sq::A3,
+                to: sq::A1,
+            }),
+            Rook(Simple {
+                from: sq::A3,
+                to: sq::A2,
+            }),
+            Rook(Simple {
+                from: sq::A3,
+                to: sq::B3,
+            }),
+            Rook(Simple {
+                from: sq::A3,
+                to: sq::A4,
+            }),
+            Rook(Simple {
+                from: sq::A3,
+                to: sq::A5,
+            }),
+            Rook(Simple {
+                from: sq::A3,
+                to: sq::A6,
+            }),
+            Rook(Simple {
+                from: sq::A3,
+                to: sq::A7,
+            }),
+            Rook(Simple {
+                from: sq::A3,
+                to: sq::A8,
+            }),
+            King(Simple {
+                from: sq::B5,
+                to: sq::A4,
+            }),
+            King(Simple {
+                from: sq::B5,
+                to: sq::B4,
+            }),
+            King(Simple {
+                from: sq::B5,
+                to: sq::C4,
+            }),
+            King(Simple {
+                from: sq::B5,
+                to: sq::A5,
+            }),
+            King(Simple {
+                from: sq::B5,
+                to: sq::A6,
+            }),
+            King(Simple {
+                from: sq::B5,
+                to: sq::C6,
+            }),
+        ]);
+        assert_eq!(HashSet::from_iter(moves), expected_moves);
+    }
 }

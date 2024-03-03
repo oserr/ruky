@@ -43,6 +43,7 @@ impl Ruky {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::board::GameState;
     use crate::piece::Piece::*;
     use crate::piece_move::PieceMove::*;
     use crate::sq;
@@ -870,5 +871,15 @@ mod tests {
 
         let actual = HashSet::from_iter(moves);
         assert_eq!(actual, expected_moves);
+    }
+
+    #[test]
+    fn terminal_state_from_fen() {
+        let board = RUKY
+            .from_fen("2Kn4/7r/2n5/3p1p2/1b1p1p2/3r4/4k3/8 w - - 4 74")
+            .expect("FEN is OK");
+        assert!(board.is_terminal());
+        assert!(!board.is_check());
+        assert_eq!(board.game_state(), GameState::Draw);
     }
 }

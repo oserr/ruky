@@ -19,6 +19,101 @@ pub struct Board {
 }
 
 impl Board {
+    ///////////////////////////
+    // Getters for board state.
+    ///////////////////////////
+
+    #[inline]
+    pub fn white_king(&self) -> BitBoard {
+        self.white().king()
+    }
+
+    #[inline]
+    pub fn white_queens(&self) -> BitBoard {
+        self.white().queens()
+    }
+
+    #[inline]
+    pub fn white_rooks(&self) -> BitBoard {
+        self.white().rooks()
+    }
+
+    #[inline]
+    pub fn white_bishops(&self) -> BitBoard {
+        self.white().bishops()
+    }
+
+    #[inline]
+    pub fn white_knights(&self) -> BitBoard {
+        self.white().knights()
+    }
+
+    #[inline]
+    pub fn white_pawns(&self) -> BitBoard {
+        self.white().pawns()
+    }
+
+    #[inline]
+    pub fn black_king(&self) -> BitBoard {
+        self.black().king()
+    }
+
+    #[inline]
+    pub fn black_queens(&self) -> BitBoard {
+        self.black().queens()
+    }
+
+    #[inline]
+    pub fn black_rooks(&self) -> BitBoard {
+        self.black().rooks()
+    }
+
+    #[inline]
+    pub fn black_bishops(&self) -> BitBoard {
+        self.black().bishops()
+    }
+
+    #[inline]
+    pub fn black_knights(&self) -> BitBoard {
+        self.black().knights()
+    }
+
+    #[inline]
+    pub fn black_pawns(&self) -> BitBoard {
+        self.black().pawns()
+    }
+
+    #[inline]
+    fn white(&self) -> &PieceSet {
+        match self.state.color() {
+            Color::White => &self.state.mine,
+            Color::Black => &self.state.other,
+        }
+    }
+
+    #[inline]
+    fn black(&self) -> &PieceSet {
+        match self.state.color() {
+            Color::Black => &self.state.mine,
+            Color::White => &self.state.other,
+        }
+    }
+
+    #[inline]
+    fn half_move(&self) -> u16 {
+        self.state.half_move
+    }
+
+    #[inline]
+    fn full_move(&self) -> u16 {
+        self.state.full_move
+    }
+
+    #[inline]
+    fn passant(&self) -> Option<PassantSq> {
+        self.state.passant_sq
+    }
+
     // Updates the game state.
     fn update_game_state(&mut self, piece_move: Option<PieceMove>) {
         if piece_move.is_some() && piece_move.unwrap().is_king_capture() {
@@ -657,13 +752,13 @@ impl GameState {
 
 // A struct to represent the position where en-passant capture is possible.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
-struct PassantSq {
+pub struct PassantSq {
     // Represents the actual location of the piece. This is a square in either the 4th or 5th rank.
-    actual: Sq,
+    pub actual: Sq,
 
     // Represents the square where the pawn is captured. This is a square in either the 3rd or 6th
     // rank.
-    capture: Sq,
+    pub capture: Sq,
 }
 
 impl PassantSq {

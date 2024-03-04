@@ -722,12 +722,13 @@ impl BoardBuilder {
     }
 
     pub fn set_passant(&mut self, target: Sq) -> &mut Self {
-        // TODO: need to check that passant squares are valid, pawn is found at
-        // actual square.
         self.passant_sq = PassantSq::from_target(target);
         self
     }
 
+    // TODO:
+    // - need to check that passant squares are valid.
+    // - need to check that full_move is at least 1.
     pub fn build(&mut self) -> Result<Board, PiecesErr> {
         let (mine, other) = if self.color.is_white() {
             (

@@ -175,8 +175,8 @@ fn parse_passant(field: &str, builder: &mut BoardBuilder) -> Result<(), FenErr> 
                 return Err(FenErr::BadPassant(field.to_string()));
             }
 
-            let col = col_letter as u8 - 'a' as u8;
-            let row = row_letter as u8 - '1' as u8;
+            let col = col_letter as u8 - b'a';
+            let row = row_letter as u8 - b'1';
 
             let target = Sq::from_rc(row, col).unwrap();
 

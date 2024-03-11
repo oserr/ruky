@@ -1,10 +1,11 @@
 use crate::bitboard::{BitErr, BitErr::*};
 use crate::piece::Piece;
 use crate::sq::Sq;
+use serde::Serialize;
 use std::convert::From;
 
 // An enum for representing the different types of moves for all chess pieces.
-#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Serialize)]
 pub enum PieceMove {
     // Simple represents simple moves that only need a source and destination square to be fully
     // specified.

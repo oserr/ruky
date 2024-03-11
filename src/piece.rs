@@ -1,4 +1,6 @@
-#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+use serde::Serialize;
+
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq, Serialize)]
 pub enum Piece<T> {
     King(T),
     Queen(T),

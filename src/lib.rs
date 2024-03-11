@@ -10,5 +10,6 @@ pub mod ruky;
 mod sq;
 
 pub use board::{Board, BoardBuilder};
+pub use piece::Piece;
 pub use piece_move::PieceMove;
 pub use ruky::Ruky;

@@ -6,7 +6,7 @@ use crate::piece_move::PieceMove;
 use std::sync::Arc;
 
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
-struct Ruky {
+pub struct Ruky {
     magics: Arc<ChessMagics>,
 }
 

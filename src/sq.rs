@@ -9,6 +9,11 @@ pub struct Sq {
 }
 
 impl Sq {
+    #[inline]
+    pub fn raw(&self) -> u8 {
+        self.val
+    }
+
     // Creats a Sq from a row and col if the row and col are valid.
     pub fn from_rc(row: u8, col: u8) -> Option<Self> {
         if row < 8 && col < 8 {

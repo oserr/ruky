@@ -5,7 +5,7 @@ use std::ops::Shl;
 
 #[derive(Clone, Copy, Default, Eq, Hash, PartialEq, PartialOrd, Serialize)]
 pub struct Sq {
-    pub(crate) val: u8,
+    val: u8,
 }
 
 impl Sq {

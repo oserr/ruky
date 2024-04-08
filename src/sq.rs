@@ -1,9 +1,9 @@
-use serde::Serialize;
+use serde::ser::{Serialize, Serializer};
 use std::convert::From;
 use std::fmt::{self, Debug, Formatter};
 use std::ops::Shl;
 
-#[derive(Clone, Copy, Default, Eq, Hash, PartialEq, PartialOrd, Serialize)]
+#[derive(Clone, Copy, Default, Eq, Hash, PartialEq, PartialOrd)]
 pub struct Sq {
     val: u8,
 }
@@ -195,6 +195,16 @@ impl Shl<Sq> for u64 {
     #[inline]
     fn shl(self, sq: Sq) -> u64 {
         self << sq.val
+    }
+}
+
+// Implement Serialize for Sq to serialize as a raw number.
+impl Serialize for Sq {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        serializer.serialize_u8(self.val)
     }
 }
 

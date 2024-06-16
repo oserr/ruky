@@ -228,6 +228,29 @@ impl Board {
         )
     }
 
+    // Returns true if piece_move is a legal move in the current position, or false
+    // otherwise.
+    pub fn is_legal_move(&self, piece_move: Piece<PieceMove>) -> bool {
+        self.next_moves()
+            .is_some_and(|moves| moves.into_iter().find(|mv| *mv == piece_move).is_some())
+    }
+
+    // Returns the next board when move piece_move is applied. If the move is
+    // illegal or we are in a terminal state, then it returns None.
+    pub fn next_board_from_move(&self, piece_move: Piece<PieceMove>) -> Option<Board> {
+        if self.is_terminal() {
+            return None;
+        }
+
+        if !self.is_legal_move(piece_move) {
+            return None;
+        }
+
+        let mut board = self.clone();
+        board.update(piece_move);
+        Some(board)
+    }
+
     // Returns true if the current position represents a terminal state.
     #[inline]
     pub fn is_terminal(&self) -> bool {

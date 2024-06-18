@@ -4,6 +4,7 @@
 use crate::opt::UciOpt;
 
 // Represents a command from the GUI to the engine.
+#[derive(Clone, Debug, PartialEq)]
 pub enum GuiCommand {
     // uci: Tells the engine to switch to UCI mode.
     Uci,
@@ -46,6 +47,7 @@ pub enum GuiCommand {
 // calculating the best move given an intial position. The command can take
 // multiple options. Start calculating on the current position set up with the
 // "position" command.
+#[derive(Clone, Debug, PartialEq)]
 pub struct Go {
     // searchmoves <move1> ... <movei>: Restricts calculation by one or more moves.
     search_moves: Option<Vec<String>>,
@@ -93,6 +95,7 @@ pub struct Go {
 // play the moves. No new command is needed, but if the position is from a
 // different game than the last position sent to the engine, then the GUI should
 // have sent a "ucinewgame" in between.
+#[derive(Clone, Debug, PartialEq)]
 pub struct Position {
     // Represents the initial position: either a new game or a FEN string.
     pos: PosOpt,
@@ -104,6 +107,7 @@ pub struct Position {
 
 // An enum to represent the two different types of positions that can be set,
 // i.e. startpos or a position from a FEN string.
+#[derive(Clone, Debug, PartialEq)]
 pub enum PosOpt {
     StartPos,
     Fen(String),

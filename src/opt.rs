@@ -2,6 +2,7 @@
 
 // Represents all the different options that may be supported by a UCI compliant
 // chess engine.
+#[derive(Clone, Debug, PartialEq)]
 pub enum UciOpt {
     // The value in MB for memory for hash tables.
     Hash,
@@ -70,6 +71,7 @@ pub enum UciOpt {
 }
 
 // The type of an option.
+#[derive(Clone, Debug, PartialEq)]
 pub enum OptType {
     Check,
     Spin,
@@ -80,6 +82,7 @@ pub enum OptType {
 
 // Represents either the value an option can take, or the value to set an
 // option.
+#[derive(Clone, Debug, PartialEq)]
 pub enum OptVal {
     // Used to set a value, from GUI to engine.
     Set(i64),
@@ -94,6 +97,7 @@ pub enum OptVal {
 }
 
 // Represents the title of the player, e.g. grand master.
+#[derive(Clone, Debug, PartialEq)]
 pub enum Title {
     GM,
     IM,
@@ -103,12 +107,14 @@ pub enum Title {
 }
 
 // To represent human or computer players.
+#[derive(Clone, Debug, PartialEq)]
 pub enum PlayerType {
     Human,
     Computer,
 }
 
 // Represents the different values that can be used for UCI_SetPositionValue.
+#[derive(Clone, Debug, PartialEq)]
 pub enum PosValueOpt {
     // <value> + <fen>
     Val { val: i32, fen: String },

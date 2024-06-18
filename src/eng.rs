@@ -9,6 +9,7 @@ use crate::opt::UciOpt;
 // - registration [ok | error]: Needed for engines that need a username and or a
 //   code to function
 // with all the features.
+#[derive(Clone, Debug, PartialEq)]
 pub enum EngCommand {
     // id name <x> | id author <x>: The engine sends this in response to "uci".
     Id(IdOpt),
@@ -48,6 +49,7 @@ pub enum EngCommand {
 // sent together, e.g. "info depth 2 score cp 214 time 1242 nodes 2124 nps 34928
 // pv e2e4 e7e5 g1f3". Suggest to send "currmove", "currmovenumber", "currline",
 // and "refutation" only after 1 second to avoid too much traffic.
+#[derive(Clone, Debug, PartialEq)]
 pub struct Info {
     // depth <x>: Search depth in plies.
     depth: Option<u16>,
@@ -106,6 +108,7 @@ pub struct Info {
 // CPU, <cpunr> can be omitted. If <cpunr> is greater than 1, always send all
 // k lines in k strings   together. The engine should only send this if the
 // option "UCI_ShowCurrLine" is set to true.
+#[derive(Clone, Debug, PartialEq)]
 pub struct CurrentLine {
     cpu_id: Option<u16>,
     line: Vec<String>,
@@ -114,6 +117,7 @@ pub struct CurrentLine {
 // refutation <move1> <move2> .. <movei>: Represents the refutation command.
 // Move <move1> is refuted by the line <move2> .. <movei>. The engine should
 // only send this if the option "UCI_ShowRefutations" is set to true.
+#[derive(Clone, Debug, PartialEq)]
 pub struct Refutation {
     // The move being refuted.
     mv: String,
@@ -124,6 +128,7 @@ pub struct Refutation {
 
 // score cp <x> [mate <y>] [lowerbound] [upperbound]: Represents the score
 // option to the info command.
+#[derive(Clone, Debug, PartialEq)]
 pub struct Score {
     // cp <x>: The score from the engine's point of view in centipawns.
     cp: i32,
@@ -137,6 +142,7 @@ pub struct Score {
 }
 
 // Represents a lower or an upper score bound.
+#[derive(Clone, Debug, PartialEq)]
 pub enum ScoreBound {
     Lower,
     Upper,
@@ -145,6 +151,7 @@ pub enum ScoreBound {
 // multipv <num>: Used for representing the multipv command in the multipv mode.
 // For the best move/pv add "multipv 1" in the string when you send the pv. In
 // k-best mode, should always send the all k variants in k strings together.
+#[derive(Clone, Debug, PartialEq)]
 pub struct MultiPv {
     rank: u16,
     moves: Vec<String>,
@@ -153,6 +160,7 @@ pub struct MultiPv {
 // An enum to represent the options for the ID command:
 // - id name <x>: The name and version of the engine.
 // - id author <x>: The name of the chess engine author.
+#[derive(Clone, Debug, PartialEq)]
 pub enum IdOpt {
     Name(String),
     Author(String),

@@ -2,6 +2,7 @@
 #[derive(Debug, Clone, PartialEq)]
 pub enum UziErr {
     MissingCmd,
+    MissingOnOff,
     Position,
     What,
 }

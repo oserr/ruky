@@ -1,11 +1,12 @@
 // This module contains artifacts used to build and represent commands from the
 // GUI to the engine.
 
+use crate::err::UziErr;
 use crate::opt::UciOpt;
 
 // Represents a command from the GUI to the engine.
 #[derive(Clone, Debug, PartialEq)]
-pub enum GuiCommand {
+pub enum GuiCmd {
     // uci: Tells the engine to switch to UCI mode.
     Uci,
 
@@ -29,7 +30,7 @@ pub enum GuiCommand {
 
     // position [fen <fenstring> | startpos] moves <move1> ... <movei>: A command to set up the
     // initial position.
-    Pos(Position),
+    Pos(Pos),
 
     // go [opts]: A command to tell the engine to begin calculating the best move.
     Go(Go),
@@ -41,6 +42,18 @@ pub enum GuiCommand {
     // to ponder on the same move the engine has played. The engine has switched from
     // pondering to normal search.
     Ponderhit,
+}
+
+impl TryFrom<&str> for GuiCmd {
+    type Error = UziErr;
+
+    fn try_from(cmd: &str) -> Result<GuiCmd, Self::Error> {
+        let words = cmd.split_whitespace().collect::<Vec<_>>();
+        if words.is_empty() {
+            return Err(UziErr::MissingCmd);
+        }
+        todo!()
+    }
 }
 
 // A struct to represent the UCI "go" command, used to tell the engine to begin
@@ -88,6 +101,97 @@ pub struct Go {
     infinite: Option<()>,
 }
 
+// Default initialization for Go.
+impl Default for Go {
+    fn default() -> Self {
+        Self {
+            search_moves: None,
+            ponder: None,
+            wtime: None,
+            btime: None,
+            winc: None,
+            binc: None,
+            moves_to_go: None,
+            depth: None,
+            nodes: None,
+            mate: None,
+            move_time: None,
+            infinite: None,
+        }
+    }
+}
+
+impl Go {
+    #[inline]
+    pub fn new() -> Self {
+        Go::default()
+    }
+}
+
+// A Go command builder.
+#[derive(Debug, Clone)]
+struct GoBuilder {
+    go: Go,
+}
+
+impl GoBuilder {
+    pub fn new() -> Self {
+        Self { go: Go::new() }
+    }
+}
+
+// A Pos builder.
+#[derive(Debug, Clone)]
+pub struct PosBuilder {
+    pos: Option<PosOpt>,
+    moves: Option<Vec<String>>,
+}
+
+impl PosBuilder {
+    // Creates a new builder with the Pos completely unset.
+    pub fn new() -> Self {
+        Self {
+            pos: None,
+            moves: None,
+        }
+    }
+
+    // Initializes the position with a new game.
+    pub fn start_pos(&mut self) -> &mut Self {
+        self.pos.replace(PosOpt::StartPos);
+        self
+    }
+
+    // The initial position is taken from a FEN string.
+    pub fn fen(&mut self, fen: &str) -> &mut Self {
+        self.pos.replace(PosOpt::Fen(fen.into()));
+        self
+    }
+
+    // Adds a move to the position. Moves should be added in the order they are
+    // played.
+    pub fn add_move(&mut self, mv: &str) -> &mut Self {
+        if let Some(ref mut moves) = self.moves {
+            moves.push(mv.into());
+        } else {
+            self.moves = Some(vec![mv.into()]);
+        }
+        self
+    }
+
+    // If the initial position is not set, returns an error.
+    pub fn build(&mut self) -> Result<Pos, UziErr> {
+        if self.pos.is_none() {
+            return Err(UziErr::Position);
+        }
+
+        Ok(Pos {
+            pos: self.pos.take().unwrap(),
+            moves: self.moves.take(),
+        })
+    }
+}
+
 // A structure to represent the UCI "position" command, which is issued to the
 // engine to set up the initial position.
 // position [fen <fenstring> | startpos] moves <move1> ... <movei>
@@ -96,7 +200,7 @@ pub struct Go {
 // different game than the last position sent to the engine, then the GUI should
 // have sent a "ucinewgame" in between.
 #[derive(Clone, Debug, PartialEq)]
-pub struct Position {
+pub struct Pos {
     // Represents the initial position: either a new game or a FEN string.
     pos: PosOpt,
 

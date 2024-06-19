@@ -157,7 +157,7 @@ impl PosBuilder {
     }
 
     // Initializes the position with a new game.
-    pub fn start_pos(&mut self) -> &mut Self {
+    pub fn start(&mut self) -> &mut Self {
         self.pos.replace(PosOpt::StartPos);
         self
     }
@@ -215,4 +215,51 @@ pub struct Pos {
 pub enum PosOpt {
     StartPos,
     Fen(String),
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn new_pos_builder() {
+        let pos_builder = PosBuilder::new();
+        assert!(pos_builder.pos.is_none());
+        assert!(pos_builder.moves.is_none());
+    }
+
+    #[test]
+    fn pos_builder_with_startpos() {
+        let mut pos_builder = PosBuilder::new();
+        let pos = pos_builder
+            .start()
+            .build()
+            .expect("Should build with startpos");
+        assert_eq!(pos.pos, PosOpt::StartPos);
+        assert!(pos.moves.is_none());
+    }
+
+    #[test]
+    fn pos_builder_with_fen() {
+        let mut pos_builder = PosBuilder::new();
+        let pos = pos_builder
+            .fen("fen")
+            .build()
+            .expect("Should build with fen");
+        assert_eq!(pos.pos, PosOpt::Fen("fen".into()));
+        assert!(pos.moves.is_none());
+    }
+
+    #[test]
+    fn pos_builder_with_startpos_and_moves() {
+        let mut pos_builder = PosBuilder::new();
+        let pos = pos_builder
+            .start()
+            .add_move("e2e4")
+            .add_move("e7e5")
+            .build()
+            .expect("Should build with startpos and moves");
+        assert_eq!(pos.pos, PosOpt::StartPos);
+        assert_eq!(pos.moves, Some(vec!["e2e4".into(), "e7e5".into()]));
+    }
 }

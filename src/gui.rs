@@ -52,7 +52,18 @@ impl TryFrom<&str> for GuiCmd {
         if words.is_empty() {
             return Err(UziErr::MissingCmd);
         }
-        todo!()
+        match words[0] {
+            "uci" => Ok(GuiCmd::Uci),
+            "isready" => Ok(GuiCmd::IsReady),
+            "ucinewgame" => Ok(GuiCmd::NewGame),
+            "stop" => Ok(GuiCmd::Stop),
+            "ponderhit" => Ok(GuiCmd::Ponderhit),
+            "debug" => todo!(),
+            "setoption" => todo!(),
+            "position" => todo!(),
+            "go" => todo!(),
+            _ => Err(UziErr::What),
+        }
     }
 }
 

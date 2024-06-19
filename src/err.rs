@@ -3,4 +3,5 @@
 pub enum UziErr {
     MissingCmd,
     Position,
+    What,
 }

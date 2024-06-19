@@ -224,6 +224,71 @@ pub struct Pos {
     moves: Option<Vec<String>>,
 }
 
+impl TryFrom<&Vec<&str>> for Pos {
+    type Error = UziErr;
+
+    fn try_from(cmd: &Vec<&str>) -> Result<Pos, Self::Error> {
+        let mut builder = PosBuilder::new();
+        let mut pos_state = PosState::Begin;
+
+        for word in cmd {
+            match *word {
+                "position" => {
+                    if pos_state != PosState::Begin {
+                        return Err(UziErr::Position);
+                    }
+                    pos_state = PosState::Position;
+                }
+                "fen" => {
+                    if pos_state != PosState::Position {
+                        return Err(UziErr::Position);
+                    }
+                    pos_state = PosState::Fen
+                }
+                "startpos" => {
+                    if pos_state != PosState::Position {
+                        return Err(UziErr::Position);
+                    }
+                    pos_state = PosState::StartPos;
+                    builder.start();
+                }
+                "moves" => {
+                    if pos_state != PosState::FenStr || pos_state != PosState::StartPos {
+                        return Err(UziErr::Position);
+                    }
+                    pos_state = PosState::Moves;
+                }
+                _ => {
+                    if pos_state == PosState::Fen {
+                        pos_state = PosState::FenStr;
+                        builder.fen(*word);
+                    } else if pos_state == PosState::Moves {
+                        builder.add_move(*word);
+                    } else {
+                        return Err(UziErr::Position);
+                    }
+                }
+            };
+        }
+
+        match pos_state {
+            PosState::FenStr | PosState::Moves | PosState::StartPos => builder.build(),
+            _ => Err(UziErr::Position),
+        }
+    }
+}
+
+// Represents state of parsing the "position" command.
+#[derive(PartialEq)]
+enum PosState {
+    Begin,
+    Position,
+    StartPos,
+    Fen,
+    FenStr,
+    Moves,
+}
+
 // An enum to represent the two different types of positions that can be set,
 // i.e. startpos or a position from a FEN string.
 #[derive(Clone, Debug, PartialEq)]

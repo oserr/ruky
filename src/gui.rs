@@ -58,13 +58,18 @@ impl TryFrom<&str> for GuiCmd {
             "ucinewgame" => Ok(GuiCmd::NewGame),
             "stop" => Ok(GuiCmd::Stop),
             "ponderhit" => Ok(GuiCmd::Ponderhit),
-            "debug" => match words[1] {
-                "on" => Ok(GuiCmd::Debug(true)),
-                "off" => Ok(GuiCmd::Debug(false)),
-                _ => Err(UziErr::MissingOnOff),
-            },
+            "debug" => {
+                if words.len() <= 1 {
+                    return Err(UziErr::MissingOnOff);
+                }
+                match words[1] {
+                    "on" => Ok(GuiCmd::Debug(true)),
+                    "off" => Ok(GuiCmd::Debug(false)),
+                    _ => Err(UziErr::MissingOnOff),
+                }
+            }
             "setoption" => todo!(),
-            "position" => todo!(),
+            "position" => Ok(GuiCmd::Pos(Pos::try_from(&words)?)),
             "go" => todo!(),
             _ => Err(UziErr::What),
         }

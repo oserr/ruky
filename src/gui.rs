@@ -259,7 +259,7 @@ impl TryFrom<&Vec<&str>> for Pos {
                     builder.start();
                 }
                 "moves" => {
-                    if pos_state != PosState::FenStr || pos_state != PosState::StartPos {
+                    if pos_state != PosState::FenStr && pos_state != PosState::StartPos {
                         return Err(UziErr::Position);
                     }
                     pos_state = PosState::Moves;
@@ -347,5 +347,76 @@ mod tests {
             .expect("Should build with startpos and moves");
         assert_eq!(pos.pos, PosOpt::StartPos);
         assert_eq!(pos.moves, Some(vec!["e2e4".into(), "e7e5".into()]));
+    }
+
+    #[test]
+    fn pos_try_from_empty_vec() {
+        let args = vec![];
+        assert_eq!(Pos::try_from(&args), Err(UziErr::Position));
+    }
+
+    #[test]
+    fn pos_try_from_with_only_position() {
+        let args = vec!["position"];
+        assert_eq!(Pos::try_from(&args), Err(UziErr::Position));
+    }
+
+    #[test]
+    fn pos_try_from_pos_with_startpos() {
+        let args = vec!["position", "startpos"];
+        assert_eq!(Pos::try_from(&args), PosBuilder::new().start().build());
+    }
+
+    #[test]
+    fn pos_try_from_fen_but_missing_fen_string() {
+        let args = vec!["position", "fen"];
+        assert_eq!(Pos::try_from(&args), Err(UziErr::Position));
+    }
+
+    #[test]
+    fn pos_try_from_with_ranom_string() {
+        let args = vec!["position", "random", "fen"];
+        assert_eq!(Pos::try_from(&args), Err(UziErr::Position));
+    }
+
+    #[test]
+    fn pos_try_from_fen_with_fen() {
+        let args = vec!["position", "fen", "FENSTRING"];
+        assert_eq!(
+            Pos::try_from(&args),
+            PosBuilder::new().fen("FENSTRING").build()
+        );
+    }
+
+    #[test]
+    fn pos_try_from_fen_with_moves() {
+        let args = vec!["position", "fen", "FENSTRING", "moves", "e2e4", "e7e5"];
+        assert_eq!(
+            Pos::try_from(&args),
+            PosBuilder::new()
+                .fen("FENSTRING")
+                .add_move("e2e4")
+                .add_move("e7e5")
+                .build()
+        );
+    }
+
+    #[test]
+    fn pos_try_from_startpos_with_moves() {
+        let args = vec!["position", "startpos", "moves", "e2e4", "e7e5"];
+        assert_eq!(
+            Pos::try_from(&args),
+            PosBuilder::new()
+                .start()
+                .add_move("e2e4")
+                .add_move("e7e5")
+                .build()
+        );
+    }
+
+    #[test]
+    fn pos_try_from_mixed_fen_and_startpos() {
+        let args = vec!["position", "startpos", "fen"];
+        assert_eq!(Pos::try_from(&args), Err(UziErr::Position));
     }
 }

@@ -3,6 +3,7 @@
 
 use crate::err::UziErr;
 use crate::opt::UciOpt;
+use std::time::Duration;
 
 // Represents a command from the GUI to the engine.
 #[derive(Clone, Debug, PartialEq)]
@@ -89,16 +90,16 @@ pub struct Go {
     ponder: Option<bool>,
 
     // wtime <x>: White has x milliseconds on the clock.
-    wtime: Option<u32>,
+    wtime: Option<Duration>,
 
     // btime <x>: Black has x milliseconds on the clock.
-    btime: Option<u32>,
+    btime: Option<Duration>,
 
     // winc <x>: White increment per move in milliseconds.
-    winc: Option<u16>,
+    winc: Option<Duration>,
 
     // binc <x>: Black increment per move in milliseconds.
-    binc: Option<u16>,
+    binc: Option<Duration>,
 
     // movestogo <x>: There are x moves to the next time control. If this is not set, then wtime
     // and btime represent sudden death.
@@ -114,7 +115,7 @@ pub struct Go {
     mate: Option<u16>,
 
     // movetime <x>: Search exactly x milliseconds.
-    move_time: Option<u32>,
+    move_time: Option<Duration>,
 
     // infinite: Search until the stop command. Do not exit search without being told to do so in
     // this mode.

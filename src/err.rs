@@ -3,6 +3,7 @@
 pub enum UziErr {
     MissingCmd,
     MissingOnOff,
+    NothingSetForGo,
     Position,
     What,
 }

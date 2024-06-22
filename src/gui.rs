@@ -275,7 +275,7 @@ impl TryFrom<&Vec<&str>> for Go {
                     parse_state = GoParseState::Ponder;
                     go.set_ponder();
                 }
-                _ => parse_go_cmd(parse_state, word, &mut go)?,
+                _ => parse_go_opt(parse_state, word, &mut go)?,
             }
         }
 
@@ -288,7 +288,7 @@ impl TryFrom<&Vec<&str>> for Go {
 }
 
 // A helper function to parse and set the "go" command options.
-fn parse_go_cmd(parse_state: GoParseState, word: &str, go: &mut Go) -> Result<(), UziErr> {
+fn parse_go_opt(parse_state: GoParseState, word: &str, go: &mut Go) -> Result<(), UziErr> {
     match parse_state {
         GoParseState::Wtime => go.set_wtime(to_millis(word)?),
         GoParseState::Btime => go.set_btime(to_millis(word)?),

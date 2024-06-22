@@ -72,7 +72,7 @@ impl TryFrom<&str> for GuiCmd {
             }
             "setoption" => todo!(),
             "position" => Ok(GuiCmd::Pos(Pos::try_from(&words)?)),
-            "go" => todo!(),
+            "go" => Ok(GuiCmd::Go(Go::try_from(&words)?)),
             _ => Err(UziErr::What),
         }
     }

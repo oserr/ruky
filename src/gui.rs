@@ -270,58 +270,6 @@ impl Go {
     }
 }
 
-// A Pos builder.
-#[derive(Debug, Clone)]
-pub struct PosBuilder {
-    pos: Option<PosOpt>,
-    moves: Option<Vec<String>>,
-}
-
-impl PosBuilder {
-    // Creates a new builder with the Pos completely unset.
-    pub fn new() -> Self {
-        Self {
-            pos: None,
-            moves: None,
-        }
-    }
-
-    // Initializes the position with a new game.
-    pub fn start(&mut self) -> &mut Self {
-        self.pos.replace(PosOpt::StartPos);
-        self
-    }
-
-    // The initial position is taken from a FEN string.
-    pub fn fen(&mut self, fen: &str) -> &mut Self {
-        self.pos.replace(PosOpt::Fen(fen.into()));
-        self
-    }
-
-    // Adds a move to the position. Moves should be added in the order they are
-    // played.
-    pub fn add_move(&mut self, mv: &str) -> &mut Self {
-        if let Some(ref mut moves) = self.moves {
-            moves.push(mv.into());
-        } else {
-            self.moves = Some(vec![mv.into()]);
-        }
-        self
-    }
-
-    // If the initial position is not set, returns an error.
-    pub fn build(&mut self) -> Result<Pos, UziErr> {
-        if self.pos.is_none() {
-            return Err(UziErr::Position);
-        }
-
-        Ok(Pos {
-            pos: self.pos.take().unwrap(),
-            moves: self.moves.take(),
-        })
-    }
-}
-
 // A structure to represent the UCI "position" command, which is issued to the
 // engine to set up the initial position.
 // position [fen <fenstring> | startpos] moves <move1> ... <movei>

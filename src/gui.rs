@@ -267,7 +267,7 @@ impl TryFrom<&Vec<&str>> for Go {
                 "nodes" => parse_state = GoParseState::Nodes,
                 "mate" => parse_state = GoParseState::Mate,
                 "searchmoves" => parse_state = GoParseState::SearchMoves,
-                "infite" => {
+                "infinite" => {
                     parse_state = GoParseState::Infinite;
                     go.set_infinite();
                 }
@@ -290,11 +290,11 @@ impl TryFrom<&Vec<&str>> for Go {
 // A helper function to parse and set the "go" command options.
 fn parse_go_opt(parse_state: GoParseState, word: &str, go: &mut Go) -> Result<(), UziErr> {
     match parse_state {
-        GoParseState::Wtime => go.set_wtime(to_millis(word)?),
-        GoParseState::Btime => go.set_btime(to_millis(word)?),
-        GoParseState::Winc => go.set_winc(to_millis(word)?),
-        GoParseState::Binc => go.set_binc(to_millis(word)?),
-        GoParseState::MoveTime => go.set_move_time(to_millis(word)?),
+        GoParseState::Wtime => go.set_wtime(to_millis(word, "wtime")?),
+        GoParseState::Btime => go.set_btime(to_millis(word, "btime")?),
+        GoParseState::Winc => go.set_winc(to_millis(word, "winc")?),
+        GoParseState::Binc => go.set_binc(to_millis(word, "binc")?),
+        GoParseState::MoveTime => go.set_move_time(to_millis(word, "movetime")?),
         GoParseState::MovesToGo => go.set_moves_to_go(to_number::<u16>(word)?),
         GoParseState::Depth => go.set_depth(to_number::<u16>(word)?),
         GoParseState::Nodes => go.set_nodes(to_number::<u64>(word)?),
@@ -307,8 +307,10 @@ fn parse_go_opt(parse_state: GoParseState, word: &str, go: &mut Go) -> Result<()
 
 // A function to parse time as milliseconds, with parse errors mapped to thne
 // UziErr::BadMillis error.
-fn to_millis(word: &str) -> Result<Duration, UziErr> {
-    let millis = word.parse::<u64>().map_err(|_| UziErr::BadMillis)?;
+fn to_millis(word: &str, opt_name: &str) -> Result<Duration, UziErr> {
+    let millis = word
+        .parse::<u64>()
+        .map_err(|_| UziErr::BadMillis(opt_name.into(), word.into()))?;
     Ok(Duration::from_millis(millis))
 }
 
@@ -548,5 +550,97 @@ mod tests {
     fn pos_try_from_mixed_fen_and_startpos() {
         let args = vec!["position", "startpos", "fen"];
         assert_eq!(Pos::try_from(&args), Err(UziErr::Position));
+    }
+
+    #[test]
+    fn go_default_without_any_opts() {
+        let go = Go::new();
+        assert!(!go.has_any());
+    }
+
+    #[test]
+    fn go_with_all_opts() {
+        let mut go = Go::new();
+        go.add_search_move("e2e4")
+            .set_ponder()
+            .set_wtime(Duration::from_millis(1))
+            .set_btime(Duration::from_millis(2))
+            .set_winc(Duration::from_millis(1))
+            .set_binc(Duration::from_millis(2))
+            .set_moves_to_go(10)
+            .set_depth(100)
+            .set_nodes(100_000)
+            .set_mate(10)
+            .set_move_time(Duration::from_millis(100))
+            .set_infinite();
+        assert_eq!(
+            go,
+            Go {
+                search_moves: Some(vec!["e2e4".into()]),
+                ponder: Some(()),
+                wtime: Some(Duration::from_millis(1)),
+                btime: Some(Duration::from_millis(2)),
+                winc: Some(Duration::from_millis(1)),
+                binc: Some(Duration::from_millis(2)),
+                moves_to_go: Some(10),
+                depth: Some(100),
+                nodes: Some(100_000),
+                mate: Some(10),
+                move_time: Some(Duration::from_millis(100)),
+                infinite: Some(()),
+            }
+        );
+    }
+
+    #[test]
+    fn go_try_from_empty() {
+        assert_eq!(Go::try_from(&vec!["hello", "mother"]), Err(UziErr::GoErr));
+    }
+
+    #[test]
+    fn go_try_from_all_opts() {
+        let opts = vec![
+            "go",
+            "searchmoves",
+            "e2e4",
+            "e7e5",
+            "ponder",
+            "wtime",
+            "1",
+            "btime",
+            "2",
+            "winc",
+            "1",
+            "binc",
+            "2",
+            "movestogo",
+            "10",
+            "depth",
+            "100",
+            "nodes",
+            "100000",
+            "mate",
+            "10",
+            "movetime",
+            "100",
+            "infinite",
+        ];
+        assert_eq!(
+            Go::try_from(&opts),
+            Ok(Go {
+                search_moves: Some(vec!["e2e4".into(), "e7e5".into()]),
+                ponder: Some(()),
+                wtime: Some(Duration::from_millis(1)),
+                btime: Some(Duration::from_millis(2)),
+                winc: Some(Duration::from_millis(1)),
+                binc: Some(Duration::from_millis(2)),
+                moves_to_go: Some(10),
+                depth: Some(100),
+                nodes: Some(100_000),
+                mate: Some(10),
+                move_time: Some(Duration::from_millis(100)),
+                infinite: Some(()),
+            })
+        );
     }
 }

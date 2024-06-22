@@ -243,6 +243,99 @@ pub struct Go {
     infinite: Option<()>,
 }
 
+impl Go {
+    #[inline]
+    pub fn new() -> Self {
+        Go::default()
+    }
+
+    // Adds a search move to restrict search.
+    pub fn add_search_move(&mut self, mv: &str) -> &mut Self {
+        if let Some(ref mut moves) = self.search_moves {
+            moves.push(mv.into());
+        } else {
+            self.search_moves = Some(vec![mv.into()]);
+        }
+        self
+    }
+
+    // Remaining time for white in seconds.
+    pub fn set_wtime(&mut self, wtime: Duration) -> &mut Self {
+        self.wtime.replace(wtime);
+        self
+    }
+
+    // Remaining time for black in seconds.
+    pub fn set_btime(&mut self, btime: Duration) -> &mut Self {
+        self.btime.replace(btime);
+        self
+    }
+
+    // Time increment for white in seconds.
+    pub fn set_winc(&mut self, winc: Duration) -> &mut Self {
+        self.winc.replace(winc);
+        self
+    }
+
+    // Time increment for black in seconds.
+    pub fn set_binc(&mut self, binc: Duration) -> &mut Self {
+        self.binc.replace(binc);
+        self
+    }
+
+    // Sets the number of moves until the next time control.
+    pub fn set_moves_to_go(&mut self, moves_to_go: u16) -> &mut Self {
+        self.moves_to_go.replace(moves_to_go);
+        self
+    }
+
+    // Sets the depth limit in plies.
+    pub fn set_depth(&mut self, depth: u16) -> &mut Self {
+        self.depth.replace(depth);
+        self
+    }
+
+    // Max total nodes to search.
+    pub fn set_nodes(&mut self, nodes: u64) -> &mut Self {
+        self.nodes.replace(nodes);
+        self
+    }
+
+    // Moves to force mate.
+    pub fn set_mate(&mut self, mate: u16) -> &mut Self {
+        self.mate.replace(mate);
+        self
+    }
+
+    // Number of seconds to spend for the move.
+    pub fn set_move_time(&mut self, move_time: Duration) -> &mut Self {
+        self.move_time.replace(move_time);
+        self
+    }
+
+    // Search until the "stop" command is sent.
+    pub fn set_infinite(&mut self) -> &mut Self {
+        self.infinite.replace(());
+        self
+    }
+
+    // Returns true if any options are set.
+    pub fn has_any(&self) -> bool {
+        self.search_moves.is_some()
+            || self.ponder.is_some()
+            || self.wtime.is_some()
+            || self.btime.is_some()
+            || self.winc.is_some()
+            || self.binc.is_some()
+            || self.moves_to_go.is_some()
+            || self.depth.is_some()
+            || self.nodes.is_some()
+            || self.mate.is_some()
+            || self.move_time.is_some()
+            || self.infinite.is_some()
+    }
+}
+
 // Default initialization for Go.
 impl Default for Go {
     fn default() -> Self {
@@ -260,13 +353,6 @@ impl Default for Go {
             move_time: None,
             infinite: None,
         }
-    }
-}
-
-impl Go {
-    #[inline]
-    pub fn new() -> Self {
-        Go::default()
     }
 }
 

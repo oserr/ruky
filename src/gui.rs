@@ -3,6 +3,7 @@
 
 use crate::err::UziErr;
 use crate::opt::UciOpt;
+use std::str::FromStr;
 use std::time::Duration;
 
 // Represents a command from the GUI to the engine.
@@ -198,6 +199,12 @@ impl Go {
         self
     }
 
+    // Search in ponder mode.
+    pub fn set_ponder(&mut self) -> &mut Self {
+        self.ponder.replace(());
+        self
+    }
+
     // Returns true if any options are set.
     pub fn has_any(&self) -> bool {
         self.search_moves.is_some()
@@ -233,6 +240,103 @@ impl Default for Go {
             infinite: None,
         }
     }
+}
+
+impl TryFrom<&Vec<&str>> for Go {
+    type Error = UziErr;
+
+    fn try_from(cmd: &Vec<&str>) -> Result<Go, Self::Error> {
+        let mut go = Go::new();
+        let mut parse_state = GoParseState::Begin;
+
+        for word in cmd {
+            match *word {
+                "go" => {
+                    if parse_state != GoParseState::Begin {
+                        return Err(UziErr::GoErr);
+                    }
+                    parse_state = GoParseState::Go;
+                }
+                "wtime" => parse_state = GoParseState::Wtime,
+                "btime" => parse_state = GoParseState::Btime,
+                "winc" => parse_state = GoParseState::Winc,
+                "binc" => parse_state = GoParseState::Binc,
+                "movetime" => parse_state = GoParseState::MoveTime,
+                "movestogo" => parse_state = GoParseState::MovesToGo,
+                "depth" => parse_state = GoParseState::Depth,
+                "nodes" => parse_state = GoParseState::Nodes,
+                "mate" => parse_state = GoParseState::Mate,
+                "searchmoves" => parse_state = GoParseState::SearchMoves,
+                "infite" => {
+                    parse_state = GoParseState::Infinite;
+                    go.set_infinite();
+                }
+                "ponder" => {
+                    parse_state = GoParseState::Ponder;
+                    go.set_ponder();
+                }
+                _ => parse_go_cmd(parse_state, word, &mut go)?,
+            }
+        }
+
+        if !go.has_any() {
+            Err(UziErr::GoErr)
+        } else {
+            Ok(go)
+        }
+    }
+}
+
+// A helper function to parse and set the "go" command options.
+fn parse_go_cmd(parse_state: GoParseState, word: &str, go: &mut Go) -> Result<(), UziErr> {
+    match parse_state {
+        GoParseState::Wtime => go.set_wtime(to_millis(word)?),
+        GoParseState::Btime => go.set_btime(to_millis(word)?),
+        GoParseState::Winc => go.set_winc(to_millis(word)?),
+        GoParseState::Binc => go.set_binc(to_millis(word)?),
+        GoParseState::MoveTime => go.set_move_time(to_millis(word)?),
+        GoParseState::MovesToGo => go.set_moves_to_go(to_number::<u16>(word)?),
+        GoParseState::Depth => go.set_depth(to_number::<u16>(word)?),
+        GoParseState::Nodes => go.set_nodes(to_number::<u64>(word)?),
+        GoParseState::Mate => go.set_mate(to_number::<u16>(word)?),
+        GoParseState::SearchMoves => go.add_search_move(word),
+        _ => return Err(UziErr::GoErr),
+    };
+    Ok(())
+}
+
+// A function to parse time as milliseconds, with parse errors mapped to thne
+// UziErr::BadMillis error.
+fn to_millis(word: &str) -> Result<Duration, UziErr> {
+    let millis = word.parse::<u64>().map_err(|_| UziErr::BadMillis)?;
+    Ok(Duration::from_millis(millis))
+}
+
+// A function to parse a generic number which maps an error to a
+// UziErr::BadNumber error.
+fn to_number<T: FromStr>(word: &str) -> Result<T, UziErr> {
+    let num = word.parse::<T>().map_err(|_| UziErr::BadNumber)?;
+    Ok(num)
+}
+
+// An enum to represent the current option being parsed when the go command is
+// parsed.
+#[derive(PartialEq, Clone, Copy)]
+enum GoParseState {
+    Begin,
+    Go,
+    SearchMoves,
+    Ponder,
+    Wtime,
+    Btime,
+    Winc,
+    Binc,
+    MovesToGo,
+    Depth,
+    Nodes,
+    Mate,
+    MoveTime,
+    Infinite,
 }
 
 // A structure to represent the UCI "position" command, which is issued to the

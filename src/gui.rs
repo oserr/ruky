@@ -339,11 +339,49 @@ pub struct Pos {
     moves: Option<Vec<String>>,
 }
 
+impl Pos {
+    pub fn new() -> Self {
+        Pos::default()
+    }
+
+    pub fn with_fen(fen: &str) -> Self {
+        Pos {
+            pos: PosOpt::Fen(fen.into()),
+            moves: None,
+        }
+    }
+
+    pub fn set_fen(&mut self, fen: &str) -> &mut Self {
+        self.pos = PosOpt::Fen(fen.into());
+        self
+    }
+
+    // Adds a move to the position. Moves should be added in the order they are
+    // played.
+    pub fn add_move(&mut self, mv: &str) -> &mut Self {
+        if let Some(ref mut moves) = self.moves {
+            moves.push(mv.into());
+        } else {
+            self.moves = Some(vec![mv.into()]);
+        }
+        self
+    }
+}
+
+impl Default for Pos {
+    fn default() -> Self {
+        Self {
+            pos: PosOpt::StartPos,
+            moves: None,
+        }
+    }
+}
+
 impl TryFrom<&Vec<&str>> for Pos {
     type Error = UziErr;
 
     fn try_from(cmd: &Vec<&str>) -> Result<Pos, Self::Error> {
-        let mut builder = PosBuilder::new();
+        let mut pos = Pos::new();
         let mut pos_state = PosState::Begin;
 
         for word in cmd {
@@ -365,7 +403,6 @@ impl TryFrom<&Vec<&str>> for Pos {
                         return Err(UziErr::Position);
                     }
                     pos_state = PosState::StartPos;
-                    builder.start();
                 }
                 "moves" => {
                     if pos_state != PosState::FenStr && pos_state != PosState::StartPos {
@@ -376,9 +413,9 @@ impl TryFrom<&Vec<&str>> for Pos {
                 _ => {
                     if pos_state == PosState::Fen {
                         pos_state = PosState::FenStr;
-                        builder.fen(*word);
+                        pos.set_fen(*word);
                     } else if pos_state == PosState::Moves {
-                        builder.add_move(*word);
+                        pos.add_move(*word);
                     } else {
                         return Err(UziErr::Position);
                     }
@@ -387,7 +424,7 @@ impl TryFrom<&Vec<&str>> for Pos {
         }
 
         match pos_state {
-            PosState::FenStr | PosState::Moves | PosState::StartPos => builder.build(),
+            PosState::FenStr | PosState::Moves | PosState::StartPos => Ok(pos),
             _ => Err(UziErr::Position),
         }
     }

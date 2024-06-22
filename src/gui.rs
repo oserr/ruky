@@ -454,43 +454,23 @@ mod tests {
     use super::*;
 
     #[test]
-    fn new_pos_builder() {
-        let pos_builder = PosBuilder::new();
-        assert!(pos_builder.pos.is_none());
-        assert!(pos_builder.moves.is_none());
-    }
-
-    #[test]
-    fn pos_builder_with_startpos() {
-        let mut pos_builder = PosBuilder::new();
-        let pos = pos_builder
-            .start()
-            .build()
-            .expect("Should build with startpos");
+    fn pos_new() {
+        let pos = Pos::new();
         assert_eq!(pos.pos, PosOpt::StartPos);
         assert!(pos.moves.is_none());
     }
 
     #[test]
-    fn pos_builder_with_fen() {
-        let mut pos_builder = PosBuilder::new();
-        let pos = pos_builder
-            .fen("fen")
-            .build()
-            .expect("Should build with fen");
+    fn pos_with_fen() {
+        let pos = Pos::with_fen("fen");
         assert_eq!(pos.pos, PosOpt::Fen("fen".into()));
         assert!(pos.moves.is_none());
     }
 
     #[test]
-    fn pos_builder_with_startpos_and_moves() {
-        let mut pos_builder = PosBuilder::new();
-        let pos = pos_builder
-            .start()
-            .add_move("e2e4")
-            .add_move("e7e5")
-            .build()
-            .expect("Should build with startpos and moves");
+    fn pos_with_moves() {
+        let mut pos = Pos::new();
+        pos.add_move("e2e4").add_move("e7e5");
         assert_eq!(pos.pos, PosOpt::StartPos);
         assert_eq!(pos.moves, Some(vec!["e2e4".into(), "e7e5".into()]));
     }
@@ -510,7 +490,7 @@ mod tests {
     #[test]
     fn pos_try_from_pos_with_startpos() {
         let args = vec!["position", "startpos"];
-        assert_eq!(Pos::try_from(&args), PosBuilder::new().start().build());
+        assert_eq!(Pos::try_from(&args), Ok(Pos::new()));
     }
 
     #[test]
@@ -528,36 +508,23 @@ mod tests {
     #[test]
     fn pos_try_from_fen_with_fen() {
         let args = vec!["position", "fen", "FENSTRING"];
-        assert_eq!(
-            Pos::try_from(&args),
-            PosBuilder::new().fen("FENSTRING").build()
-        );
+        assert_eq!(Pos::try_from(&args), Ok(Pos::with_fen("FENSTRING")));
     }
 
     #[test]
     fn pos_try_from_fen_with_moves() {
         let args = vec!["position", "fen", "FENSTRING", "moves", "e2e4", "e7e5"];
-        assert_eq!(
-            Pos::try_from(&args),
-            PosBuilder::new()
-                .fen("FENSTRING")
-                .add_move("e2e4")
-                .add_move("e7e5")
-                .build()
-        );
+        let mut pos = Pos::with_fen("FENSTRING");
+        pos.add_move("e2e4").add_move("e7e5");
+        assert_eq!(Pos::try_from(&args), Ok(pos));
     }
 
     #[test]
     fn pos_try_from_startpos_with_moves() {
         let args = vec!["position", "startpos", "moves", "e2e4", "e7e5"];
-        assert_eq!(
-            Pos::try_from(&args),
-            PosBuilder::new()
-                .start()
-                .add_move("e2e4")
-                .add_move("e7e5")
-                .build()
-        );
+        let mut pos = Pos::new();
+        pos.add_move("e2e4").add_move("e7e5");
+        assert_eq!(Pos::try_from(&args), Ok(pos));
     }
 
     #[test]

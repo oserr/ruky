@@ -1,5 +1,7 @@
 // This module contains the types to represent a UCI option.
 
+use crate::err::UziErr;
+
 // Represents all the different options that may be supported by a UCI compliant
 // chess engine.
 #[derive(Clone, Debug, PartialEq)]
@@ -117,6 +119,21 @@ pub enum SetOpt {
     // in centipawns from white's point of view if evaluating this specific position. Allowed
     // formats:
     SetPositionValue(PosValueOpt),
+}
+
+impl TryFrom<&Vec<&str>> for SetOpt {
+    type Error = UziErr;
+    fn try_from(cmd: &Vec<&str>) -> Result<Self, Self::Error> {
+        todo!()
+    }
+}
+
+#[derive(PartialEq)]
+enum SetOptParseState {
+    Begin,
+    SetOpt,
+    Name,
+    Value
 }
 
 // Represents the opponent option: UCI_Opponent.

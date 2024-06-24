@@ -161,3 +161,17 @@ pub enum PosValueOpt {
     // clearall
     ClearAll,
 }
+
+// Constants for the names of the UCI options.
+const HASH: &str = "Hash";
+const NALIMOV_PATH: &str = "NalimovPath";
+const OWN_BOOK: &str = "NalimovCache";
+const MULTI_PV: &str = "MultiPv";
+const SHOW_CURR_LINE: &str = &"UCI_ShowCurrLine";
+const SHOW_REFUTATIONS: &str = "UCI_ShowRefutations";
+const LIMIT_STRENGTH: &str = "UCI_LimitStrength";
+const ELO: &str = "UCI_Elo";
+const ANALYSIS_MODE: &str = "UCI_AnalysisMode";
+const OPPONENT: &str = "UCI_Opponent";
+const SHREDDER_BASES_PATH: &str = "UCI_ShredderbasesPath";
+const SET_POSITION_VALUE: &str = "UCI_SetPositionValue";

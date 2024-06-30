@@ -177,7 +177,7 @@ fn parse_value(opt: UziOpt, cmd: &[&str]) -> Result<SetOpt, UziErr> {
         UziOpt::ShredderBasesPath => {
             Ok(SetOpt::ShredderBasesPath(PathBuf::from_str(word).unwrap()))
         }
-        UziOpt::Opponent => parse_opponent(&cmd),
+        UziOpt::Opponent => Ok(SetOpt::Opp(Opponent::try_from(cmd)?)),
         UziOpt::SetPositionValue => parse_position_val(&cmd),
     }
 }
@@ -310,10 +310,6 @@ impl TryFrom<&[&str]> for Opponent {
 
         Ok(opp)
     }
-}
-
-fn parse_opponent(cmd: &[&str]) -> Result<SetOpt, UziErr> {
-    todo!()
 }
 
 // Represents the title of the player, e.g. grand master.

@@ -292,19 +292,23 @@ impl TryFrom<&[&str]> for Opponent {
             return Err(UziErr::BadOpponent);
         }
 
-        let mut opponent = Opponent::default();
+        let mut opp = Opponent::default();
 
         for (i, word) in opts.into_iter().enumerate() {
             match i {
-                0 => todo!(),
-                1 => todo!(),
-                2 => todo!(),
-                3 => todo!(),
+                0 => opp.title = Title::from_str(word)?,
+                1 if *word == "none" => continue,
+                1 => {
+                    let elo = to_number::<u16>(word).map_err(|_| UziErr::BadOpponent)?;
+                    opp.elo = Some(elo);
+                }
+                2 => opp.player_type = PlayerType::from_str(word)?,
+                3 => opp.name.push_str(word),
                 _ => return Err(UziErr::BadOpponent),
             }
         }
 
-        Ok(opponent)
+        Ok(opp)
     }
 }
 

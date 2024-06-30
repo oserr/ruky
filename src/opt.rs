@@ -239,6 +239,7 @@ impl FromStr for UziOpt {
 
     fn from_str(buf: &str) -> Result<Self, Self::Err> {
         match buf {
+            ABOUT => Ok(UziOpt::About),
             HASH => Ok(UziOpt::Hash),
             NALIMOV_PATH => Ok(UziOpt::NalimovPath),
             NALIMOVE_CACHE => Ok(UziOpt::NalimovCache),
@@ -398,6 +399,7 @@ const NALIMOVE_CACHE: &str = "NalimovCache";
 const OWN_BOOK: &str = "OwnBook";
 const MULTI_PV: &str = "MultiPv";
 const PONDER: &str = "Ponder";
+const ABOUT: &str = "UCI_EngineAbout";
 const SHOW_CURR_LINE: &str = &"UCI_ShowCurrLine";
 const SHOW_REFUTATIONS: &str = "UCI_ShowRefutations";
 const LIMIT_STRENGTH: &str = "UCI_LimitStrength";

@@ -369,6 +369,28 @@ pub enum PosValueOpt {
     ClearAll,
 }
 
+impl TryFrom<&[&str]> for PosValueOpt {
+    type Error = UziErr;
+
+    fn try_from(opts: &[&str]) -> Result<Self, Self::Error> {
+        if opts.len() == 1 && opts[0] == "clearall" {
+            return Ok(PosValueOpt::ClearAll);
+        }
+
+        if opts.len() != 2 {
+            return Err(UziErr::BadPositionVal);
+        }
+
+        match opts[0] {
+            "clear" => Ok(PosValueOpt::Clear(opts[1].into())),
+            _ => Ok(PosValueOpt::Val {
+                val: to_number::<i32>(opts[0]).map_err(|_| UziErr::BadPositionVal)?,
+                fen: opts[1].into(),
+            }),
+        }
+    }
+}
+
 fn parse_position_val(cmd: &[&str]) -> Result<SetOpt, UziErr> {
     todo!()
 }

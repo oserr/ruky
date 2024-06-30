@@ -6,6 +6,7 @@ pub enum UziErr {
     BadNumber,
     BadOpponent,
     BadPlayerType,
+    BadPositionVal,
     BadTitle,
     GoErr,
     MissingCmd,

@@ -346,6 +346,18 @@ pub enum PlayerType {
     Computer,
 }
 
+impl FromStr for PlayerType {
+    type Err = UziErr;
+
+    fn from_str(buf: &str) -> Result<Self, Self::Err> {
+        match buf {
+            "human" => Ok(PlayerType::Human),
+            "computer" => Ok(PlayerType::Computer),
+            _ => Err(UziErr::BadPlayerType),
+        }
+    }
+}
+
 // Represents the different values that can be used for UCI_SetPositionValue.
 #[derive(Clone, Debug, PartialEq)]
 pub enum PosValueOpt {

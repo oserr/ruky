@@ -5,6 +5,7 @@ pub enum UziErr {
     BadMillis(String, String),
     BadNumber,
     BadOpponent,
+    BadPlayerType,
     BadTitle,
     GoErr,
     MissingCmd,

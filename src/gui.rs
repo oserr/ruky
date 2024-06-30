@@ -3,7 +3,7 @@
 
 use crate::conv::{to_millis, to_number};
 use crate::err::UziErr;
-use crate::opt::UciOpt;
+use crate::opt::SetOpt;
 use std::time::Duration;
 
 // Represents a command from the GUI to the engine.
@@ -24,7 +24,7 @@ pub enum GuiCmd {
     // This is sent to the engine when the user wants to change the internal parameters of the
     // engine. One command will be sent for each parameter and this will only be sent when the
     // engine is waiting.
-    SetOpt(UciOpt),
+    SetOpt(SetOpt),
 
     // ucinewgame: Sent to the engine when the next search, started with position and go will be
     // from a different game.
@@ -70,7 +70,7 @@ impl TryFrom<&str> for GuiCmd {
                     _ => Err(UziErr::MissingOnOff),
                 }
             }
-            "setoption" => todo!(),
+            "setoption" => Ok(GuiCmd::SetOpt(SetOpt::try_from(&words)?)),
             "position" => Ok(GuiCmd::Pos(Pos::try_from(&words)?)),
             "go" => Ok(GuiCmd::Go(Go::try_from(&words)?)),
             _ => Err(UziErr::What),

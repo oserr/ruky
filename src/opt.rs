@@ -1,6 +1,9 @@
 // This module contains the types to represent a UCI option.
 
 use crate::err::UziErr;
+use crate::conv::{to_bool, to_number};
+use std::path::PathBuf;
+use std::str::FromStr;
 
 // Represents all the different options that may be supported by a UCI compliant
 // chess engine.
@@ -10,7 +13,7 @@ pub enum UciOpt {
     Hash,
     // The path on the hard disk to the Nalimov compressed format. Multiple directories can be
     // concatenated with ";".
-    NalimovPath(String),
+    NalimovPath(PathBuf),
     // This is the size in MB for the cache for the nalimov table bases.
     NalimovCache(OptVal),
     // This means that the engine is able to ponder.
@@ -48,7 +51,7 @@ pub enum UciOpt {
     // UCI_EngineAbout: The engine tells the GUI information about itself.
     About(String),
     // UCI_ShredderbasesPath: Path to folder of containing the Shredder endgame databases.
-    ShredderBasesPath(String),
+    ShredderBasesPath(PathBuf),
     // UCI_SetPositionValue: The GUI can send this to the engine to tell it to use a certain value
     // in centipawns from white's point of view if evaluating this specific position. Allowed
     // formats:
@@ -89,9 +92,11 @@ pub enum SetOpt {
     Hash(u64),
     // The path on the hard disk to the Nalimov compressed format. Multiple directories can be
     // concatenated with ";".
-    NalimovPath(String),
+    NalimovPath(PathBuf),
     // This is the size in MB for the cache for the nalimov table bases.
     NalimovCache(u64),
+    // If set, the engine can think of the next move while the opponent is thinking.
+    Ponder(bool),
     // This means that the engine has its own book which is accessed by the engine itself. If this
     // is set, the engine takes care of the opening book. If set to false, the engine should not
     // its book.
@@ -111,10 +116,10 @@ pub enum SetOpt {
     // UCI_AnalsysMode: The engine wants to behave differently when analysing or playing a game.
     // This is set to false if the engine is playing a game.
     AnalysisMode(bool),
+    // UCI_ShredderbasesPath: Path to folder of containing the Shredder endgame databases.
+    ShredderBasesPath(PathBuf),
     // UCI_Opponent: Used to set the opponent info.
     Opp(Opponent),
-    // UCI_ShredderbasesPath: Path to folder of containing the Shredder endgame databases.
-    ShredderBasesPath(String),
     // UCI_SetPositionValue: The GUI can send this to the engine to tell it to use a certain value
     // in centipawns from white's point of view if evaluating this specific position. Allowed
     // formats:
@@ -124,7 +129,56 @@ pub enum SetOpt {
 impl TryFrom<&Vec<&str>> for SetOpt {
     type Error = UziErr;
     fn try_from(cmd: &Vec<&str>) -> Result<Self, Self::Error> {
-        todo!()
+        let mut parse_state = SetOptParseState::Begin;
+        for (i, word) in cmd.into_iter().enumerate() {
+            match *word {
+                "setoption" if parse_state.is_begin() => parse_state = SetOptParseState::SetOpt,
+                "name" if parse_state.is_setopt() => parse_state = SetOptParseState::Name,
+                "value" if parse_state.is_val() => {
+                    if let Some(opt) = parse_state.get_val() {
+                        return parse_value(opt, &cmd[i..]);
+                    } else {
+                        return Err(UziErr::SetOptErr);
+                    }
+                }
+                _ => match parse_state {
+                    SetOptParseState::Name => {
+                        let opt = UziOpt::from_str(*word)?;
+                        parse_state = SetOptParseState::Value(opt);
+                    }
+                    _ => return Err(UziErr::SetOptErr),
+                },
+            }
+        }
+        Err(UziErr::SetOptErr)
+    }
+}
+
+// Parse the value in the "setoption" command and creates a SetOpt if there is no error, otherwise
+// returns an error.
+fn parse_value(opt: UziOpt, cmd: &[&str]) -> Result<SetOpt, UziErr> {
+    if cmd.is_empty() {
+        return Err(UziErr::SetOptErr);
+    }
+    let word = cmd[0];
+    match opt {
+        UziOpt::About => Err(UziErr::SetOptErr),
+        UziOpt::Hash => Ok(SetOpt::Hash(to_number::<u64>(word)?)),
+        UziOpt::NalimovPath => Ok(SetOpt::NalimovPath(PathBuf::from_str(word).unwrap())),
+        UziOpt::NalimovCache => Ok(SetOpt::NalimovCache(to_number::<u64>(word)?)),
+        UziOpt::Ponder => Ok(SetOpt::Ponder(to_bool(word)?)),
+        UziOpt::OwnBook => Ok(SetOpt::OwnBook(to_bool(word)?)),
+        UziOpt::MultiPv => Ok(SetOpt::MultiPv(to_number::<u64>(word)?)),
+        UziOpt::ShowCurrLine => Ok(SetOpt::ShowCurrLine(to_bool(word)?)),
+        UziOpt::ShowRefutations => Ok(SetOpt::ShowRefutations(to_bool(word)?)),
+        UziOpt::LimitStrength => Ok(SetOpt::LimitStrength(to_bool(word)?)),
+        UziOpt::Elo => Ok(SetOpt::Elo(to_number::<u16>(word)?)),
+        UziOpt::AnalysisMode => Ok(SetOpt::AnalysisMode(to_bool(word)?)),
+        UziOpt::ShredderBasesPath => {
+            Ok(SetOpt::ShredderBasesPath(PathBuf::from_str(word).unwrap()))
+        }
+        UziOpt::Opponent => parse_opponent(&cmd),
+        UziOpt::SetPositionValue => parse_position_val(&cmd),
     }
 }
 
@@ -133,7 +187,75 @@ enum SetOptParseState {
     Begin,
     SetOpt,
     Name,
-    Value
+    Value(UziOpt),
+}
+
+impl SetOptParseState {
+    #[inline]
+    fn is_begin(&self) -> bool {
+        matches!(*self, SetOptParseState::Begin)
+    }
+
+    #[inline]
+    fn is_setopt(&self) -> bool {
+        matches!(*self, SetOptParseState::SetOpt)
+    }
+
+    #[inline]
+    fn is_val(&self) -> bool {
+        matches!(*self, SetOptParseState::Value(_))
+    }
+
+    fn get_val(&self) -> Option<UziOpt> {
+        match *self {
+            SetOptParseState::Value(opt) => Some(opt),
+            _ => None,
+        }
+    }
+}
+
+// Represents all the UCI options, but we don't use payloads here.
+#[derive(Copy, Clone, PartialEq)]
+pub enum UziOpt {
+    Hash,
+    NalimovPath,
+    NalimovCache,
+    Ponder,
+    OwnBook,
+    MultiPv,
+    ShowCurrLine,
+    ShowRefutations,
+    LimitStrength,
+    Elo,
+    AnalysisMode,
+    Opponent,
+    About,
+    ShredderBasesPath,
+    SetPositionValue,
+}
+
+impl FromStr for UziOpt {
+    type Err = UziErr;
+
+    fn from_str(buff: &str) -> Result<Self, Self::Err> {
+        match buff {
+            HASH => Ok(UziOpt::Hash),
+            NALIMOV_PATH => Ok(UziOpt::NalimovPath),
+            NALIMOVE_CACHE => Ok(UziOpt::NalimovCache),
+            PONDER => Ok(UziOpt::Ponder),
+            OWN_BOOK => Ok(UziOpt::OwnBook),
+            MULTI_PV => Ok(UziOpt::MultiPv),
+            SHOW_CURR_LINE => Ok(UziOpt::ShowCurrLine),
+            SHOW_REFUTATIONS => Ok(UziOpt::ShowRefutations),
+            LIMIT_STRENGTH => Ok(UziOpt::LimitStrength),
+            ELO => Ok(UziOpt::Elo),
+            ANALYSIS_MODE => Ok(UziOpt::AnalysisMode),
+            OPPONENT => Ok(UziOpt::Opponent),
+            SHREDDER_BASES_PATH => Ok(UziOpt::ShredderBasesPath),
+            SET_POSITION_VALUE => Ok(UziOpt::SetPositionValue),
+            _ => Err(UziErr::UnknownOpt),
+        }
+    }
 }
 
 // Represents the opponent option: UCI_Opponent.
@@ -149,6 +271,10 @@ pub struct Opponent {
     elo: Option<u16>,
     player_type: PlayerType,
     name: String,
+}
+
+fn parse_opponent(cmd: &[&str]) -> Result<SetOpt, UziErr> {
+    todo!()
 }
 
 // Represents the title of the player, e.g. grand master.
@@ -179,11 +305,17 @@ pub enum PosValueOpt {
     ClearAll,
 }
 
+fn parse_position_val(cmd: &[&str]) -> Result<SetOpt, UziErr> {
+    todo!()
+}
+
 // Constants for the names of the UCI options.
 const HASH: &str = "Hash";
 const NALIMOV_PATH: &str = "NalimovPath";
-const OWN_BOOK: &str = "NalimovCache";
+const NALIMOVE_CACHE: &str = "NalimovCache";
+const OWN_BOOK: &str = "OwnBook";
 const MULTI_PV: &str = "MultiPv";
+const PONDER: &str = "Ponder";
 const SHOW_CURR_LINE: &str = &"UCI_ShowCurrLine";
 const SHOW_REFUTATIONS: &str = "UCI_ShowRefutations";
 const LIMIT_STRENGTH: &str = "UCI_LimitStrength";

@@ -3,7 +3,7 @@
 
 use crate::err::UziErr;
 use crate::opt::UciOpt;
-use std::str::FromStr;
+use crate::conv::{to_millis, to_number};
 use std::time::Duration;
 
 // Represents a command from the GUI to the engine.
@@ -303,22 +303,6 @@ fn parse_go_opt(parse_state: GoParseState, word: &str, go: &mut Go) -> Result<()
         _ => return Err(UziErr::GoErr),
     };
     Ok(())
-}
-
-// A function to parse time as milliseconds, with parse errors mapped to thne
-// UziErr::BadMillis error.
-fn to_millis(word: &str, opt_name: &str) -> Result<Duration, UziErr> {
-    let millis = word
-        .parse::<u64>()
-        .map_err(|_| UziErr::BadMillis(opt_name.into(), word.into()))?;
-    Ok(Duration::from_millis(millis))
-}
-
-// A function to parse a generic number which maps an error to a
-// UziErr::BadNumber error.
-fn to_number<T: FromStr>(word: &str) -> Result<T, UziErr> {
-    let num = word.parse::<T>().map_err(|_| UziErr::BadNumber)?;
-    Ok(num)
 }
 
 // An enum to represent the current option being parsed when the go command is

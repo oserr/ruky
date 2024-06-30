@@ -1,7 +1,7 @@
 // This module contains the types to represent a UCI option.
 
-use crate::err::UziErr;
 use crate::conv::{to_bool, to_number};
+use crate::err::UziErr;
 use std::path::PathBuf;
 use std::str::FromStr;
 
@@ -154,8 +154,8 @@ impl TryFrom<&Vec<&str>> for SetOpt {
     }
 }
 
-// Parse the value in the "setoption" command and creates a SetOpt if there is no error, otherwise
-// returns an error.
+// Parse the value in the "setoption" command and creates a SetOpt if there is
+// no error, otherwise returns an error.
 fn parse_value(opt: UziOpt, cmd: &[&str]) -> Result<SetOpt, UziErr> {
     if cmd.is_empty() {
         return Err(UziErr::SetOptErr);
@@ -237,8 +237,8 @@ pub enum UziOpt {
 impl FromStr for UziOpt {
     type Err = UziErr;
 
-    fn from_str(buff: &str) -> Result<Self, Self::Err> {
-        match buff {
+    fn from_str(buf: &str) -> Result<Self, Self::Err> {
+        match buf {
             HASH => Ok(UziOpt::Hash),
             NALIMOV_PATH => Ok(UziOpt::NalimovPath),
             NALIMOVE_CACHE => Ok(UziOpt::NalimovCache),
@@ -267,10 +267,45 @@ impl FromStr for UziOpt {
 // - setoption name UCI_Opponent value none none computer Shredder
 #[derive(Clone, Debug, PartialEq)]
 pub struct Opponent {
-    title: Option<Title>,
+    title: Title,
     elo: Option<u16>,
     player_type: PlayerType,
     name: String,
+}
+
+impl Default for Opponent {
+    fn default() -> Self {
+        Self {
+            title: Title::NoTitle,
+            elo: None,
+            player_type: PlayerType::Human,
+            name: String::new(),
+        }
+    }
+}
+
+impl TryFrom<&[&str]> for Opponent {
+    type Error = UziErr;
+
+    fn try_from(opts: &[&str]) -> Result<Opponent, UziErr> {
+        if opts.len() != 4 {
+            return Err(UziErr::BadOpponent);
+        }
+
+        let mut opponent = Opponent::default();
+
+        for (i, word) in opts.into_iter().enumerate() {
+            match i {
+                0 => todo!(),
+                1 => todo!(),
+                2 => todo!(),
+                3 => todo!(),
+                _ => return Err(UziErr::BadOpponent),
+            }
+        }
+
+        Ok(opponent)
+    }
 }
 
 fn parse_opponent(cmd: &[&str]) -> Result<SetOpt, UziErr> {
@@ -285,6 +320,23 @@ pub enum Title {
     FM,
     WGM,
     WIM,
+    NoTitle,
+}
+
+impl FromStr for Title {
+    type Err = UziErr;
+
+    fn from_str(buf: &str) -> Result<Title, UziErr> {
+        match buf {
+            "GM" => Ok(Title::GM),
+            "IM" => Ok(Title::IM),
+            "FM" => Ok(Title::FM),
+            "WGM" => Ok(Title::WGM),
+            "WIM" => Ok(Title::WIM),
+            "none" => Ok(Title::NoTitle),
+            _ => Err(UziErr::BadTitle),
+        }
+    }
 }
 
 // To represent human or computer players.

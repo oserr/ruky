@@ -4,6 +4,8 @@ pub enum UziErr {
     BadBool,
     BadMillis(String, String),
     BadNumber,
+    BadOpponent,
+    BadTitle,
     GoErr,
     MissingCmd,
     MissingOnOff,

@@ -1,9 +1,9 @@
 // This module contains artifacts used to build and represent commands from the
 // GUI to the engine.
 
+use crate::conv::{to_millis, to_number};
 use crate::err::UziErr;
 use crate::opt::UciOpt;
-use crate::conv::{to_millis, to_number};
 use std::time::Duration;
 
 // Represents a command from the GUI to the engine.

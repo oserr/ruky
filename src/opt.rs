@@ -123,7 +123,7 @@ pub enum SetOpt {
     // UCI_SetPositionValue: The GUI can send this to the engine to tell it to use a certain value
     // in centipawns from white's point of view if evaluating this specific position. Allowed
     // formats:
-    SetPositionValue(PosValueOpt),
+    SetPosVal(PosValueOpt),
 }
 
 impl TryFrom<&Vec<&str>> for SetOpt {
@@ -178,7 +178,7 @@ fn parse_value(opt: UziOpt, cmd: &[&str]) -> Result<SetOpt, UziErr> {
             Ok(SetOpt::ShredderBasesPath(PathBuf::from_str(word).unwrap()))
         }
         UziOpt::Opponent => Ok(SetOpt::Opp(Opponent::try_from(cmd)?)),
-        UziOpt::SetPositionValue => parse_position_val(&cmd),
+        UziOpt::SetPositionValue => Ok(SetOpt::SetPosVal(PosValueOpt::try_from(cmd)?)),
     }
 }
 
@@ -389,10 +389,6 @@ impl TryFrom<&[&str]> for PosValueOpt {
             }),
         }
     }
-}
-
-fn parse_position_val(cmd: &[&str]) -> Result<SetOpt, UziErr> {
-    todo!()
 }
 
 // Constants for the names of the UCI options.

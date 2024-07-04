@@ -89,6 +89,16 @@ pub struct ComboType {
     pub var: Vec<String>,
 }
 
+impl Display for ComboType {
+    fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
+        write!(formatter, "type combo default {}", self.default)?;
+        for v in &self.var {
+            write!(formatter, " var {}", v)?;
+        }
+        Ok(())
+    }
+}
+
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct ButtonType;
 

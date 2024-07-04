@@ -74,9 +74,6 @@ pub enum OptType {
 // option.
 #[derive(Clone, Debug, PartialEq)]
 pub enum OptVal {
-    // Used to set a value, from GUI to engine.
-    Set(i64),
-
     // Used to tell the GUI about the values an option can take.
     Info {
         default: i64,

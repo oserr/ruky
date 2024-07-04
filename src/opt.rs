@@ -41,11 +41,7 @@ pub enum HasOpt {
     AnalysisMode(CheckType),
     // UCI_ShredderbasesPath: Path to folder of containing the Shredder endgame databases.
     ShredderBasesPath(StrType),
-    // UCI_Opponent: The command can be used by the GUI to send the name, title, elo and if the
-    // engine is playing a human or computer to the engine. The format of the string is:
-    // - [GM|IM|FM|WGM|WIM|none] [<elo>|none] [computer|human] <name>, e.g.:
-    // - setoption name UCI_Opponent value GM 2800 human Garry Kasparov
-    // - setoption name UCI_Opponent value none none computer Shredder
+    // UCI_Opponent: Tells the GUI how to configure the Opponent.
     Opp(StrType),
     // UCI_SetPositionValue: The GUI can send this to the engine to tell it to use a certain value
     // in centipawns from white's point of view if evaluating this specific position. Allowed
@@ -113,7 +109,11 @@ pub enum SetOpt {
     AnalysisMode(bool),
     // UCI_ShredderbasesPath: Path to folder of containing the Shredder endgame databases.
     ShredderBasesPath(PathBuf),
-    // UCI_Opponent: Used to set the opponent info.
+    // UCI_Opponent: The command can be used by the GUI to send the name, title, elo and if the
+    // engine is playing a human or computer to the engine. The format of the string is:
+    // - [GM|IM|FM|WGM|WIM|none] [<elo>|none] [computer|human] <name>, e.g.:
+    // - setoption name UCI_Opponent value GM 2800 human Garry Kasparov
+    // - setoption name UCI_Opponent value none none computer Shredder
     Opp(Opponent),
     // UCI_SetPositionValue: The GUI can send this to the engine to tell it to use a certain value
     // in centipawns from white's point of view if evaluating this specific position. Allowed

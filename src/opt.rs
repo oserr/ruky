@@ -70,7 +70,58 @@ pub enum OptType {
     Str,
 }
 
-// The next five structs represent the option types. For example, NalimovPath is string type.
+// Represents all the different options that may be supported by a UCI compliant
+// chess engine. These are meant to be used by the engine to tell the GUI which
+// options are available, and what their default configurations are.
+// TODO: Add support for non-standard options.
+#[derive(Clone, Debug, PartialEq)]
+pub enum HasOpt {
+    // The value in MB for memory for hash tables.
+    Hash(SpinType<u64>),
+    // The path on the hard disk to the Nalimov compressed format. Multiple directories can be
+    // concatenated with ";".
+    NalimovPath(StrType),
+    // This is the size in MB for the cache for the nalimov table bases.
+    NalimovCache(SpinType<u64>),
+    // This means that the engine is able to ponder.
+    Ponder(CheckType),
+    // This means that the engine has its own book which is accessed by the engine itself. If this
+    // is set, the engine takes care of the opening book. If set to false, the engine should not
+    // its book.
+    OwnBook(CheckType),
+    // The engine supports multi best line or k-best mode. The default value is 1.
+    MultiPv(SpinType<u64>),
+    // UCI_ShowCurrLine: The engine can show the current line it is calculating.
+    ShowCurrLine(CheckType),
+    // UCI_ShowRefutations: The engine can show a move and its refutations in a line.
+    ShowRefutations(CheckType),
+    // UCI_LimitStrength: The engine is able to limit its strength to a specific elo rating. This
+    // should always be implemented together with "UCI_Elo".
+    LimitStrength(CheckType),
+    // UCI_Elo: The engine can limit its strengh in Elo within this interval. Should be
+    // implemented together with UCI_LimitStrength.
+    Elo(SpinType<u16>),
+    // UCI_AnalsysMode: The engine wants to behave differently when analysing or playing a game.
+    // This is set to false if the engine is playing a game.
+    AnalysisMode(CheckType),
+    // UCI_ShredderbasesPath: Path to folder of containing the Shredder endgame databases.
+    ShredderBasesPath(StrType),
+    // UCI_Opponent: The command can be used by the GUI to send the name, title, elo and if the
+    // engine is playing a human or computer to the engine. The format of the string is:
+    // - [GM|IM|FM|WGM|WIM|none] [<elo>|none] [computer|human] <name>, e.g.:
+    // - setoption name UCI_Opponent value GM 2800 human Garry Kasparov
+    // - setoption name UCI_Opponent value none none computer Shredder
+    Opp(StrType),
+    // UCI_SetPositionValue: The GUI can send this to the engine to tell it to use a certain value
+    // in centipawns from white's point of view if evaluating this specific position. Allowed
+    // formats:
+    SetPositionValue(StrType),
+    // UCI_EngineAbout: The engine tells the GUI information about itself.
+    About(StrType),
+}
+
+// The next five structs represent the option types. For example, NalimovPath is
+// string type.
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct CheckType(bool);
@@ -107,6 +158,7 @@ pub enum OptVal {
     },
 }
 
+// TODO: Add support for non-standard options.
 #[derive(Clone, Debug, PartialEq)]
 pub enum SetOpt {
     // The value in MB for memory for hash tables.

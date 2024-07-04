@@ -16,7 +16,8 @@ pub(crate) fn to_millis(word: &str, opt_name: &str) -> Result<Duration, UziErr> 
 // A function to parse a generic number which maps an error to a
 // UziErr::BadNumber error.
 pub(crate) fn to_number<T: FromStr>(word: &str) -> Result<T, UziErr> {
-    word.parse::<T>().map_err(|_| UziErr::BadNumber)
+    word.parse::<T>()
+        .map_err(|_| UziErr::BadNumber(word.into()))
 }
 
 // A function to parse a bool and map the error to UziErr::BadBool.

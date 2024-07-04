@@ -134,18 +134,13 @@ impl TryFrom<&Vec<&str>> for SetOpt {
             match *word {
                 "setoption" if parse_state.is_begin() => parse_state = SetOptParseState::SetOpt,
                 "name" if parse_state.is_setopt() => parse_state = SetOptParseState::Name,
-                "value" if parse_state.is_val() => {
-                    if let Some(opt) = parse_state.get_val() {
-                        return parse_value(opt, &cmd[i..]);
-                    } else {
-                        return Err(UziErr::SetOptErr);
-                    }
-                }
+                "value" if parse_state.is_val() => (),
                 _ => match parse_state {
                     SetOptParseState::Name => {
                         let opt = UziOpt::from_str(*word)?;
                         parse_state = SetOptParseState::Value(opt);
                     }
+                    SetOptParseState::Value(opt) => return parse_value(opt, &cmd[i..]),
                     _ => return Err(UziErr::SetOptErr),
                 },
             }
@@ -242,7 +237,7 @@ impl FromStr for UziOpt {
             ABOUT => Ok(UziOpt::About),
             HASH => Ok(UziOpt::Hash),
             NALIMOV_PATH => Ok(UziOpt::NalimovPath),
-            NALIMOVE_CACHE => Ok(UziOpt::NalimovCache),
+            NALIMOV_CACHE => Ok(UziOpt::NalimovCache),
             PONDER => Ok(UziOpt::Ponder),
             OWN_BOOK => Ok(UziOpt::OwnBook),
             MULTI_PV => Ok(UziOpt::MultiPv),
@@ -395,7 +390,7 @@ impl TryFrom<&[&str]> for PosValueOpt {
 // Constants for the names of the UCI options.
 const HASH: &str = "Hash";
 const NALIMOV_PATH: &str = "NalimovPath";
-const NALIMOVE_CACHE: &str = "NalimovCache";
+const NALIMOV_CACHE: &str = "NalimovCache";
 const OWN_BOOK: &str = "OwnBook";
 const MULTI_PV: &str = "MultiPv";
 const PONDER: &str = "Ponder";
@@ -408,3 +403,208 @@ const ANALYSIS_MODE: &str = "UCI_AnalysisMode";
 const OPPONENT: &str = "UCI_Opponent";
 const SHREDDER_BASES_PATH: &str = "UCI_ShredderbasesPath";
 const SET_POSITION_VALUE: &str = "UCI_SetPositionValue";
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn try_from_returns_err_missing_options() {
+        let mut opts = Vec::new();
+        assert_eq!(SetOpt::try_from(&opts), Err(UziErr::SetOptErr));
+        opts.push("setoption");
+        assert_eq!(SetOpt::try_from(&opts), Err(UziErr::SetOptErr));
+        opts.push("name");
+        assert_eq!(SetOpt::try_from(&opts), Err(UziErr::SetOptErr));
+    }
+
+    #[test]
+    fn set_opt_try_from_returns_err_for_unknown_opt() {
+        let opts = vec!["setoption", "name", "CheeseBurger"];
+        assert_eq!(SetOpt::try_from(&opts), Err(UziErr::UnknownOpt));
+    }
+
+    #[test]
+    fn set_opt_try_from_returns_err_for_missing_val() {
+        let opts = vec!["setoption", "name", HASH];
+        assert_eq!(SetOpt::try_from(&opts), Err(UziErr::SetOptErr));
+    }
+
+    #[test]
+    fn set_opt_try_from_hash() {
+        let opts = vec!["setoption", "name", HASH, "value", "128"];
+        assert_eq!(SetOpt::try_from(&opts), Ok(SetOpt::Hash(128)));
+    }
+
+    #[test]
+    fn set_opt_try_from_nalimov_path() {
+        let opts = vec!["setoption", "name", NALIMOV_PATH, "value", "some/path"];
+        assert_eq!(
+            SetOpt::try_from(&opts),
+            Ok(SetOpt::NalimovPath(PathBuf::from_str("some/path").unwrap()))
+        );
+    }
+
+    #[test]
+    fn set_opt_try_from_nalimov_cache() {
+        let opts = vec!["setoption", "name", NALIMOV_CACHE, "value", "256000"];
+        assert_eq!(SetOpt::try_from(&opts), Ok(SetOpt::NalimovCache(256_000)));
+    }
+
+    #[test]
+    fn set_opt_try_from_ponder() {
+        let opts = vec!["setoption", "name", PONDER, "value", "true"];
+        assert_eq!(SetOpt::try_from(&opts), Ok(SetOpt::Ponder(true)));
+        let opts = vec!["setoption", "name", PONDER, "value", "false"];
+        assert_eq!(SetOpt::try_from(&opts), Ok(SetOpt::Ponder(false)));
+    }
+
+    #[test]
+    fn set_opt_try_own_book() {
+        let opts = vec!["setoption", "name", OWN_BOOK, "value", "true"];
+        assert_eq!(SetOpt::try_from(&opts), Ok(SetOpt::OwnBook(true)));
+        let opts = vec!["setoption", "name", OWN_BOOK, "value", "false"];
+        assert_eq!(SetOpt::try_from(&opts), Ok(SetOpt::OwnBook(false)));
+    }
+
+    #[test]
+    fn set_opt_try_multipv() {
+        let opts = vec!["setoption", "name", MULTI_PV, "value", "16"];
+        assert_eq!(SetOpt::try_from(&opts), Ok(SetOpt::MultiPv(16)));
+    }
+
+    #[test]
+    fn set_opt_try_show_curr_line() {
+        let opts = vec!["setoption", "name", SHOW_CURR_LINE, "value", "false"];
+        assert_eq!(SetOpt::try_from(&opts), Ok(SetOpt::ShowCurrLine(false)));
+        let opts = vec!["setoption", "name", SHOW_CURR_LINE, "value", "true"];
+        assert_eq!(SetOpt::try_from(&opts), Ok(SetOpt::ShowCurrLine(true)));
+    }
+
+    #[test]
+    fn set_opt_try_from_opponent() {
+        let opts = vec!["setoption", "name", OPPONENT, "value", "none"];
+        assert_eq!(SetOpt::try_from(&opts), Err(UziErr::BadOpponent));
+
+        let opts = vec![
+            "setoption",
+            "name",
+            OPPONENT,
+            "value",
+            "none",
+            "none",
+            "human",
+            "oserr",
+        ];
+        assert_eq!(
+            SetOpt::try_from(&opts),
+            Ok(SetOpt::Opp(Opponent {
+                title: Title::NoTitle,
+                elo: None,
+                player_type: PlayerType::Human,
+                name: "oserr".into()
+            }))
+        );
+
+        let opts = vec![
+            "setoption",
+            "name",
+            OPPONENT,
+            "value",
+            "none",
+            "2200",
+            "computer",
+            "oserr",
+        ];
+        assert_eq!(
+            SetOpt::try_from(&opts),
+            Ok(SetOpt::Opp(Opponent {
+                title: Title::NoTitle,
+                elo: Some(2200),
+                player_type: PlayerType::Computer,
+                name: "oserr".into()
+            }))
+        );
+
+        let opts = vec![
+            "setoption",
+            "name",
+            OPPONENT,
+            "value",
+            "GM",
+            "4800",
+            "computer",
+            "ruky",
+        ];
+        assert_eq!(
+            SetOpt::try_from(&opts),
+            Ok(SetOpt::Opp(Opponent {
+                title: Title::GM,
+                elo: Some(4800),
+                player_type: PlayerType::Computer,
+                name: "ruky".into()
+            }))
+        );
+
+        let opts = vec![
+            "setoption",
+            "name",
+            OPPONENT,
+            "value",
+            "zzz",
+            "4800",
+            "computer",
+            "ruky",
+        ];
+        assert_eq!(SetOpt::try_from(&opts), Err(UziErr::BadTitle));
+    }
+
+    #[test]
+    fn set_opt_try_from_pos_value() {
+        let opts = vec!["setoption", "name", SET_POSITION_VALUE, "value", "clearall"];
+        assert_eq!(
+            SetOpt::try_from(&opts),
+            Ok(SetOpt::SetPosVal(PosValueOpt::ClearAll))
+        );
+
+        let opts = vec![
+            "setoption",
+            "name",
+            SET_POSITION_VALUE,
+            "value",
+            "clear",
+            "fen",
+        ];
+        assert_eq!(
+            SetOpt::try_from(&opts),
+            Ok(SetOpt::SetPosVal(PosValueOpt::Clear("fen".into())))
+        );
+
+        let opts = vec![
+            "setoption",
+            "name",
+            SET_POSITION_VALUE,
+            "value",
+            "100",
+            "fen",
+        ];
+        assert_eq!(
+            SetOpt::try_from(&opts),
+            Ok(SetOpt::SetPosVal(PosValueOpt::Val {
+                val: 100,
+                fen: "fen".into()
+            }))
+        );
+
+        let opts = vec![
+            "setoption",
+            "name",
+            SET_POSITION_VALUE,
+            "value",
+            "100",
+            "fen",
+            "extra",
+        ];
+        assert_eq!(SetOpt::try_from(&opts), Err(UziErr::BadPositionVal));
+    }
+}

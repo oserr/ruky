@@ -3,7 +3,7 @@
 pub enum UziErr {
     BadBool,
     BadMillis(String, String),
-    BadNumber,
+    BadNumber(String),
     BadOpponent,
     BadPlayerType,
     BadPositionVal,

@@ -44,8 +44,7 @@ pub enum HasOpt {
     // UCI_Opponent: Tells the GUI how to configure the Opponent.
     Opp(StrType),
     // UCI_SetPositionValue: The GUI can send this to the engine to tell it to use a certain value
-    // in centipawns from white's point of view if evaluating this specific position. Allowed
-    // formats:
+    // in centipawns from white's point of view if evaluating this specific position.
     SetPositionValue(StrType),
     // UCI_EngineAbout: The engine tells the GUI information about itself.
     About(StrType),
@@ -116,8 +115,8 @@ pub enum SetOpt {
     // - setoption name UCI_Opponent value none none computer Shredder
     Opp(Opponent),
     // UCI_SetPositionValue: The GUI can send this to the engine to tell it to use a certain value
-    // in centipawns from white's point of view if evaluating this specific position. Allowed
-    // formats:
+    // in centipawns from white's point of view if evaluating this specific position. See
+    // PosValueOpt for accepted formats.
     SetPosVal(PosValueOpt),
 }
 

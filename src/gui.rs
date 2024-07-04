@@ -5,6 +5,7 @@ use crate::conv::{to_millis, to_number};
 use crate::err::UziErr;
 use crate::opt::SetOpt;
 use std::time::Duration;
+use std::str::FromStr;
 
 // Represents a command from the GUI to the engine.
 #[derive(Clone, Debug, PartialEq)]
@@ -46,10 +47,10 @@ pub enum GuiCmd {
     Ponderhit,
 }
 
-impl TryFrom<&str> for GuiCmd {
-    type Error = UziErr;
+impl FromStr for GuiCmd {
+    type Err = UziErr;
 
-    fn try_from(cmd: &str) -> Result<GuiCmd, Self::Error> {
+    fn from_str(cmd: &str) -> Result<GuiCmd, Self::Err> {
         let words = cmd.split_whitespace().collect::<Vec<_>>();
         if words.is_empty() {
             return Err(UziErr::MissingCmd);

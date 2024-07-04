@@ -263,10 +263,10 @@ impl FromStr for UziOpt {
 // - setoption name UCI_Opponent value none none computer Shredder
 #[derive(Clone, Debug, PartialEq)]
 pub struct Opponent {
-    title: Title,
-    elo: Option<u16>,
-    player_type: PlayerType,
-    name: String,
+    pub title: Title,
+    pub elo: Option<u16>,
+    pub player_type: PlayerType,
+    pub name: String,
 }
 
 impl Default for Opponent {

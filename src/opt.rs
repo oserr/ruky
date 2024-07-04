@@ -80,19 +80,6 @@ pub struct ButtonType;
 #[derive(Clone, Debug, PartialEq)]
 pub struct StrType(String);
 
-// Represents either the value an option can take, or the value to set an
-// option.
-#[derive(Clone, Debug, PartialEq)]
-pub enum OptVal {
-    // Used to tell the GUI about the values an option can take.
-    Info {
-        default: i64,
-        min: i64,
-        max: i64,
-        var: Option<i64>,
-    },
-}
-
 // TODO: Add support for non-standard options.
 #[derive(Clone, Debug, PartialEq)]
 pub enum SetOpt {

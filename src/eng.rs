@@ -1,7 +1,7 @@
 // This module contains the types to represent commands from the chess engine to
 // a GUI.
 
-use crate::opt::UciOpt;
+use crate::opt::HasOpt;
 
 // Represents a command from the engine to the GUI.
 // TODO: support copyprotection, registration:
@@ -11,17 +11,16 @@ use crate::opt::UciOpt;
 // with all the features.
 #[derive(Clone, Debug, PartialEq)]
 pub enum EngCmd {
-    // id name <x> | id author <x>: The engine sends this in response to "uci".
-    Id(IdOpt),
-
+    // id name <x>: The name and version of the chess engine, as response to "uci" command..
+    IdName(String),
+    // id author <x>: The name of the author of the chess engine, as response to "uci" command.
+    IdAuthor(String),
     // uciok: Must be sent after the ID and optional options to tell the GUI that the engine has
     // sent all infos and is ready in uci mode.
     UciOk,
-
     // readyok: This must be sent when the engine has received an "isready" command and has
     // processed all input and is ready to accept new commands now.
     ReadyOk,
-
     // bestmove <move1> [ponder <move2>]: The engine has stopped searching and found the move
     // <move1> best in this position. The engine can send the move it likes to ponder on. The
     // engine must not start pondering automatically. This command must always be sent if the
@@ -32,13 +31,11 @@ pub enum EngCmd {
         best: String,
         ponder: Option<String>,
     },
-
     // info [opts]: Used by the engine to send information about the engine and its calculations
     // to the GUI. See below for more details.
     Info(Info),
-
     // option name <id> [opts..]: To tell the engine which options can be changed.
-    HasOpt(UciOpt),
+    HasOpt(HasOpt),
 }
 
 // Represents the various options to encode the "info" command, when the engine

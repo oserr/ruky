@@ -70,6 +70,19 @@ pub struct SpinType<T> {
     pub max: T,
 }
 
+impl<T> Display for SpinType<T>
+where
+    T: Display,
+{
+    fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
+        write!(
+            formatter,
+            "type spin default {} min {} max {}",
+            self.default, self.min, self.max
+        )
+    }
+}
+
 #[derive(Clone, Debug, PartialEq)]
 pub struct ComboType {
     pub default: String,

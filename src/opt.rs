@@ -105,6 +105,12 @@ pub struct ButtonType;
 #[derive(Clone, Debug, PartialEq)]
 pub struct StrType(String);
 
+impl Display for StrType {
+    fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
+        write!(formatter, "type string default {}", self.0)
+    }
+}
+
 // TODO: Add support for non-standard options.
 #[derive(Clone, Debug, PartialEq)]
 pub enum SetOpt {

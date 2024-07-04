@@ -58,8 +58,8 @@ pub enum HasOpt {
 pub struct CheckType(bool);
 
 impl Display for CheckType {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        self.0.fmt(f)
+    fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
+        write!(formatter, "type bool default {}", self.0)
     }
 }
 

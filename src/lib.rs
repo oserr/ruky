@@ -9,3 +9,4 @@ mod eng;
 mod err;
 mod gui;
 mod opt;
+mod sq;

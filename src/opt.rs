@@ -2,6 +2,7 @@
 
 use crate::conv::{to_bool, to_number};
 use crate::err::UziErr;
+use std::fmt::{self, Display, Formatter};
 use std::path::PathBuf;
 use std::str::FromStr;
 
@@ -55,6 +56,12 @@ pub enum HasOpt {
 
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct CheckType(bool);
+
+impl Display for CheckType {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        self.0.fmt(f)
+    }
+}
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct SpinType<T> {

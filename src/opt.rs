@@ -92,7 +92,7 @@ pub struct ComboType {
 pub struct ButtonType;
 
 #[derive(Clone, Debug, PartialEq)]
-pub struct StringType(String);
+pub struct StrType(String);
 
 // Represents either the value an option can take, or the value to set an
 // option.

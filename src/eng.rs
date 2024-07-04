@@ -153,12 +153,3 @@ pub struct MultiPv {
     rank: u16,
     moves: Vec<String>,
 }
-
-// An enum to represent the options for the ID command:
-// - id name <x>: The name and version of the engine.
-// - id author <x>: The name of the chess engine author.
-#[derive(Clone, Debug, PartialEq)]
-pub enum IdOpt {
-    Name(String),
-    Author(String),
-}

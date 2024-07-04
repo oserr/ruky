@@ -70,6 +70,30 @@ pub enum OptType {
     Str,
 }
 
+// The next five structs represent the option types. For example, NalimovPath is string type.
+
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct CheckType(bool);
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct SpinType<T> {
+    pub default: T,
+    pub min: T,
+    pub max: T,
+}
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct ComboType {
+    pub default: String,
+    pub var: Vec<String>,
+}
+
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub struct ButtonType;
+
+#[derive(Clone, Debug, PartialEq)]
+pub struct StringType(String);
+
 // Represents either the value an option can take, or the value to set an
 // option.
 #[derive(Clone, Debug, PartialEq)]

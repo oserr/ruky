@@ -10,7 +10,7 @@ use crate::opt::UciOpt;
 //   code to function
 // with all the features.
 #[derive(Clone, Debug, PartialEq)]
-pub enum EngCommand {
+pub enum EngCmd {
     // id name <x> | id author <x>: The engine sends this in response to "uci".
     Id(IdOpt),
 

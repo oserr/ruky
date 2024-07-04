@@ -51,6 +51,29 @@ pub enum HasOpt {
     About(StrType),
 }
 
+impl Display for HasOpt {
+    fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
+        write!(formatter, "option name ")?;
+        match self {
+            HasOpt::Hash(t) => write!(formatter, "{} {}", HASH, t),
+            HasOpt::NalimovPath(t) => write!(formatter, "{} {}", NALIMOV_PATH, t),
+            HasOpt::NalimovCache(t) => write!(formatter, "{} {}", NALIMOV_CACHE, t),
+            HasOpt::Ponder(t) => write!(formatter, "{} {}", PONDER, t),
+            HasOpt::OwnBook(t) => write!(formatter, "{} {}", OWN_BOOK, t),
+            HasOpt::MultiPv(t) => write!(formatter, "{} {}", MULTI_PV, t),
+            HasOpt::ShowCurrLine(t) => write!(formatter, "{} {}", SHOW_CURR_LINE, t),
+            HasOpt::ShowRefutations(t) => write!(formatter, "{} {}", SHOW_REFUTATIONS, t),
+            HasOpt::LimitStrength(t) => write!(formatter, "{} {}", LIMIT_STRENGTH, t),
+            HasOpt::Elo(t) => write!(formatter, "{} {}", ELO, t),
+            HasOpt::AnalysisMode(t) => write!(formatter, "{} {}", ANALYSIS_MODE, t),
+            HasOpt::ShredderBasesPath(t) => write!(formatter, "{} {}", SHREDDER_BASES_PATH, t),
+            HasOpt::Opp(t) => write!(formatter, "{} {}", OPPONENT, t),
+            HasOpt::SetPositionValue(t) => write!(formatter, "{} {}", SET_POSITION_VALUE, t),
+            HasOpt::About(t) => write!(formatter, "{} {}", ABOUT, t),
+        }
+    }
+}
+
 // The next five structs represent the option types. For example, NalimovPath is
 // string type.
 

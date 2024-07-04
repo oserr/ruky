@@ -4,7 +4,7 @@
 use crate::opt::HasOpt;
 
 // Represents a command from the engine to the GUI.
-// TODO: support copyprotection, registration:
+// TODO: support copyprotection, registration, and custom commands:
 // - copyprotection: Used by copyprotected engines.
 // - registration [ok | error]: Needed for engines that need a username and or a
 //   code to function

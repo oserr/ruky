@@ -4,8 +4,8 @@
 use crate::conv::{to_millis, to_number};
 use crate::err::UziErr;
 use crate::opt::SetOpt;
-use std::time::Duration;
 use std::str::FromStr;
+use std::time::Duration;
 
 // Represents a command from the GUI to the engine.
 #[derive(Clone, Debug, PartialEq)]
@@ -456,6 +456,7 @@ pub enum PosOpt {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::opt::{Opponent, PlayerType, SetOpt, Title};
 
     #[test]
     fn pos_new() {
@@ -626,6 +627,55 @@ mod tests {
                 move_time: Some(Duration::from_millis(100)),
                 infinite: Some(()),
             })
+        );
+    }
+
+    #[test]
+    fn guicmd_simple() {
+        assert_eq!(GuiCmd::from_str("uci"), Ok(GuiCmd::Uci));
+        assert_eq!(GuiCmd::from_str("isready"), Ok(GuiCmd::IsReady));
+        assert_eq!(GuiCmd::from_str("ucinewgame"), Ok(GuiCmd::NewGame));
+        assert_eq!(GuiCmd::from_str("stop"), Ok(GuiCmd::Stop));
+        assert_eq!(GuiCmd::from_str("ponderhit"), Ok(GuiCmd::Ponderhit));
+        assert_eq!(GuiCmd::from_str("debug on"), Ok(GuiCmd::Debug(true)));
+        assert_eq!(GuiCmd::from_str("debug off"), Ok(GuiCmd::Debug(false)));
+        assert_eq!(GuiCmd::from_str("hello"), Err(UziErr::What));
+    }
+
+    #[test]
+    fn guicmd_setopt() {
+        assert_eq!(
+            GuiCmd::from_str("setoption name UCI_Opponent value IM 2300 human oserr"),
+            Ok(GuiCmd::SetOpt(SetOpt::Opp(Opponent {
+                title: Title::IM,
+                elo: Some(2300),
+                player_type: PlayerType::Human,
+                name: "oserr".into()
+            })))
+        );
+    }
+
+    #[test]
+    fn guicmd_position() {
+        assert_eq!(
+            GuiCmd::from_str("position fen FENSTRING moves e2e4 e7e5"),
+            Ok(GuiCmd::Pos(Pos {
+                pos: PosOpt::Fen("FENSTRING".into()),
+                moves: Some(vec!["e2e4".into(), "e7e5".into()]),
+            }))
+        );
+    }
+
+    #[test]
+    fn guicmd_go() {
+        let mut go = Go::new();
+        go.add_search_move("e2e4")
+            .add_search_move("e7e5")
+            .set_wtime(Duration::from_millis(1))
+            .set_btime(Duration::from_millis(2));
+        assert_eq!(
+            GuiCmd::from_str("go searchmoves e2e4 e7e5 wtime 1 btime 2"),
+            Ok(GuiCmd::Go(go))
         );
     }
 }

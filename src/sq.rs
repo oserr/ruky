@@ -162,3 +162,27 @@ impl From<(u8, u8)> for Sq {
 
 // A handy constant to represnt the last valid square.
 const MAX: u8 = 63;
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn new_creates_sq() {
+        assert_eq!(u8::from(Sq::new(8)), 8u8);
+        assert_eq!(u8::from(Sq::new(100)), 63u8);
+    }
+
+    #[test]
+    fn sq_as_str() {
+        assert_eq!(Sq::new(4).as_str(), "e1");
+        assert_eq!(Sq::from((1, 4)).as_str(), "e2");
+        assert_eq!(Sq::new(63).as_str(), "h8");
+    }
+
+    #[test]
+    fn sq_from_str() {
+        assert_eq!(Sq::from_str("e1"), Ok(Sq::new(4)));
+        assert_eq!(Sq::from_str("eq3"), Err(UziErr::ParseSqErr("eq3".into())));
+    }
+}

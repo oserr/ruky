@@ -101,3 +101,19 @@ impl Display for Sq {
         formatter.write_str(self.as_str())
     }
 }
+
+macro_rules! from_sq_for_integral {
+    ( $( $t:ident )* ) => {
+        $(
+            impl From<Sq> for $t {
+                fn from(sq: Sq) -> $t {
+                    sq.index as $t
+                }
+            }
+        )*
+    }
+}
+
+// Generate trait implementations for From<Sq> for all integral types up to i64
+// and u64.
+from_sq_for_integral![u8 u16 u32 u64 i8 i16 i32 i64];

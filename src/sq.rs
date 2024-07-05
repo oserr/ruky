@@ -1,7 +1,10 @@
 // This module contains the defintion for Sq, a simple class to represent a
 // square on the board.
 
+use crate::err::UziErr;
+use std::cmp::min;
 use std::fmt::{self, Debug, Display, Formatter};
+use std::str::FromStr;
 
 #[derive(Clone, Copy, Default, Eq, Hash, PartialEq, PartialOrd)]
 struct Sq {
@@ -9,6 +12,15 @@ struct Sq {
 }
 
 impl Sq {
+    #[inline]
+    // Creates a new Sq from index. If index is not a valid square index in range
+    // [0, 63], it uses index 63.
+    pub fn new(index: u8) -> Self {
+        Sq {
+            index: min(index, MAX),
+        }
+    }
+
     // Returns a tuple (row, col) with the row and column.
     #[inline]
     pub fn rc(&self) -> (u8, u8) {
@@ -90,6 +102,30 @@ impl Sq {
     }
 }
 
+impl FromStr for Sq {
+    type Err = UziErr;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        if s.len() != 2 {
+            return Err(UziErr::ParseSqErr(s.into()));
+        }
+
+        let mut bytes = s.bytes();
+
+        let col = match bytes.next().unwrap() {
+            c @ b'a'..=b'h' => c - b'a',
+            _ => return Err(UziErr::ParseSqErr(s.into())),
+        };
+
+        let row = match bytes.next().unwrap() {
+            r @ b'1'..=b'8' => r - b'1',
+            _ => return Err(UziErr::ParseSqErr(s.into())),
+        };
+
+        Ok(Sq::from((row, col)))
+    }
+}
+
 impl Debug for Sq {
     fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
         formatter.write_str(self.as_str())
@@ -117,3 +153,12 @@ macro_rules! from_sq_for_integral {
 // Generate trait implementations for From<Sq> for all integral types up to i64
 // and u64.
 from_sq_for_integral![u8 u16 u32 u64 i8 i16 i32 i64];
+
+impl From<(u8, u8)> for Sq {
+    fn from((row, col): (u8, u8)) -> Sq {
+        Sq::new(row * 8 + col)
+    }
+}
+
+// A handy constant to represnt the last valid square.
+const MAX: u8 = 63;

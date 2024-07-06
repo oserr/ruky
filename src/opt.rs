@@ -253,13 +253,6 @@ impl SetOptParseState {
     fn is_val(&self) -> bool {
         matches!(*self, SetOptParseState::Value(_))
     }
-
-    fn get_val(&self) -> Option<UziOpt> {
-        match *self {
-            SetOptParseState::Value(opt) => Some(opt),
-            _ => None,
-        }
-    }
 }
 
 // Represents all the UCI options, but we don't use payloads here.

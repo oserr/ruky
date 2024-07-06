@@ -305,3 +305,50 @@ impl Display for MultiPv {
         Ok(())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::str::FromStr;
+
+    #[test]
+    fn engcmd_id_name() {
+        let cmd = EngCmd::IdName("funnychess".into());
+        assert_eq!(cmd.to_string().as_str(), "id name funnychess");
+    }
+
+    #[test]
+    fn engcmd_id_author() {
+        let cmd = EngCmd::IdAuthor("Omar S".into());
+        assert_eq!(cmd.to_string().as_str(), "id author Omar S");
+    }
+
+    #[test]
+    fn engcmd_uciok() {
+        assert_eq!(EngCmd::UciOk.to_string().as_str(), "uciok");
+    }
+
+    #[test]
+    fn engcmd_readyok() {
+        assert_eq!(EngCmd::ReadyOk.to_string().as_str(), "readyok");
+    }
+
+    #[test]
+    fn engcmd_bestmove() {
+        let best = Pm::from_str("e2e4").unwrap();
+
+        let best_move = EngCmd::BestMove {
+            best: best,
+            ponder: None,
+        };
+
+        assert_eq!(best_move.to_string().as_str(), "bestmove e2e4");
+
+        let best_move = EngCmd::BestMove {
+            best: best,
+            ponder: Some(Pm::from_str("e7e6").unwrap()),
+        };
+
+        assert_eq!(best_move.to_string().as_str(), "bestmove e2e4 ponder e7e6");
+    }
+}

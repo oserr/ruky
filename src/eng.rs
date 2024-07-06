@@ -37,6 +37,26 @@ pub enum EngCmd {
     HasOpt(HasOpt),
 }
 
+impl Display for EngCmd {
+    fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
+        match self {
+            EngCmd::UciOk => formatter.write_str("uciok"),
+            EngCmd::ReadyOk => formatter.write_str("readyok"),
+            EngCmd::IdName(ref name) => write!(formatter, "id name {}", name),
+            EngCmd::IdAuthor(ref author) => write!(formatter, "id author {}", author),
+            EngCmd::Info(ref info) => info.fmt(formatter),
+            EngCmd::HasOpt(ref has_opt) => has_opt.fmt(formatter),
+            EngCmd::BestMove { best, ponder } => {
+                write!(formatter, "bestmove {}", best)?;
+                if let Some(pm) = ponder {
+                    write!(formatter, " ponder {}", pm)?;
+                }
+                Ok(())
+            }
+        }
+    }
+}
+
 // Represents the various options to encode the "info" command, when the engine
 // wants to send information to the GUI. This should be done whenever one of the
 // info has changed. The engine can send only selected infos or mutliple infos

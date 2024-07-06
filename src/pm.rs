@@ -31,7 +31,19 @@ impl Display for Pm {
 impl TryFrom<&[u8]> for Pm {
     type Error = UziErr;
 
-    fn try_from(_bytes: &[u8]) -> Result<Self, Self::Error> {
-        todo!()
+    fn try_from(bytes: &[u8]) -> Result<Self, Self::Error> {
+        match bytes.len() {
+            4 if bytes[0] != b'0' => Ok(Pm::Normal {
+                from: Sq::try_from(&bytes[..2])?,
+                to: Sq::try_from(&bytes[2..])?,
+            }),
+            5 => Ok(Pm::Promo {
+                from: Sq::try_from(&bytes[..2])?,
+                to: Sq::try_from(&bytes[2..4])?,
+                promo: Piece::try_from(bytes[4])?,
+            }),
+            4 if bytes.iter().all(|b| *b == b'0') => Ok(Pm::Null),
+            _ => Err(UziErr::ParseMoveErr),
+        }
     }
 }

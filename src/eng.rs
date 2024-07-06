@@ -117,10 +117,9 @@ pub struct CurrentLine {
 // only send this if the option "UCI_ShowRefutations" is set to true.
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub struct Refutation {
-    // The move being refuted.
-    mv: String,
+    refuted_move: Pm,
 
-    // The line of moves that refute move |mv|.
+    // The line of moves that refute refuted_move.
     moves: Vec<Pm>,
 }
 

@@ -9,7 +9,7 @@ use std::str::FromStr;
 use std::time::Duration;
 
 // Represents a command from the GUI to the engine.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub enum GuiCmd {
     // uci: Tells the engine to switch to UCI mode.
     Uci,
@@ -86,7 +86,7 @@ impl FromStr for GuiCmd {
 // calculating the best move given an intial position. The command can take
 // multiple options. Start calculating on the current position set up with the
 // "position" command.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub struct Go {
     // searchmoves <move1> ... <movei>: Restricts calculation by one or more
     // moves.
@@ -339,7 +339,7 @@ enum GoParseState {
 // play the moves. No new command is needed, but if the position is from a
 // different game than the last position sent to the engine, then the GUI should
 // have sent a "ucinewgame" in between.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub struct Pos {
     // Represents the initial position: either a new game or a FEN string.
     pos: PosOpt,
@@ -453,7 +453,7 @@ enum PosState {
 
 // An enum to represent the two different types of positions that can be set,
 // i.e. startpos or a position from a FEN string.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub enum PosOpt {
     StartPos,
     Fen(String),

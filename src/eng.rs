@@ -121,6 +121,16 @@ pub struct Refutation {
     moves: Vec<Pm>,
 }
 
+impl Display for Refutation {
+    fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
+        write!(formatter, "refutation {}", self.refuted_move)?;
+        for pm in &self.moves {
+            write!(formatter, " {}", *pm)?;
+        }
+        Ok(())
+    }
+}
+
 // score cp <x> [mate <y>] [lowerbound] [upperbound]: Represents the score
 // option to the info command.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]

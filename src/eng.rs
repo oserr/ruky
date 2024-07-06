@@ -4,6 +4,7 @@
 use crate::opt::HasOpt;
 use crate::pm::Pm;
 use std::fmt::{self, Display, Formatter};
+use std::time::Duration;
 
 // Represents a command from the engine to the GUI.
 // TODO: support copyprotection, registration, and custom commands:
@@ -78,7 +79,7 @@ pub struct Info {
     node: Option<u32>,
 
     // time <x>: The time searched in ms. This should be sent together with the PV.
-    time: Option<u32>,
+    time: Option<Duration>,
 
     // pv <move1> .. <movei>: The best line found.
     pv: Option<Vec<Pm>>,
@@ -134,7 +135,7 @@ impl Display for Info {
             write!(formatter, " node {}", node)?;
         }
         if let Some(time) = self.time {
-            write!(formatter, " time {}", time)?;
+            write!(formatter, " time {}", time.as_millis())?;
         }
         if let Some(ref pv) = self.pv {
             write!(formatter, " pv")?;

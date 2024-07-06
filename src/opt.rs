@@ -14,40 +14,39 @@ use std::str::FromStr;
 pub enum HasOpt {
     // The value in MB for memory for hash tables.
     Hash(SpinType<u64>),
-    // The path on the hard disk to the Nalimov compressed format. Multiple directories can be
-    // concatenated with ";".
+    // The path on the hard disk to the Nalimov compressed format.
     NalimovPath(StrType),
     // This is the size in MB for the cache for the nalimov table bases.
     NalimovCache(SpinType<u64>),
-    // This means that the engine is able to ponder.
+    // Tells the GUI the engine is able to ponder.
     Ponder(CheckType),
-    // This means that the engine has its own book which is accessed by the engine itself. If this
-    // is set, the engine takes care of the opening book. If set to false, the engine should not
-    // its book.
+    // Tells the GUI the engine has its own opening book.
     OwnBook(CheckType),
-    // The engine supports multi best line or k-best mode. The default value is 1.
+    // Tells teh GUI the engine supports k-best mode.
     MultiPv(SpinType<u64>),
-    // UCI_ShowCurrLine: The engine can show the current line it is calculating.
+    // UCI_ShowCurrLine: Tells the GUI the engine can show the current line it
+    // is calculating.
     ShowCurrLine(CheckType),
-    // UCI_ShowRefutations: The engine can show a move and its refutations in a line.
+    // UCI_ShowRefutations: Tells the GUI the engine can show a move and its
+    // refutations in a line.
     ShowRefutations(CheckType),
-    // UCI_LimitStrength: The engine is able to limit its strength to a specific elo rating. This
-    // should always be implemented together with "UCI_Elo".
+    // UCI_LimitStrength: Tells the GUI that the engine can limit its strength.
     LimitStrength(CheckType),
-    // UCI_Elo: The engine can limit its strengh in Elo within this interval. Should be
-    // implemented together with UCI_LimitStrength.
+    // UCI_Elo: Tells the GUI that it can limit its strength within an Elo
+    // interval.
     Elo(SpinType<u16>),
-    // UCI_AnalsysMode: The engine wants to behave differently when analysing or playing a game.
-    // This is set to false if the engine is playing a game.
+    // UCI_AnalsysMode: Tells the GUI that the engine supports analysis mode, in
+    // which case behavior might be different than when it is playing a game.
     AnalysisMode(CheckType),
-    // UCI_ShredderbasesPath: Path to folder of containing the Shredder endgame databases.
+    // UCI_ShredderbasesPath: Tells the GUI that the engine supports the
+    // Shredder end-game databa.
     ShredderBasesPath(StrType),
     // UCI_Opponent: Tells the GUI how to configure the Opponent.
     Opp(StrType),
-    // UCI_SetPositionValue: The GUI can send this to the engine to tell it to use a certain value
-    // in centipawns from white's point of view if evaluating this specific position.
+    // UCI_SetPositionValue: Tells the GUI that the engine supports evaluating
+    // positions with values provided by the GUI.
     SetPositionValue(StrType),
-    // UCI_EngineAbout: The engine tells the GUI information about itself.
+    // UCI_EngineAbout: Tells the GUI about the engine.
     About(StrType),
 }
 
@@ -139,43 +138,46 @@ impl Display for StrType {
 pub enum SetOpt {
     // The value in MB for memory for hash tables.
     Hash(u64),
-    // The path on the hard disk to the Nalimov compressed format. Multiple directories can be
-    // concatenated with ";".
+    // The path on the hard disk to the Nalimov compressed format. Multiple
+    // directories can be concatenated with ";".
     NalimovPath(PathBuf),
     // This is the size in MB for the cache for the nalimov table bases.
     NalimovCache(u64),
-    // If set, the engine can think of the next move while the opponent is thinking.
+    // If set, the engine can think of the next move while the opponent is
+    // thinking.
     Ponder(bool),
-    // This means that the engine has its own book which is accessed by the engine itself. If this
-    // is set, the engine takes care of the opening book. If set to false, the engine should not
-    // its book.
+    // If set, enables the engine to use its own opening book.
     OwnBook(bool),
-    // The engine supports multi best line or k-best mode. The default value is 1.
+    // Used by the GUI to tell the engine to use k-best mode. The default value
+    // is 1.
     MultiPv(u64),
-    // UCI_ShowCurrLine: The engine can show the current line it is calculating.
+    // UCI_ShowCurrLine: If set to true, the engine shows the current line it is
+    // calculating.
     ShowCurrLine(bool),
-    // UCI_ShowRefutations: The engine can show a move and its refutations in a line.
+    // UCI_ShowRefutations: If set to true, the engine can show a move and its
+    // refutations in a line.
     ShowRefutations(bool),
-    // UCI_LimitStrength: The engine is able to limit its strength to a specific elo rating. This
-    // should always be implemented together with "UCI_Elo".
+    // UCI_LimitStrength: If set, the engine limits its strength to a specific
+    // ELO rating. If this is enabled, the GUI must alsot set "UCI_Elo" to an
+    // appropriate ELO score.
     LimitStrength(bool),
-    // UCI_Elo: The engine can limit its strengh in Elo within this interval. Should be
-    // implemented together with UCI_LimitStrength.
+    // UCI_Elo: If set, the engine plays at a strength that is accordance with
+    // the Elo rating. Must be set in tandem with the "UCI_LimitStrength".
     Elo(u16),
-    // UCI_AnalsysMode: The engine wants to behave differently when analysing or playing a game.
-    // This is set to false if the engine is playing a game.
+    // UCI_AnalsysMode: Tells the engine to use analysis mode.
     AnalysisMode(bool),
-    // UCI_ShredderbasesPath: Path to folder of containing the Shredder endgame databases.
+    // UCI_ShredderbasesPath: Sets the path to a folder containing the Shredder
+    // endgame databases.
     ShredderBasesPath(PathBuf),
-    // UCI_Opponent: The command can be used by the GUI to send the name, title, elo and if the
-    // engine is playing a human or computer to the engine. The format of the string is:
+    // UCI_Opponent: Tells the engine the name, title, elo and if the engine is
+    // playing a human or computer to the engine. The format of the string is:
     // - [GM|IM|FM|WGM|WIM|none] [<elo>|none] [computer|human] <name>, e.g.:
     // - setoption name UCI_Opponent value GM 2800 human Garry Kasparov
     // - setoption name UCI_Opponent value none none computer Shredder
     Opp(Opponent),
-    // UCI_SetPositionValue: The GUI can send this to the engine to tell it to use a certain value
-    // in centipawns from white's point of view if evaluating this specific position. See
-    // PosValueOpt for accepted formats.
+    // UCI_SetPositionValue: Tells the engine to use a certain value in
+    // centipawns from white's point of view if evaluating this specific
+    // position. See PosValueOpt for accepted formats.
     SetPosVal(PosValueOpt),
 }
 

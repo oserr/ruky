@@ -56,3 +56,40 @@ impl FromStr for Pm {
         Pm::try_from(s.as_bytes())
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn pm_from_null_move() {
+        let null_move = &[b'0', b'0', b'0', b'0'];
+        assert_eq!(Pm::try_from(&null_move[..]), Ok(Pm::Null));
+        assert_eq!(Pm::from_str("0000"), Ok(Pm::Null));
+    }
+
+    #[test]
+    fn pm_from_normal_move() {
+        let e2e4 = &[b'e', b'2', b'e', b'4'];
+        let pm = Pm::Normal {
+            from: Sq::from((1, 4)),
+            to: Sq::from((3, 4)),
+        };
+
+        assert_eq!(Pm::try_from(&e2e4[..]), Ok(pm));
+        assert_eq!(Pm::from_str("e2e4"), Ok(pm));
+    }
+
+    #[test]
+    fn pm_from_promo_move() {
+        let promo_move = &[b'a', b'7', b'a', b'8', b'q'];
+        let pm = Pm::Promo {
+            from: Sq::from((6, 0)),
+            to: Sq::from((7, 0)),
+            promo: Piece::Queen,
+        };
+
+        assert_eq!(Pm::try_from(&promo_move[..]), Ok(pm));
+        assert_eq!(Pm::from_str("a7a8q"), Ok(pm));
+    }
+}

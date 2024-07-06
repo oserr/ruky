@@ -13,6 +13,7 @@ pub enum UziErr {
     MissingOnOff,
     NothingSetForGo,
     ParseSqErr(String),
+    ParsePieceErr(String),
     Position,
     SetOptErr,
     UnknownOpt,

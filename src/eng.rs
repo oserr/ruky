@@ -54,11 +54,11 @@ pub struct Info {
     // also be a "depth" present in the same string.
     sel_depth: Option<u16>,
 
-    // time <x>: The time searched in ms. This should be sent together with the PV.
-    time: Option<u32>,
-
     // node <x>: x nodes searched. The engine should send this info regularly.
     node: Option<u32>,
+
+    // time <x>: The time searched in ms. This should be sent together with the PV.
+    time: Option<u32>,
 
     // pv <move1> .. <movei>: The best line found.
     pv: Option<Vec<Pm>>,
@@ -86,9 +86,12 @@ pub struct Info {
     // sbhits <x>: x positions where found in the shredder endgame databases.
     sb_hits: Option<u32>,
 
+    // cpuload <x>: The CPU usage of the engine is <x> permill.
+    cpu_load: Option<u16>,
+
     // string <str>: Any string <str> which will be displayed by the engine. If there is a string
     // command the rest of the line will be interpreted as <str>.
-    cpu_load: Option<u16>,
+    string: Option<String>,
 
     // refutation <move1> <move2> .. <movei>: move1 is refuted by line.
     refutation: Option<Refutation>,
@@ -96,6 +99,64 @@ pub struct Info {
     // currline <cpunr> <move1> .. <movei>: The current line the engine is calculating. <cpnur> is
     // only relevant if more than one CPU is used. See CurrentLine for more detaisl.
     curr_line: Option<CurrLine>,
+}
+
+impl Display for Info {
+    fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
+        write!(formatter, "info")?;
+        if let Some(depth) = self.depth {
+            write!(formatter, " depth {}", depth)?;
+        }
+        if let Some(sel_depth) = self.sel_depth {
+            write!(formatter, " seldepth {}", sel_depth)?;
+        }
+        if let Some(node) = self.node {
+            write!(formatter, " node {}", node)?;
+        }
+        if let Some(time) = self.time {
+            write!(formatter, " time {}", time)?;
+        }
+        if let Some(ref pv) = self.pv {
+            write!(formatter, " pv")?;
+            for pm in pv {
+                write!(formatter, " {}", pm)?;
+            }
+        }
+        if let Some(ref multi_pv) = self.multi_pv {
+            write!(formatter, " {}", multi_pv)?;
+        }
+        if let Some(score) = self.score {
+            write!(formatter, " {}", score)?;
+        }
+        if let Some(curr_move) = self.curr_move {
+            write!(formatter, " currmove {}", curr_move)?;
+        }
+        if let Some(hash_full) = self.hash_full {
+            write!(formatter, " hashfull {}", hash_full)?;
+        }
+        if let Some(nps) = self.nodes_per_sec {
+            write!(formatter, " nps {}", nps)?;
+        }
+        if let Some(tb_hits) = self.tb_hits {
+            write!(formatter, " tbhits {}", tb_hits)?;
+        }
+        if let Some(sb_hits) = self.sb_hits {
+            write!(formatter, " sbhits {}", sb_hits)?;
+        }
+        if let Some(cpu_load) = self.cpu_load {
+            write!(formatter, " cpuload {}", cpu_load)?;
+        }
+        if let Some(ref string) = self.string {
+            write!(formatter, " string {}", string)?;
+        }
+        if let Some(ref refutation) = self.refutation {
+            write!(formatter, " {}", refutation)?;
+        }
+        if let Some(ref curr_line) = self.curr_line {
+            write!(formatter, " {}", curr_line)?;
+        }
+        Ok(())
+    }
 }
 
 // currline <cpunr> <move1> .. <movei>: Represents the current line the engine

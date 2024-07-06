@@ -75,7 +75,7 @@ impl FromStr for GuiCmd {
                 }
             }
             "setoption" => Ok(GuiCmd::SetOpt(SetOpt::try_from(&words)?)),
-            "position" => Ok(GuiCmd::Pos(Pos::try_from(&words)?)),
+            "position" => Ok(GuiCmd::Pos(Pos::try_from(words.as_slice())?)),
             "go" => Ok(GuiCmd::Go(Go::try_from(words.as_slice())?)),
             _ => Err(UziErr::What),
         }
@@ -387,10 +387,10 @@ impl Default for Pos {
     }
 }
 
-impl TryFrom<&Vec<&str>> for Pos {
+impl TryFrom<&[&str]> for Pos {
     type Error = UziErr;
 
-    fn try_from(cmd: &Vec<&str>) -> Result<Pos, Self::Error> {
+    fn try_from(cmd: &[&str]) -> Result<Pos, Self::Error> {
         let mut pos = Pos::new();
         let mut pos_state = PosState::Begin;
 
@@ -491,61 +491,61 @@ mod tests {
     #[test]
     fn pos_try_from_empty_vec() {
         let args = vec![];
-        assert_eq!(Pos::try_from(&args), Err(UziErr::Position));
+        assert_eq!(Pos::try_from(args.as_slice()), Err(UziErr::Position));
     }
 
     #[test]
     fn pos_try_from_with_only_position() {
-        let args = vec!["position"];
-        assert_eq!(Pos::try_from(&args), Err(UziErr::Position));
+        let args = ["position"];
+        assert_eq!(Pos::try_from(&args[..]), Err(UziErr::Position));
     }
 
     #[test]
     fn pos_try_from_pos_with_startpos() {
-        let args = vec!["position", "startpos"];
-        assert_eq!(Pos::try_from(&args), Ok(Pos::new()));
+        let args = ["position", "startpos"];
+        assert_eq!(Pos::try_from(&args[..]), Ok(Pos::new()));
     }
 
     #[test]
     fn pos_try_from_fen_but_missing_fen_string() {
-        let args = vec!["position", "fen"];
-        assert_eq!(Pos::try_from(&args), Err(UziErr::Position));
+        let args = ["position", "fen"];
+        assert_eq!(Pos::try_from(&args[..]), Err(UziErr::Position));
     }
 
     #[test]
     fn pos_try_from_with_ranom_string() {
-        let args = vec!["position", "random", "fen"];
-        assert_eq!(Pos::try_from(&args), Err(UziErr::Position));
+        let args = ["position", "random", "fen"];
+        assert_eq!(Pos::try_from(&args[..]), Err(UziErr::Position));
     }
 
     #[test]
     fn pos_try_from_fen_with_fen() {
-        let args = vec!["position", "fen", "FENSTRING"];
-        assert_eq!(Pos::try_from(&args), Ok(Pos::with_fen("FENSTRING")));
+        let args = ["position", "fen", "FENSTRING"];
+        assert_eq!(Pos::try_from(&args[..]), Ok(Pos::with_fen("FENSTRING")));
     }
 
     #[test]
     fn pos_try_from_fen_with_moves() {
-        let args = vec!["position", "fen", "FENSTRING", "moves", "e2e4", "e7e5"];
+        let args = ["position", "fen", "FENSTRING", "moves", "e2e4", "e7e5"];
         let mut pos = Pos::with_fen("FENSTRING");
         pos.add_move(Pm::from_str("e2e4").unwrap())
             .add_move(Pm::from_str("e7e5").unwrap());
-        assert_eq!(Pos::try_from(&args), Ok(pos));
+        assert_eq!(Pos::try_from(&args[..]), Ok(pos));
     }
 
     #[test]
     fn pos_try_from_startpos_with_moves() {
-        let args = vec!["position", "startpos", "moves", "e2e4", "e7e5"];
+        let args = ["position", "startpos", "moves", "e2e4", "e7e5"];
         let mut pos = Pos::new();
         pos.add_move(Pm::from_str("e2e4").unwrap())
             .add_move(Pm::from_str("e7e5").unwrap());
-        assert_eq!(Pos::try_from(&args), Ok(pos));
+        assert_eq!(Pos::try_from(&args[..]), Ok(pos));
     }
 
     #[test]
     fn pos_try_from_mixed_fen_and_startpos() {
-        let args = vec!["position", "startpos", "fen"];
-        assert_eq!(Pos::try_from(&args), Err(UziErr::Position));
+        let args = ["position", "startpos", "fen"];
+        assert_eq!(Pos::try_from(&args[..]), Err(UziErr::Position));
     }
 
     #[test]

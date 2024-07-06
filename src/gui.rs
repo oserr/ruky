@@ -17,34 +17,36 @@ pub enum GuiCmd {
     // debug: If true, then debug mode is enabled, otherwise it is disabled.
     Debug(bool),
 
-    // isready: Used to synchronize the GUI with the engine. The command always needs to be
-    // answered with readyok. If the engine is calculating, it should also send readyok without
-    // stopping the calculation.
+    // isready: Used to synchronize the GUI with the engine. The command always
+    // needs to be answered with readyok. If the engine is calculating, it
+    // should also send readyok without stopping the calculation.
     IsReady,
 
-    // setoption name <id> [value <x>]
-    // This is sent to the engine when the user wants to change the internal parameters of the
-    // engine. One command will be sent for each parameter and this will only be sent when the
-    // engine is waiting.
+    // setoption name <id> [value <x>]: This is sent to the engine when the user
+    // wants to change the internal parameters of the engine. One command will
+    // be sent for each parameter and this will only be sent when the engine is
+    // waiting.
     SetOpt(SetOpt),
 
-    // ucinewgame: Sent to the engine when the next search, started with position and go will be
-    // from a different game.
+    // ucinewgame: Sent to the engine when the next search, started with
+    // position and go will be from a different game.
     NewGame,
 
-    // position [fen <fenstring> | startpos] moves <move1> ... <movei>: A command to set up the
-    // initial position.
+    // position [fen <fenstring> | startpos] moves <move1> ... <movei>: A
+    // command to set up the initial position.
     Pos(Pos),
 
-    // go [opts]: A command to tell the engine to begin calculating the best move.
+    // go [opts]: A command to tell the engine to begin calculating the best
+    // move.
     Go(Go),
 
-    // stop: A command to tell the engine to stop calculating as soon as possible.
+    // stop: A command to tell the engine to stop calculating as soon as
+    // possible.
     Stop,
 
-    // ponderhit: The user has played the expected move. This will be sent if the engine was told
-    // to ponder on the same move the engine has played. The engine has switched from
-    // pondering to normal search.
+    // ponderhit: The user has played the expected move. This will be sent if
+    // the engine was told to ponder on the same move the engine has played. The
+    // engine has switched from pondering to normal search.
     Ponderhit,
 }
 
@@ -86,7 +88,8 @@ impl FromStr for GuiCmd {
 // "position" command.
 #[derive(Clone, Debug, PartialEq)]
 pub struct Go {
-    // searchmoves <move1> ... <movei>: Restricts calculation by one or more moves.
+    // searchmoves <move1> ... <movei>: Restricts calculation by one or more
+    // moves.
     search_moves: Option<Vec<Pm>>,
 
     // ponder: Starts searching in pondering mode.
@@ -104,8 +107,8 @@ pub struct Go {
     // binc <x>: Black increment per move in milliseconds.
     binc: Option<Duration>,
 
-    // movestogo <x>: There are x moves to the next time control. If this is not set, then wtime
-    // and btime represent sudden death.
+    // movestogo <x>: There are x moves to the next time control. If this is not
+    // set, then wtime and btime represent sudden death.
     moves_to_go: Option<u16>,
 
     // depth <x>: Search x plies only.
@@ -120,8 +123,8 @@ pub struct Go {
     // movetime <x>: Search exactly x milliseconds.
     move_time: Option<Duration>,
 
-    // infinite: Search until the stop command. Do not exit search without being told to do so in
-    // this mode.
+    // infinite: Search until the stop command. Do not exit search without being
+    // told to do so in this mode.
     infinite: Option<()>,
 }
 
@@ -328,8 +331,10 @@ enum GoParseState {
 }
 
 // A structure to represent the UCI "position" command, which is issued to the
-// engine to set up the initial position.
+// engine to set up the initial position, in the following format:
+//
 // position [fen <fenstring> | startpos] moves <move1> ... <movei>
+//
 // Set up the position described in fenstring or from the starting position and
 // play the moves. No new command is needed, but if the position is from a
 // different game than the last position sent to the engine, then the GUI should

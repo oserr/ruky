@@ -136,6 +136,19 @@ pub struct Score {
     bound: Option<ScoreBound>,
 }
 
+impl Display for Score {
+    fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
+        write!(formatter, "score cp {}", self.cp)?;
+        if let Some(mate) = self.mate {
+            write!(formatter, " {}", mate)?;
+        }
+        if let Some(bound) = self.bound {
+            write!(formatter, " {}", bound)?;
+        }
+        Ok(())
+    }
+}
+
 // Represents a lower or an upper score bound.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub enum ScoreBound {

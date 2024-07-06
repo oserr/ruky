@@ -95,7 +95,7 @@ pub struct Info {
 
     // currline <cpunr> <move1> .. <movei>: The current line the engine is calculating. <cpnur> is
     // only relevant if more than one CPU is used. See CurrentLine for more detaisl.
-    curr_line: Option<CurrentLine>,
+    curr_line: Option<CurrLine>,
 }
 
 // currline <cpunr> <move1> .. <movei>: Represents the current line the engine
@@ -105,9 +105,22 @@ pub struct Info {
 // k lines in k strings   together. The engine should only send this if the
 // option "UCI_ShowCurrLine" is set to true.
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
-pub struct CurrentLine {
+pub struct CurrLine {
     cpu_id: Option<u16>,
     line: Vec<Pm>,
+}
+
+impl Display for CurrLine {
+    fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
+        write!(formatter, "currline")?;
+        if let Some(cpu_id) = self.cpu_id {
+            write!(formatter, " {}", cpu_id)?;
+        }
+        for pm in &self.line {
+            write!(formatter, " {}", *pm)?;
+        }
+        Ok(())
+    }
 }
 
 // refutation <move1> <move2> .. <movei>: Represents the refutation command.

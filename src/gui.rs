@@ -339,9 +339,9 @@ pub struct Pos {
     // Represents the initial position: either a new game or a FEN string.
     pos: PosOpt,
 
-    // Moves to apply to the initial position. If set, the intial position is derived after the
-    // moves are applied to the initial position.
-    moves: Option<Vec<String>>,
+    // Moves to apply to the initial position. If set, the intial position is
+    // derived after the moves are applied to the initial position.
+    moves: Option<Vec<Pm>>,
 }
 
 impl Pos {
@@ -363,11 +363,11 @@ impl Pos {
 
     // Adds a move to the position. Moves should be added in the order they are
     // played.
-    pub fn add_move(&mut self, mv: &str) -> &mut Self {
+    pub fn add_move(&mut self, pm: Pm) -> &mut Self {
         if let Some(ref mut moves) = self.moves {
-            moves.push(mv.into());
+            moves.push(pm);
         } else {
-            self.moves = Some(vec![mv.into()]);
+            self.moves = Some(vec![pm]);
         }
         self
     }
@@ -420,7 +420,7 @@ impl TryFrom<&Vec<&str>> for Pos {
                         pos_state = PosState::FenStr;
                         pos.set_fen(*word);
                     } else if pos_state == PosState::Moves {
-                        pos.add_move(*word);
+                        pos.add_move(Pm::from_str(*word)?);
                     } else {
                         return Err(UziErr::Position);
                     }
@@ -475,10 +475,12 @@ mod tests {
 
     #[test]
     fn pos_with_moves() {
+        let pm1 = Pm::from_str("e2e4").unwrap();
+        let pm2 = Pm::from_str("e7e5").unwrap();
         let mut pos = Pos::new();
-        pos.add_move("e2e4").add_move("e7e5");
+        pos.add_move(pm1).add_move(pm2);
         assert_eq!(pos.pos, PosOpt::StartPos);
-        assert_eq!(pos.moves, Some(vec!["e2e4".into(), "e7e5".into()]));
+        assert_eq!(pos.moves, Some(vec![pm1, pm2]));
     }
 
     #[test]
@@ -521,7 +523,8 @@ mod tests {
     fn pos_try_from_fen_with_moves() {
         let args = vec!["position", "fen", "FENSTRING", "moves", "e2e4", "e7e5"];
         let mut pos = Pos::with_fen("FENSTRING");
-        pos.add_move("e2e4").add_move("e7e5");
+        pos.add_move(Pm::from_str("e2e4").unwrap())
+            .add_move(Pm::from_str("e7e5").unwrap());
         assert_eq!(Pos::try_from(&args), Ok(pos));
     }
 
@@ -529,7 +532,8 @@ mod tests {
     fn pos_try_from_startpos_with_moves() {
         let args = vec!["position", "startpos", "moves", "e2e4", "e7e5"];
         let mut pos = Pos::new();
-        pos.add_move("e2e4").add_move("e7e5");
+        pos.add_move(Pm::from_str("e2e4").unwrap())
+            .add_move(Pm::from_str("e7e5").unwrap());
         assert_eq!(Pos::try_from(&args), Ok(pos));
     }
 
@@ -665,7 +669,10 @@ mod tests {
             GuiCmd::from_str("position fen FENSTRING moves e2e4 e7e5"),
             Ok(GuiCmd::Pos(Pos {
                 pos: PosOpt::Fen("FENSTRING".into()),
-                moves: Some(vec!["e2e4".into(), "e7e5".into()]),
+                moves: Some(vec![
+                    Pm::from_str("e2e4").unwrap(),
+                    Pm::from_str("e7e5").unwrap()
+                ]),
             }))
         );
     }

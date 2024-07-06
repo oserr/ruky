@@ -3,6 +3,7 @@
 
 use crate::opt::HasOpt;
 use crate::pm::Pm;
+use std::fmt::{self, Display, Formatter};
 
 // Represents a command from the engine to the GUI.
 // TODO: support copyprotection, registration, and custom commands:
@@ -28,10 +29,7 @@ pub enum EngCmd {
     // engine stops searching, also in pondering mode if there is a "stop" command, so for
     // every "go" command a "bestmove" command is needed. Directly before that, the engine
     // should send a final info command with the final search information.
-    BestMove {
-        best: Pm,
-        ponder: Option<Pm>,
-    },
+    BestMove { best: Pm, ponder: Option<Pm> },
     // info [opts]: Used by the engine to send information about the engine and its calculations
     // to the GUI. See below for more details.
     Info(Info),
@@ -152,4 +150,14 @@ pub enum ScoreBound {
 pub struct MultiPv {
     rank: u64,
     moves: Vec<Pm>,
+}
+
+impl Display for MultiPv {
+    fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
+        write!(formatter, "multipv {}", self.rank)?;
+        for pm in &self.moves {
+            write!(formatter, " {}", *pm)?;
+        }
+        Ok(())
+    }
 }

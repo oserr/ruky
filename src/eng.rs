@@ -2,6 +2,7 @@
 // a GUI.
 
 use crate::opt::HasOpt;
+use crate::pm::Pm;
 
 // Represents a command from the engine to the GUI.
 // TODO: support copyprotection, registration, and custom commands:
@@ -28,8 +29,8 @@ pub enum EngCmd {
     // every "go" command a "bestmove" command is needed. Directly before that, the engine
     // should send a final info command with the final search information.
     BestMove {
-        best: String,
-        ponder: Option<String>,
+        best: Pm,
+        ponder: Option<Pm>,
     },
     // info [opts]: Used by the engine to send information about the engine and its calculations
     // to the GUI. See below for more details.
@@ -62,7 +63,7 @@ pub struct Info {
     node: Option<u32>,
 
     // pv <move1> .. <movei>: The best line found.
-    pv: Option<Vec<String>>,
+    pv: Option<Vec<Pm>>,
 
     // multipv <num>: This for the multipv mode. For the best move/pv add "multipv 1" in the string
     // when you send the pv. In k-best mode always send the all k variants in k strings
@@ -73,7 +74,7 @@ pub struct Info {
     score: Option<Score>,
 
     // currmove <move>: Currently searching this move.
-    curr_move: Option<String>,
+    curr_move: Option<Pm>,
 
     // hashfull <x>: The hashfull is x permill full. The engine should send this info regularly.
     hash_full: Option<u16>,
@@ -108,7 +109,7 @@ pub struct Info {
 #[derive(Clone, Debug, PartialEq)]
 pub struct CurrentLine {
     cpu_id: Option<u16>,
-    line: Vec<String>,
+    line: Vec<Pm>,
 }
 
 // refutation <move1> <move2> .. <movei>: Represents the refutation command.
@@ -120,7 +121,7 @@ pub struct Refutation {
     mv: String,
 
     // The line of moves that refute move |mv|.
-    moves: Vec<String>,
+    moves: Vec<Pm>,
 }
 
 // score cp <x> [mate <y>] [lowerbound] [upperbound]: Represents the score
@@ -151,5 +152,5 @@ pub enum ScoreBound {
 #[derive(Clone, Debug, PartialEq)]
 pub struct MultiPv {
     rank: u16,
-    moves: Vec<String>,
+    moves: Vec<Pm>,
 }

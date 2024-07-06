@@ -14,7 +14,7 @@ pub enum UziErr {
     NothingSetForGo,
     ParseMoveErr,
     ParsePieceErr(String),
-    ParseSqErr(String),
+    ParseSqErr,
     Position,
     SetOptErr,
     UnknownOpt,

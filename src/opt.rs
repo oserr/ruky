@@ -187,7 +187,7 @@ impl TryFrom<&Vec<&str>> for SetOpt {
             match *word {
                 "setoption" if parse_state.is_begin() => parse_state = SetOptParseState::SetOpt,
                 "name" if parse_state.is_setopt() => parse_state = SetOptParseState::Name,
-                "value" if parse_state.is_val() => (),
+                "value" if parse_state.is_val() => continue,
                 _ => match parse_state {
                     SetOptParseState::Name => {
                         let opt = UziOpt::from_str(*word)?;

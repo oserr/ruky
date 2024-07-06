@@ -179,9 +179,9 @@ pub enum SetOpt {
     SetPosVal(PosValueOpt),
 }
 
-impl TryFrom<&Vec<&str>> for SetOpt {
+impl TryFrom<&[&str]> for SetOpt {
     type Error = UziErr;
-    fn try_from(cmd: &Vec<&str>) -> Result<Self, Self::Error> {
+    fn try_from(cmd: &[&str]) -> Result<Self, Self::Error> {
         let mut parse_state = SetOptParseState::Begin;
         for (i, word) in cmd.into_iter().enumerate() {
             match *word {
@@ -464,82 +464,85 @@ mod tests {
     #[test]
     fn try_from_returns_err_missing_options() {
         let mut opts = Vec::new();
-        assert_eq!(SetOpt::try_from(&opts), Err(UziErr::SetOptErr));
+        assert_eq!(SetOpt::try_from(opts.as_slice()), Err(UziErr::SetOptErr));
         opts.push("setoption");
-        assert_eq!(SetOpt::try_from(&opts), Err(UziErr::SetOptErr));
+        assert_eq!(SetOpt::try_from(opts.as_slice()), Err(UziErr::SetOptErr));
         opts.push("name");
-        assert_eq!(SetOpt::try_from(&opts), Err(UziErr::SetOptErr));
+        assert_eq!(SetOpt::try_from(opts.as_slice()), Err(UziErr::SetOptErr));
     }
 
     #[test]
     fn set_opt_try_from_returns_err_for_unknown_opt() {
-        let opts = vec!["setoption", "name", "CheeseBurger"];
-        assert_eq!(SetOpt::try_from(&opts), Err(UziErr::UnknownOpt));
+        let opts = ["setoption", "name", "CheeseBurger"];
+        assert_eq!(SetOpt::try_from(&opts[..]), Err(UziErr::UnknownOpt));
     }
 
     #[test]
     fn set_opt_try_from_returns_err_for_missing_val() {
-        let opts = vec!["setoption", "name", HASH];
-        assert_eq!(SetOpt::try_from(&opts), Err(UziErr::SetOptErr));
+        let opts = ["setoption", "name", HASH];
+        assert_eq!(SetOpt::try_from(&opts[..]), Err(UziErr::SetOptErr));
     }
 
     #[test]
     fn set_opt_try_from_hash() {
-        let opts = vec!["setoption", "name", HASH, "value", "128"];
-        assert_eq!(SetOpt::try_from(&opts), Ok(SetOpt::Hash(128)));
+        let opts = ["setoption", "name", HASH, "value", "128"];
+        assert_eq!(SetOpt::try_from(&opts[..]), Ok(SetOpt::Hash(128)));
     }
 
     #[test]
     fn set_opt_try_from_nalimov_path() {
-        let opts = vec!["setoption", "name", NALIMOV_PATH, "value", "some/path"];
+        let opts = ["setoption", "name", NALIMOV_PATH, "value", "some/path"];
         assert_eq!(
-            SetOpt::try_from(&opts),
+            SetOpt::try_from(&opts[..]),
             Ok(SetOpt::NalimovPath(PathBuf::from_str("some/path").unwrap()))
         );
     }
 
     #[test]
     fn set_opt_try_from_nalimov_cache() {
-        let opts = vec!["setoption", "name", NALIMOV_CACHE, "value", "256000"];
-        assert_eq!(SetOpt::try_from(&opts), Ok(SetOpt::NalimovCache(256_000)));
+        let opts = ["setoption", "name", NALIMOV_CACHE, "value", "256000"];
+        assert_eq!(
+            SetOpt::try_from(&opts[..]),
+            Ok(SetOpt::NalimovCache(256_000))
+        );
     }
 
     #[test]
     fn set_opt_try_from_ponder() {
-        let opts = vec!["setoption", "name", PONDER, "value", "true"];
-        assert_eq!(SetOpt::try_from(&opts), Ok(SetOpt::Ponder(true)));
-        let opts = vec!["setoption", "name", PONDER, "value", "false"];
-        assert_eq!(SetOpt::try_from(&opts), Ok(SetOpt::Ponder(false)));
+        let opts = ["setoption", "name", PONDER, "value", "true"];
+        assert_eq!(SetOpt::try_from(&opts[..]), Ok(SetOpt::Ponder(true)));
+        let opts = ["setoption", "name", PONDER, "value", "false"];
+        assert_eq!(SetOpt::try_from(&opts[..]), Ok(SetOpt::Ponder(false)));
     }
 
     #[test]
     fn set_opt_try_own_book() {
-        let opts = vec!["setoption", "name", OWN_BOOK, "value", "true"];
-        assert_eq!(SetOpt::try_from(&opts), Ok(SetOpt::OwnBook(true)));
-        let opts = vec!["setoption", "name", OWN_BOOK, "value", "false"];
-        assert_eq!(SetOpt::try_from(&opts), Ok(SetOpt::OwnBook(false)));
+        let opts = ["setoption", "name", OWN_BOOK, "value", "true"];
+        assert_eq!(SetOpt::try_from(&opts[..]), Ok(SetOpt::OwnBook(true)));
+        let opts = ["setoption", "name", OWN_BOOK, "value", "false"];
+        assert_eq!(SetOpt::try_from(&opts[..]), Ok(SetOpt::OwnBook(false)));
     }
 
     #[test]
     fn set_opt_try_multipv() {
-        let opts = vec!["setoption", "name", MULTI_PV, "value", "16"];
-        assert_eq!(SetOpt::try_from(&opts), Ok(SetOpt::MultiPv(16)));
+        let opts = ["setoption", "name", MULTI_PV, "value", "16"];
+        assert_eq!(SetOpt::try_from(&opts[..]), Ok(SetOpt::MultiPv(16)));
     }
 
     #[test]
     fn set_opt_try_show_curr_line() {
-        let opts = vec!["setoption", "name", SHOW_CURR_LINE, "value", "false"];
-        assert_eq!(SetOpt::try_from(&opts), Ok(SetOpt::ShowCurrLine(false)));
-        let opts = vec!["setoption", "name", SHOW_CURR_LINE, "value", "true"];
-        assert_eq!(SetOpt::try_from(&opts), Ok(SetOpt::ShowCurrLine(true)));
+        let opts = ["setoption", "name", SHOW_CURR_LINE, "value", "false"];
+        assert_eq!(SetOpt::try_from(&opts[..]), Ok(SetOpt::ShowCurrLine(false)));
+        let opts = ["setoption", "name", SHOW_CURR_LINE, "value", "true"];
+        assert_eq!(SetOpt::try_from(&opts[..]), Ok(SetOpt::ShowCurrLine(true)));
     }
 
     #[test]
     fn set_opt_try_from_opponent() {
-        let opts = vec!["setoption", "name", OPPONENT, "value", "none"];
-        assert_eq!(SetOpt::try_from(&opts), Err(UziErr::BadOpponent));
+        let opts = ["setoption", "name", OPPONENT, "value", "none"];
+        assert_eq!(SetOpt::try_from(&opts[..]), Err(UziErr::BadOpponent));
 
-        let opts = vec![
+        let opts = [
             "setoption",
             "name",
             OPPONENT,
@@ -550,7 +553,7 @@ mod tests {
             "oserr",
         ];
         assert_eq!(
-            SetOpt::try_from(&opts),
+            SetOpt::try_from(&opts[..]),
             Ok(SetOpt::Opp(Opponent {
                 title: Title::NoTitle,
                 elo: None,
@@ -559,7 +562,7 @@ mod tests {
             }))
         );
 
-        let opts = vec![
+        let opts = [
             "setoption",
             "name",
             OPPONENT,
@@ -570,7 +573,7 @@ mod tests {
             "oserr",
         ];
         assert_eq!(
-            SetOpt::try_from(&opts),
+            SetOpt::try_from(&opts[..]),
             Ok(SetOpt::Opp(Opponent {
                 title: Title::NoTitle,
                 elo: Some(2200),
@@ -579,7 +582,7 @@ mod tests {
             }))
         );
 
-        let opts = vec![
+        let opts = [
             "setoption",
             "name",
             OPPONENT,
@@ -590,7 +593,7 @@ mod tests {
             "ruky",
         ];
         assert_eq!(
-            SetOpt::try_from(&opts),
+            SetOpt::try_from(&opts[..]),
             Ok(SetOpt::Opp(Opponent {
                 title: Title::GM,
                 elo: Some(4800),
@@ -599,7 +602,7 @@ mod tests {
             }))
         );
 
-        let opts = vec![
+        let opts = [
             "setoption",
             "name",
             OPPONENT,
@@ -609,18 +612,18 @@ mod tests {
             "computer",
             "ruky",
         ];
-        assert_eq!(SetOpt::try_from(&opts), Err(UziErr::BadTitle));
+        assert_eq!(SetOpt::try_from(&opts[..]), Err(UziErr::BadTitle));
     }
 
     #[test]
     fn set_opt_try_from_pos_value() {
-        let opts = vec!["setoption", "name", SET_POSITION_VALUE, "value", "clearall"];
+        let opts = ["setoption", "name", SET_POSITION_VALUE, "value", "clearall"];
         assert_eq!(
-            SetOpt::try_from(&opts),
+            SetOpt::try_from(&opts[..]),
             Ok(SetOpt::SetPosVal(PosValueOpt::ClearAll))
         );
 
-        let opts = vec![
+        let opts = [
             "setoption",
             "name",
             SET_POSITION_VALUE,
@@ -629,11 +632,11 @@ mod tests {
             "fen",
         ];
         assert_eq!(
-            SetOpt::try_from(&opts),
+            SetOpt::try_from(&opts[..]),
             Ok(SetOpt::SetPosVal(PosValueOpt::Clear("fen".into())))
         );
 
-        let opts = vec![
+        let opts = [
             "setoption",
             "name",
             SET_POSITION_VALUE,
@@ -642,14 +645,14 @@ mod tests {
             "fen",
         ];
         assert_eq!(
-            SetOpt::try_from(&opts),
+            SetOpt::try_from(&opts[..]),
             Ok(SetOpt::SetPosVal(PosValueOpt::Val {
                 val: 100,
                 fen: "fen".into()
             }))
         );
 
-        let opts = vec![
+        let opts = [
             "setoption",
             "name",
             SET_POSITION_VALUE,
@@ -658,6 +661,6 @@ mod tests {
             "fen",
             "extra",
         ];
-        assert_eq!(SetOpt::try_from(&opts), Err(UziErr::BadPositionVal));
+        assert_eq!(SetOpt::try_from(&opts[..]), Err(UziErr::BadPositionVal));
     }
 }

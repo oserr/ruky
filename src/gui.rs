@@ -74,7 +74,7 @@ impl FromStr for GuiCmd {
                     _ => Err(UziErr::MissingOnOff),
                 }
             }
-            "setoption" => Ok(GuiCmd::SetOpt(SetOpt::try_from(&words)?)),
+            "setoption" => Ok(GuiCmd::SetOpt(SetOpt::try_from(words.as_slice())?)),
             "position" => Ok(GuiCmd::Pos(Pos::try_from(words.as_slice())?)),
             "go" => Ok(GuiCmd::Go(Go::try_from(words.as_slice())?)),
             _ => Err(UziErr::What),

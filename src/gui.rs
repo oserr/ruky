@@ -4,6 +4,7 @@
 use crate::conv::{to_millis, to_number};
 use crate::err::UziErr;
 use crate::opt::SetOpt;
+use crate::pm::Pm;
 use std::str::FromStr;
 use std::time::Duration;
 
@@ -86,7 +87,7 @@ impl FromStr for GuiCmd {
 #[derive(Clone, Debug, PartialEq)]
 pub struct Go {
     // searchmoves <move1> ... <movei>: Restricts calculation by one or more moves.
-    search_moves: Option<Vec<String>>,
+    search_moves: Option<Vec<Pm>>,
 
     // ponder: Starts searching in pondering mode.
     ponder: Option<()>,
@@ -131,11 +132,11 @@ impl Go {
     }
 
     // Adds a search move to restrict search.
-    pub fn add_search_move(&mut self, mv: &str) -> &mut Self {
+    pub fn add_search_move(&mut self, pm: Pm) -> &mut Self {
         if let Some(ref mut moves) = self.search_moves {
-            moves.push(mv.into());
+            moves.push(pm);
         } else {
-            self.search_moves = Some(vec![mv.into()]);
+            self.search_moves = Some(vec![pm]);
         }
         self
     }
@@ -300,7 +301,7 @@ fn parse_go_opt(parse_state: GoParseState, word: &str, go: &mut Go) -> Result<()
         GoParseState::Depth => go.set_depth(to_number::<u16>(word)?),
         GoParseState::Nodes => go.set_nodes(to_number::<u64>(word)?),
         GoParseState::Mate => go.set_mate(to_number::<u16>(word)?),
-        GoParseState::SearchMoves => go.add_search_move(word),
+        GoParseState::SearchMoves => go.add_search_move(Pm::from_str(word)?),
         _ => return Err(UziErr::GoErr),
     };
     Ok(())
@@ -547,7 +548,7 @@ mod tests {
     #[test]
     fn go_with_all_opts() {
         let mut go = Go::new();
-        go.add_search_move("e2e4")
+        go.add_search_move(Pm::from_str("e2e4").unwrap())
             .set_ponder()
             .set_wtime(Duration::from_millis(1))
             .set_btime(Duration::from_millis(2))
@@ -562,7 +563,7 @@ mod tests {
         assert_eq!(
             go,
             Go {
-                search_moves: Some(vec!["e2e4".into()]),
+                search_moves: Some(vec![Pm::from_str("e2e4").unwrap()]),
                 ponder: Some(()),
                 wtime: Some(Duration::from_millis(1)),
                 btime: Some(Duration::from_millis(2)),
@@ -614,7 +615,10 @@ mod tests {
         assert_eq!(
             Go::try_from(&opts),
             Ok(Go {
-                search_moves: Some(vec!["e2e4".into(), "e7e5".into()]),
+                search_moves: Some(vec![
+                    Pm::from_str("e2e4").unwrap(),
+                    Pm::from_str("e7e5").unwrap()
+                ]),
                 ponder: Some(()),
                 wtime: Some(Duration::from_millis(1)),
                 btime: Some(Duration::from_millis(2)),
@@ -669,8 +673,8 @@ mod tests {
     #[test]
     fn guicmd_go() {
         let mut go = Go::new();
-        go.add_search_move("e2e4")
-            .add_search_move("e7e5")
+        go.add_search_move(Pm::from_str("e2e4").unwrap())
+            .add_search_move(Pm::from_str("e7e5").unwrap())
             .set_wtime(Duration::from_millis(1))
             .set_btime(Duration::from_millis(2));
         assert_eq!(

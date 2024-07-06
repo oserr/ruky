@@ -151,6 +151,6 @@ pub enum ScoreBound {
 // k-best mode, should always send the all k variants in k strings together.
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub struct MultiPv {
-    rank: u16,
+    rank: u64,
     moves: Vec<Pm>,
 }

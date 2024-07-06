@@ -7,7 +7,7 @@ use std::fmt::{self, Debug, Display, Formatter};
 use std::str::FromStr;
 
 #[derive(Clone, Copy, Default, Eq, Hash, PartialEq, PartialOrd)]
-struct Sq {
+pub struct Sq {
     index: u8,
 }
 

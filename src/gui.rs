@@ -76,7 +76,7 @@ impl FromStr for GuiCmd {
             }
             "setoption" => Ok(GuiCmd::SetOpt(SetOpt::try_from(&words)?)),
             "position" => Ok(GuiCmd::Pos(Pos::try_from(&words)?)),
-            "go" => Ok(GuiCmd::Go(Go::try_from(&words)?)),
+            "go" => Ok(GuiCmd::Go(Go::try_from(words.as_slice())?)),
             _ => Err(UziErr::What),
         }
     }
@@ -247,10 +247,10 @@ impl Default for Go {
     }
 }
 
-impl TryFrom<&Vec<&str>> for Go {
+impl TryFrom<&[&str]> for Go {
     type Error = UziErr;
 
-    fn try_from(cmd: &Vec<&str>) -> Result<Go, Self::Error> {
+    fn try_from(cmd: &[&str]) -> Result<Go, Self::Error> {
         let mut go = Go::new();
         let mut parse_state = GoParseState::Begin;
 
@@ -590,12 +590,12 @@ mod tests {
 
     #[test]
     fn go_try_from_empty() {
-        assert_eq!(Go::try_from(&vec!["hello", "mother"]), Err(UziErr::GoErr));
+        assert_eq!(Go::try_from(&["hello", "mother"][..]), Err(UziErr::GoErr));
     }
 
     #[test]
     fn go_try_from_all_opts() {
-        let opts = vec![
+        let opts = [
             "go",
             "searchmoves",
             "e2e4",
@@ -622,7 +622,7 @@ mod tests {
             "infinite",
         ];
         assert_eq!(
-            Go::try_from(&opts),
+            Go::try_from(&opts[..]),
             Ok(Go {
                 search_moves: Some(vec![
                     Pm::from_str("e2e4").unwrap(),

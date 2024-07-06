@@ -143,6 +143,21 @@ pub enum ScoreBound {
     Upper,
 }
 
+impl ScoreBound {
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            ScoreBound::Lower => "lowerbound",
+            ScoreBound::Upper => "upperbound",
+        }
+    }
+}
+
+impl Display for ScoreBound {
+    fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
+        formatter.write_str(self.as_str())
+    }
+}
+
 // multipv <num>: Used for representing the multipv command in the multipv mode.
 // For the best move/pv add "multipv 1" in the string when you send the pv. In
 // k-best mode, should always send the all k variants in k strings together.

@@ -14,27 +14,33 @@ use std::time::Duration;
 // with all the features.
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub enum EngCmd {
-    // id name <x>: The name and version of the chess engine, as response to "uci" command..
+    // id name <x>: The name and version of the chess engine, as response to
+    // "uci" command..
     IdName(String),
-    // id author <x>: The name of the author of the chess engine, as response to "uci" command.
+    // id author <x>: The name of the author of the chess engine, as response to
+    // "uci" command.
     IdAuthor(String),
-    // uciok: Must be sent after the ID and optional options to tell the GUI that the engine has
-    // sent all infos and is ready in uci mode.
+    // uciok: Must be sent after the ID and optional options to tell the GUI
+    // that the engine has sent all infos and is ready in uci mode.
     UciOk,
-    // readyok: This must be sent when the engine has received an "isready" command and has
-    // processed all input and is ready to accept new commands now.
+    // readyok: This must be sent when the engine has received an "isready"
+    // command and has processed all input and is ready to accept new commands
+    // now.
     ReadyOk,
-    // bestmove <move1> [ponder <move2>]: The engine has stopped searching and found the move
-    // <move1> best in this position. The engine can send the move it likes to ponder on. The
-    // engine must not start pondering automatically. This command must always be sent if the
-    // engine stops searching, also in pondering mode if there is a "stop" command, so for
-    // every "go" command a "bestmove" command is needed. Directly before that, the engine
-    // should send a final info command with the final search information.
+    // bestmove <move1> [ponder <move2>]: The engine has stopped searching and
+    // found the move <move1> best in this position. The engine can send the
+    // move it likes to ponder on. The engine must not start pondering
+    // automatically. This command must always be sent if the engine stops
+    // searching, also in pondering mode if there is a "stop" command, so for
+    // every "go" command a "bestmove" command is needed. Directly before that,
+    // the engine should send a final info command with the final search
+    // information.
     BestMove { best: Pm, ponder: Option<Pm> },
-    // info [opts]: Used by the engine to send information about the engine and its calculations
-    // to the GUI. See below for more details.
+    // info [opts]: Used by the engine to send information about the engine and
+    // its calculations to the GUI. See below for more details.
     Info(Info),
-    // option name <id> [opts..]: To tell the engine which options can be changed.
+    // option name <id> [opts..]: To tell the engine which options can be
+    // changed.
     HasOpt(HasOpt),
 }
 
@@ -71,22 +77,23 @@ pub struct Info {
     // depth <x>: Search depth in plies.
     depth: Option<u16>,
 
-    // seldepth <x>: Selective search depth in plies. If the engine sends "seldepth", there must
-    // also be a "depth" present in the same string.
+    // seldepth <x>: Selective search depth in plies. If the engine sends
+    // "seldepth", there must also be a "depth" present in the same string.
     sel_depth: Option<u16>,
 
     // node <x>: x nodes searched. The engine should send this info regularly.
     node: Option<u32>,
 
-    // time <x>: The time searched in ms. This should be sent together with the PV.
+    // time <x>: The time searched in ms. This should be sent together with the
+    // PV.
     time: Option<Duration>,
 
     // pv <move1> .. <movei>: The best line found.
     pv: Option<Vec<Pm>>,
 
-    // multipv <num>: This for the multipv mode. For the best move/pv add "multipv 1" in the string
-    // when you send the pv. In k-best mode always send the all k variants in k strings
-    // together.
+    // multipv <num>: This for the multipv mode. For the best move/pv add
+    // "multipv 1" in the string when you send the pv. In k-best mode always
+    // send the all k variants in k strings together.
     multi_pv: Option<MultiPv>,
 
     // score [opts]: The score from the engine's point of view.
@@ -95,10 +102,12 @@ pub struct Info {
     // currmove <move>: Currently searching this move.
     curr_move: Option<Pm>,
 
-    // hashfull <x>: The hashfull is x permill full. The engine should send this info regularly.
+    // hashfull <x>: The hashfull is x permill full. The engine should send this
+    // info regularly.
     hash_full: Option<u16>,
 
-    // nps <x>: x nodes per second searched. The engine should send this info regularly.
+    // nps <x>: x nodes per second searched. The engine should send this info
+    // regularly.
     nodes_per_sec: Option<u32>,
 
     // tbhits <x>: x positions where found in the endgame table base.
@@ -110,15 +119,17 @@ pub struct Info {
     // cpuload <x>: The CPU usage of the engine is <x> permill.
     cpu_load: Option<u16>,
 
-    // string <str>: Any string <str> which will be displayed by the engine. If there is a string
-    // command the rest of the line will be interpreted as <str>.
+    // string <str>: Any string <str> which will be displayed by the engine. If
+    // there is a string command the rest of the line will be interpreted as
+    // <str>.
     string: Option<String>,
 
     // refutation <move1> <move2> .. <movei>: move1 is refuted by line.
     refutation: Option<Refutation>,
 
-    // currline <cpunr> <move1> .. <movei>: The current line the engine is calculating. <cpnur> is
-    // only relevant if more than one CPU is used. See CurrentLine for more detaisl.
+    // currline <cpunr> <move1> .. <movei>: The current line the engine is
+    // calculating. <cpnur> is only relevant if more than one CPU is used. See
+    // CurrLine for more detaisl.
     curr_line: Option<CurrLine>,
 }
 
@@ -233,8 +244,8 @@ pub struct Score {
     // cp <x>: The score from the engine's point of view in centipawns.
     cp: i32,
 
-    // mate <y>: Mate in y moves, not plies. If the engine is getting mated, use negative values
-    // for y.
+    // mate <y>: Mate in y moves, not plies. If the engine is getting mated, use
+    // negative values for y.
     mate: Option<i16>,
 
     // If provided, then the score is either a lower or an upper bound.

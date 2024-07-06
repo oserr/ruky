@@ -10,7 +10,7 @@ use std::str::FromStr;
 // chess engine. These are meant to be used by the engine to tell the GUI which
 // options are available, and what their default configurations are.
 // TODO: Add support for non-standard options.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub enum HasOpt {
     // The value in MB for memory for hash tables.
     Hash(SpinType<u64>),
@@ -77,7 +77,7 @@ impl Display for HasOpt {
 // The next five structs represent the option types. For example, NalimovPath is
 // string type.
 
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub struct CheckType(bool);
 
 impl Display for CheckType {
@@ -86,7 +86,7 @@ impl Display for CheckType {
     }
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub struct SpinType<T> {
     pub default: T,
     pub min: T,
@@ -106,7 +106,7 @@ where
     }
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub struct ComboType {
     pub default: String,
     pub var: Vec<String>,
@@ -122,10 +122,10 @@ impl Display for ComboType {
     }
 }
 
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub struct ButtonType;
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub struct StrType(String);
 
 impl Display for StrType {
@@ -135,7 +135,7 @@ impl Display for StrType {
 }
 
 // TODO: Add support for non-standard options.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub enum SetOpt {
     // The value in MB for memory for hash tables.
     Hash(u64),
@@ -263,7 +263,7 @@ impl SetOptParseState {
 }
 
 // Represents all the UCI options, but we don't use payloads here.
-#[derive(Copy, Clone, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub enum UziOpt {
     Hash,
     NalimovPath,
@@ -314,7 +314,7 @@ impl FromStr for UziOpt {
 // - [GM|IM|FM|WGM|WIM|none] [<elo>|none] [computer|human] <name>, e.g.:
 // - setoption name UCI_Opponent value GM 2800 human Garry Kasparov
 // - setoption name UCI_Opponent value none none computer Shredder
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub struct Opponent {
     pub title: Title,
     pub elo: Option<u16>,
@@ -362,7 +362,7 @@ impl TryFrom<&[&str]> for Opponent {
 }
 
 // Represents the title of the player, e.g. grand master.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub enum Title {
     GM,
     IM,
@@ -389,7 +389,7 @@ impl FromStr for Title {
 }
 
 // To represent human or computer players.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub enum PlayerType {
     Human,
     Computer,
@@ -408,7 +408,7 @@ impl FromStr for PlayerType {
 }
 
 // Represents the different values that can be used for UCI_SetPositionValue.
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub enum PosValueOpt {
     // <value> + <fen>
     Val { val: i32, fen: String },

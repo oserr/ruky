@@ -10,4 +10,5 @@ mod err;
 mod gui;
 mod opt;
 mod piece;
+mod pm;
 mod sq;

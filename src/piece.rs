@@ -76,19 +76,29 @@ impl Piece {
 
 impl FromStr for Piece {
     type Err = UziErr;
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Piece::try_from(
-            s.chars()
-                .next()
-                .ok_or_else(|| UziErr::ParsePieceErr(s.into()))?,
-        )
+    fn from_str(p: &str) -> Result<Self, Self::Err> {
+        match p {
+            "k" => Ok(Piece::King),
+            "q" => Ok(Piece::Queen),
+            "r" => Ok(Piece::Rook),
+            "n" => Ok(Piece::Knight),
+            "p" => Ok(Piece::Pawn),
+            _ => Err(UziErr::ParsePieceErr(p.to_string())),
+        }
     }
 }
 
 impl TryFrom<char> for Piece {
     type Error = UziErr;
     fn try_from(p: char) -> Result<Self, Self::Error> {
-        Piece::try_from(u8::try_from(p).map_err(|_| UziErr::ParsePieceErr(p.to_string()))?)
+        match p {
+            'k' => Ok(Piece::King),
+            'q' => Ok(Piece::Queen),
+            'r' => Ok(Piece::Rook),
+            'n' => Ok(Piece::Knight),
+            'p' => Ok(Piece::Pawn),
+            _ => Err(UziErr::ParsePieceErr(p.to_string())),
+        }
     }
 }
 

@@ -9,4 +9,5 @@ mod eng;
 mod err;
 mod gui;
 mod opt;
+mod piece;
 mod sq;

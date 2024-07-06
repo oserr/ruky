@@ -4,6 +4,7 @@ use crate::err::UziErr;
 use crate::piece::Piece;
 use crate::sq::Sq;
 use std::fmt::{self, Display, Formatter};
+use std::str::FromStr;
 
 // Pm for [P]iece [m]ove.
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
@@ -45,5 +46,13 @@ impl TryFrom<&[u8]> for Pm {
             4 if bytes.iter().all(|b| *b == b'0') => Ok(Pm::Null),
             _ => Err(UziErr::ParseMoveErr),
         }
+    }
+}
+
+impl FromStr for Pm {
+    type Err = UziErr;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Pm::try_from(s.as_bytes())
     }
 }

@@ -3,10 +3,10 @@
 
 use crate::err::UziErr;
 use std::cmp::min;
-use std::fmt::{self, Debug, Display, Formatter};
+use std::fmt::{self, Display, Formatter};
 use std::str::FromStr;
 
-#[derive(Clone, Copy, Default, Eq, Hash, PartialEq, PartialOrd)]
+#[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq, PartialOrd)]
 pub struct Sq {
     index: u8,
 }
@@ -106,29 +106,29 @@ impl FromStr for Sq {
     type Err = UziErr;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        if s.len() != 2 {
-            return Err(UziErr::ParseSqErr(s.into()));
-        }
-
-        let mut bytes = s.bytes();
-
-        let col = match bytes.next().unwrap() {
-            c @ b'a'..=b'h' => c - b'a',
-            _ => return Err(UziErr::ParseSqErr(s.into())),
-        };
-
-        let row = match bytes.next().unwrap() {
-            r @ b'1'..=b'8' => r - b'1',
-            _ => return Err(UziErr::ParseSqErr(s.into())),
-        };
-
-        Ok(Sq::from((row, col)))
+        Sq::try_from(s.as_bytes())
     }
 }
 
-impl Debug for Sq {
-    fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
-        formatter.write_str(self.as_str())
+impl TryFrom<&[u8]> for Sq {
+    type Error = UziErr;
+
+    fn try_from(bytes: &[u8]) -> Result<Self, Self::Error> {
+        if bytes.len() != 2 {
+            return Err(UziErr::ParseSqErr);
+        }
+
+        let col = match bytes[0] {
+            c @ b'a'..=b'h' => c - b'a',
+            _ => return Err(UziErr::ParseSqErr),
+        };
+
+        let row = match bytes[1] {
+            r @ b'1'..=b'8' => r - b'1',
+            _ => return Err(UziErr::ParseSqErr),
+        };
+
+        Ok(Sq::from((row, col)))
     }
 }
 
@@ -183,6 +183,15 @@ mod tests {
     #[test]
     fn sq_from_str() {
         assert_eq!(Sq::from_str("e1"), Ok(Sq::new(4)));
-        assert_eq!(Sq::from_str("eq3"), Err(UziErr::ParseSqErr("eq3".into())));
+        assert_eq!(Sq::from_str("eq3"), Err(UziErr::ParseSqErr));
+    }
+
+    #[test]
+    fn sq_from_bytes() {
+        assert_eq!(Sq::try_from(&[b'e', b'1'][..]), Ok(Sq::new(4)));
+        assert_eq!(
+            Sq::try_from(&[b'e', b'q', b'3'][..]),
+            Err(UziErr::ParseSqErr)
+        );
     }
 }

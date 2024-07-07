@@ -366,6 +366,11 @@ impl Pos {
         self
     }
 
+    pub fn set_fen_string(&mut self, fen: String) -> &mut Self {
+        self.pos = PosOpt::Fen(fen);
+        self
+    }
+
     // Adds a move to the position. Moves should be added in the order they are
     // played.
     pub fn add_move(&mut self, pm: Pm) -> &mut Self {
@@ -393,48 +398,45 @@ impl TryFrom<&[&str]> for Pos {
     fn try_from(cmd: &[&str]) -> Result<Pos, Self::Error> {
         let mut pos = Pos::new();
         let mut pos_state = PosState::Begin;
+        let mut fen_buf: Option<String> = None;
 
         for word in cmd {
             match *word {
-                "position" => {
-                    if pos_state != PosState::Begin {
-                        return Err(UziErr::Position);
-                    }
-                    pos_state = PosState::Position;
+                "position" if pos_state.is_begin() => pos_state = PosState::Position,
+                "startpos" if pos_state.is_pos() => pos_state = PosState::StartPos,
+                "fen" if pos_state.is_pos() => {
+                    pos_state = PosState::Fen;
+                    fen_buf = Some(String::with_capacity(128));
                 }
-                "fen" => {
-                    if pos_state != PosState::Position {
-                        return Err(UziErr::Position);
-                    }
-                    pos_state = PosState::Fen
+                "moves" if pos_state.is_fen() || pos_state.is_start() => {
+                    pos_state = PosState::Moves
                 }
-                "startpos" => {
-                    if pos_state != PosState::Position {
-                        return Err(UziErr::Position);
-                    }
-                    pos_state = PosState::StartPos;
+                _ if pos_state.is_moves() => {
+                    pos.add_move(Pm::from_str(*word)?);
                 }
-                "moves" => {
-                    if pos_state != PosState::FenStr && pos_state != PosState::StartPos {
-                        return Err(UziErr::Position);
-                    }
-                    pos_state = PosState::Moves;
-                }
-                _ => {
-                    if pos_state == PosState::Fen {
-                        pos_state = PosState::FenStr;
-                        pos.set_fen(*word);
-                    } else if pos_state == PosState::Moves {
-                        pos.add_move(Pm::from_str(*word)?);
+                _ if pos_state.is_fen() => {
+                    if let Some(ref mut buf) = fen_buf {
+                        if !buf.is_empty() {
+                            buf.push(' ');
+                        }
+                        buf.push_str(*word);
                     } else {
                         return Err(UziErr::Position);
                     }
                 }
+                _ => return Err(UziErr::Position),
             };
         }
 
+        if let Some(buf) = fen_buf {
+            if buf.is_empty() {
+                return Err(UziErr::Position);
+            }
+            pos.set_fen_string(buf);
+        }
+
         match pos_state {
-            PosState::FenStr | PosState::Moves | PosState::StartPos => Ok(pos),
+            PosState::Fen | PosState::Moves | PosState::StartPos => Ok(pos),
             _ => Err(UziErr::Position),
         }
     }
@@ -447,8 +449,29 @@ enum PosState {
     Position,
     StartPos,
     Fen,
-    FenStr,
     Moves,
+}
+
+impl PosState {
+    fn is_begin(&self) -> bool {
+        matches!(self, PosState::Begin)
+    }
+
+    fn is_pos(&self) -> bool {
+        matches!(self, PosState::Position)
+    }
+
+    fn is_fen(&self) -> bool {
+        matches!(self, PosState::Fen)
+    }
+
+    fn is_start(&self) -> bool {
+        matches!(self, PosState::StartPos)
+    }
+
+    fn is_moves(&self) -> bool {
+        matches!(self, PosState::Moves)
+    }
 }
 
 // An enum to represent the two different types of positions that can be set,

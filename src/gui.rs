@@ -487,6 +487,8 @@ mod tests {
     use super::*;
     use crate::opt::{Opponent, PlayerType, SetOpt, Title};
 
+    const FEN_STR: &str = "8/5k2/3p4/1p1Pp2p/pP2Pp1P/P4P1K/8/8 b - - 40 50";
+
     #[test]
     fn pos_new() {
         let pos = Pos::new();
@@ -543,14 +545,14 @@ mod tests {
 
     #[test]
     fn pos_try_from_fen_with_fen() {
-        let args = ["position", "fen", "FENSTRING"];
-        assert_eq!(Pos::try_from(&args[..]), Ok(Pos::with_fen("FENSTRING")));
+        let args = ["position", "fen", FEN_STR];
+        assert_eq!(Pos::try_from(&args[..]), Ok(Pos::with_fen(FEN_STR)));
     }
 
     #[test]
     fn pos_try_from_fen_with_moves() {
-        let args = ["position", "fen", "FENSTRING", "moves", "e2e4", "e7e5"];
-        let mut pos = Pos::with_fen("FENSTRING");
+        let args = ["position", "fen", FEN_STR, "moves", "e2e4", "e7e5"];
+        let mut pos = Pos::with_fen(FEN_STR);
         pos.add_move(Pm::from_str("e2e4").unwrap())
             .add_move(Pm::from_str("e7e5").unwrap());
         assert_eq!(Pos::try_from(&args[..]), Ok(pos));

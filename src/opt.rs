@@ -421,15 +421,17 @@ impl TryFrom<&[&str]> for PosValueOpt {
             return Ok(PosValueOpt::ClearAll);
         }
 
-        if opts.len() != 2 {
+        if opts.len() < 2 {
             return Err(UziErr::BadPositionVal);
         }
 
+        let fen = opts[1..].join(" ");
+
         match opts[0] {
-            "clear" => Ok(PosValueOpt::Clear(opts[1].into())),
+            "clear" => Ok(PosValueOpt::Clear(fen)),
             _ => Ok(PosValueOpt::Val {
                 val: to_number::<i32>(opts[0]).map_err(|_| UziErr::BadPositionVal)?,
-                fen: opts[1].into(),
+                fen: fen,
             }),
         }
     }
@@ -455,6 +457,8 @@ const SET_POSITION_VALUE: &str = "UCI_SetPositionValue";
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    const FEN_STR: &str = "8/5k2/3p4/1p1Pp2p/pP2Pp1P/P4P1K/8/8 b - - 40 50";
 
     #[test]
     fn try_from_returns_err_missing_options() {
@@ -653,9 +657,19 @@ mod tests {
             SET_POSITION_VALUE,
             "value",
             "100",
-            "fen",
-            "extra",
+            "8/5k2/3p4/1p1Pp2p/pP2Pp1P/P4P1K/8/8",
+            "b",
+            "-",
+            "-",
+            "40",
+            "50",
         ];
-        assert_eq!(SetOpt::try_from(&opts[..]), Err(UziErr::BadPositionVal));
+        assert_eq!(
+            SetOpt::try_from(&opts[..]),
+            Ok(SetOpt::SetPosVal(PosValueOpt::Val {
+                val: 100,
+                fen: FEN_STR.into(),
+            }))
+        );
     }
 }

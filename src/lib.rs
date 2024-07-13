@@ -5,7 +5,7 @@
 #![allow(dead_code)]
 
 mod conv;
-mod eng;
+mod engcmd;
 mod err;
 mod guicmd;
 mod opt;

@@ -7,7 +7,7 @@
 mod conv;
 mod eng;
 mod err;
-mod gui;
+mod guicmd;
 mod opt;
 mod piece;
 mod pm;

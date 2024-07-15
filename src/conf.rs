@@ -7,20 +7,26 @@ use std::path::PathBuf;
 
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub struct Config {
-    hash_table: Option<u64>,
-    nalimov_path: Option<PathBuf>,
-    nalimov_cache: Option<u64>,
-    ponder: bool,
-    own_book: bool,
-    multi_pv: Option<u64>,
-    show_curr_line: bool,
-    limit_strength: bool,
-    elo: Option<u16>,
-    analysis_mode: bool,
-    shredder_bases: Option<PathBuf>,
-    opponent: Option<Opponent>,
-    pos_value: Option<PosValueOpt>,
-    pos: Option<Pos>,
+    pub hash_table: Option<u64>,
+    pub nalimov_path: Option<PathBuf>,
+    pub nalimov_cache: Option<u64>,
+    pub ponder: bool,
+    pub own_book: bool,
+    pub multi_pv: Option<u64>,
+    pub show_curr_line: bool,
+    pub limit_strength: bool,
+    pub elo: Option<u16>,
+    pub analysis_mode: bool,
+    pub shredder_bases: Option<PathBuf>,
+    pub opponent: Option<Opponent>,
+    pub pos_value: Option<PosValueOpt>,
+    pub pos: Option<Pos>,
+}
+
+impl Config {
+    fn new() -> Self {
+        Self::default()
+    }
 }
 
 impl Default for Config {

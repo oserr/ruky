@@ -4,6 +4,7 @@
 // TODO: Try to remove this at crate level when the lib is more fleshed out.
 #![allow(dead_code)]
 
+mod conf;
 mod conv;
 mod eng;
 mod engcmd;

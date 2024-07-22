@@ -14,3 +14,4 @@ mod opt;
 mod piece;
 mod pm;
 mod sq;
+mod types;

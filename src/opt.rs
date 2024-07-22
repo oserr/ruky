@@ -2,6 +2,7 @@
 
 use crate::conv::{to_bool, to_number};
 use crate::err::UziErr;
+use crate::types::{CheckType, SpinType, StrType} ;
 use std::fmt::{self, Display, Formatter};
 use std::path::PathBuf;
 use std::str::FromStr;
@@ -70,66 +71,6 @@ impl Display for HasOpt {
             HasOpt::SetPositionValue(t) => write!(formatter, "{} {}", SET_POSITION_VALUE, t),
             HasOpt::About(t) => write!(formatter, "{} {}", ABOUT, t),
         }
-    }
-}
-
-// The next five structs represent the option types. For example, NalimovPath is
-// string type.
-
-#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
-pub struct CheckType(bool);
-
-impl Display for CheckType {
-    fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
-        write!(formatter, "type bool default {}", self.0)
-    }
-}
-
-#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
-pub struct SpinType<T> {
-    pub default: T,
-    pub min: T,
-    pub max: T,
-}
-
-impl<T> Display for SpinType<T>
-where
-    T: Display,
-{
-    fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
-        write!(
-            formatter,
-            "type spin default {} min {} max {}",
-            self.default, self.min, self.max
-        )
-    }
-}
-
-#[derive(Clone, Debug, Eq, Hash, PartialEq)]
-pub struct ComboType {
-    pub default: String,
-    pub var: Vec<String>,
-}
-
-impl Display for ComboType {
-    fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
-        write!(formatter, "type combo default {}", self.default)?;
-        for v in &self.var {
-            write!(formatter, " var {}", v)?;
-        }
-        Ok(())
-    }
-}
-
-#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
-pub struct ButtonType;
-
-#[derive(Clone, Debug, Eq, Hash, PartialEq)]
-pub struct StrType(String);
-
-impl Display for StrType {
-    fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
-        write!(formatter, "type string default {}", self.0)
     }
 }
 

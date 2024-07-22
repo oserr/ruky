@@ -2,7 +2,7 @@
 // enabled and disabled.
 
 use crate::guicmd::Pos;
-use crate::opt::{Opponent, PosValueOpt};
+use crate::opt::{Opponent, PosValueOpt, UziOpt};
 use std::path::PathBuf;
 
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
@@ -48,6 +48,20 @@ impl Default for Config {
             opponent: None,
             pos_value: None,
             pos: None,
+        }
+    }
+}
+
+struct ConfigIter<'a> {
+    opt: UziOpt,
+    conf: &'a Config,
+}
+
+impl<'a> ConfigIter<'a> {
+    fn new(conf: &'a Config) -> Self {
+        Self {
+            opt: UziOpt::Hash,
+            conf,
         }
     }
 }

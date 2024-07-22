@@ -2,7 +2,7 @@
 
 use crate::conv::{to_bool, to_number};
 use crate::err::UziErr;
-use crate::types::{CheckType, SpinType, StrType} ;
+use crate::types::{CheckType, SpinType, StrType};
 use std::fmt::{self, Display, Formatter};
 use std::path::PathBuf;
 use std::str::FromStr;
@@ -240,6 +240,38 @@ impl FromStr for UziOpt {
             SET_POSITION_VALUE => Ok(UziOpt::SetPositionValue),
             _ => Err(UziErr::UnknownOpt),
         }
+    }
+}
+
+pub struct UziOptIter {
+    curr: Option<UziOpt>,
+}
+
+impl Iterator for UziOptIter {
+    type Item = UziOpt;
+    fn next(&mut self) -> Option<Self::Item> {
+        let val = self.curr;
+        self.curr = match self.curr {
+            None => None,
+            Some(opt) => match opt {
+                UziOpt::Hash => Some(UziOpt::NalimovPath),
+                UziOpt::NalimovPath => Some(UziOpt::NalimovCache),
+                UziOpt::NalimovCache => Some(UziOpt::Ponder),
+                UziOpt::Ponder => Some(UziOpt::OwnBook),
+                UziOpt::OwnBook => Some(UziOpt::MultiPv),
+                UziOpt::MultiPv => Some(UziOpt::ShowCurrLine),
+                UziOpt::ShowCurrLine => Some(UziOpt::ShowRefutations),
+                UziOpt::ShowRefutations => Some(UziOpt::LimitStrength),
+                UziOpt::LimitStrength => Some(UziOpt::Elo),
+                UziOpt::Elo => Some(UziOpt::AnalysisMode),
+                UziOpt::AnalysisMode => Some(UziOpt::Opponent),
+                UziOpt::Opponent => Some(UziOpt::About),
+                UziOpt::About => Some(UziOpt::ShredderBasesPath),
+                UziOpt::ShredderBasesPath => Some(UziOpt::SetPositionValue),
+                UziOpt::SetPositionValue => None,
+            },
+        };
+        val
     }
 }
 

@@ -243,6 +243,14 @@ impl FromStr for UziOpt {
     }
 }
 
+impl IntoIterator for UziOpt {
+    type Item = UziOpt;
+    type IntoIter = UziOptIter;
+    fn into_iter(self) -> Self::IntoIter {
+        UziOptIter { curr: Some(self) }
+    }
+}
+
 pub struct UziOptIter {
     curr: Option<UziOpt>,
 }

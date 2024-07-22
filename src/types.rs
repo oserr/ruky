@@ -1,4 +1,5 @@
-// This module contains types representing the option types, e.g. spin, check, etc.
+// This module contains types representing the option types, e.g. spin, check,
+// etc.
 
 use std::fmt::{self, Display, Formatter};
 

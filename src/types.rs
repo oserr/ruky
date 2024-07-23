@@ -52,7 +52,7 @@ impl Display for ComboType {
 pub struct ButtonType;
 
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
-pub struct StrType(String);
+pub struct StrType(pub String);
 
 impl Display for StrType {
     fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {

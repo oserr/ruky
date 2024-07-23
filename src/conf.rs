@@ -55,10 +55,18 @@ impl Iterator for ConfigIter<'_> {
         while let Some(opt) = self.opt_iter.next() {
             match opt {
                 UziOpt::Hash if self.conf.hash_table.is_some() => {
-                    todo!();
+                    return Some(HasOpt::Hash(self.conf.hash_table.unwrap().clone()));
                 }
                 UziOpt::NalimovPath if self.conf.nalimov_path.is_some() => {
-                    todo!();
+                    let path = self
+                        .conf
+                        .nalimov_path
+                        .clone()
+                        .unwrap()
+                        .into_os_string()
+                        .into_string()
+                        .unwrap();
+                    return Some(HasOpt::NalimovPath(StrType(path)));
                 }
                 UziOpt::NalimovCache if self.conf.nalimov_cache.is_some() => {
                     todo!();

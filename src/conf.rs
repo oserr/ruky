@@ -69,13 +69,15 @@ impl Iterator for ConfigIter<'_> {
                     return Some(HasOpt::NalimovPath(StrType(path)));
                 }
                 UziOpt::NalimovCache if self.conf.nalimov_cache.is_some() => {
-                    todo!();
+                    return Some(HasOpt::NalimovCache(
+                        self.conf.nalimov_cache.unwrap().clone(),
+                    ));
                 }
                 UziOpt::Ponder if self.conf.ponder.is_some() => {
-                    todo!();
+                    return Some(HasOpt::Ponder(self.conf.ponder.unwrap().into()));
                 }
                 UziOpt::OwnBook if self.conf.own_book.is_some() => {
-                    todo!();
+                    return Some(HasOpt::OwnBook(self.conf.own_book.unwrap().into()));
                 }
                 UziOpt::MultiPv if self.conf.multi_pv.is_some() => {
                     todo!();

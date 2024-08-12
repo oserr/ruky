@@ -12,6 +12,12 @@ impl Display for CheckType {
     }
 }
 
+impl From<bool> for CheckType {
+    fn from(check: bool) -> Self {
+        CheckType(check)
+    }
+}
+
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub struct SpinType<T> {
     pub default: T,

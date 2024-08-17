@@ -46,7 +46,7 @@ pub enum HasOpt {
     Opp(StrType),
     // UCI_SetPositionValue: Tells the GUI that the engine supports evaluating
     // positions with values provided by the GUI.
-    SetPositionValue(StrType),
+    SetPosVal(StrType),
     // UCI_EngineAbout: Tells the GUI about the engine.
     About(StrType),
 }
@@ -68,7 +68,7 @@ impl Display for HasOpt {
             HasOpt::AnalysisMode(t) => write!(formatter, "{} {}", ANALYSIS_MODE, t),
             HasOpt::ShredderBasesPath(t) => write!(formatter, "{} {}", SHREDDER_BASES_PATH, t),
             HasOpt::Opp(t) => write!(formatter, "{} {}", OPPONENT, t),
-            HasOpt::SetPositionValue(t) => write!(formatter, "{} {}", SET_POSITION_VALUE, t),
+            HasOpt::SetPosVal(t) => write!(formatter, "{} {}", SET_POSITION_VALUE, t),
             HasOpt::About(t) => write!(formatter, "{} {}", ABOUT, t),
         }
     }
@@ -169,7 +169,7 @@ fn parse_value(opt: UziOpt, cmd: &[&str]) -> Result<SetOpt, UziErr> {
             Ok(SetOpt::ShredderBasesPath(PathBuf::from_str(word).unwrap()))
         }
         UziOpt::Opponent => Ok(SetOpt::Opp(Opponent::try_from(cmd)?)),
-        UziOpt::SetPositionValue => Ok(SetOpt::SetPosVal(PosValueOpt::try_from(cmd)?)),
+        UziOpt::SetPosVal => Ok(SetOpt::SetPosVal(PosValueOpt::try_from(cmd)?)),
     }
 }
 
@@ -215,7 +215,7 @@ pub enum UziOpt {
     Opponent,
     About,
     ShredderBasesPath,
-    SetPositionValue,
+    SetPosVal,
 }
 
 impl FromStr for UziOpt {
@@ -237,7 +237,7 @@ impl FromStr for UziOpt {
             ANALYSIS_MODE => Ok(UziOpt::AnalysisMode),
             OPPONENT => Ok(UziOpt::Opponent),
             SHREDDER_BASES_PATH => Ok(UziOpt::ShredderBasesPath),
-            SET_POSITION_VALUE => Ok(UziOpt::SetPositionValue),
+            SET_POSITION_VALUE => Ok(UziOpt::SetPosVal),
             _ => Err(UziErr::UnknownOpt),
         }
     }
@@ -275,8 +275,8 @@ impl Iterator for UziOptIter {
                 UziOpt::AnalysisMode => Some(UziOpt::Opponent),
                 UziOpt::Opponent => Some(UziOpt::About),
                 UziOpt::About => Some(UziOpt::ShredderBasesPath),
-                UziOpt::ShredderBasesPath => Some(UziOpt::SetPositionValue),
-                UziOpt::SetPositionValue => None,
+                UziOpt::ShredderBasesPath => Some(UziOpt::SetPosVal),
+                UziOpt::SetPosVal => None,
             },
         };
         val
@@ -306,6 +306,25 @@ impl Default for Opponent {
             player_type: PlayerType::Human,
             name: String::new(),
         }
+    }
+}
+
+impl Display for Opponent {
+    fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
+        let elo = self
+            .elo
+            .map_or_else(|| "none".to_string(), |x| x.to_string());
+        write!(
+            formatter,
+            "{} {} {} {}",
+            self.title, elo, self.player_type, self.name
+        )
+    }
+}
+
+impl From<Opponent> for StrType {
+    fn from(opp: Opponent) -> Self {
+        StrType(opp.to_string())
     }
 }
 
@@ -348,6 +367,25 @@ pub enum Title {
     NoTitle,
 }
 
+impl Title {
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            Title::GM => "GM",
+            Title::IM => "IM",
+            Title::FM => "FM",
+            Title::WGM => "WGM",
+            Title::WIM => "WIM",
+            Title::NoTitle => "none",
+        }
+    }
+}
+
+impl Display for Title {
+    fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
+        formatter.write_str(self.as_str())
+    }
+}
+
 impl FromStr for Title {
     type Err = UziErr;
 
@@ -369,6 +407,21 @@ impl FromStr for Title {
 pub enum PlayerType {
     Human,
     Computer,
+}
+
+impl PlayerType {
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            PlayerType::Human => "human",
+            PlayerType::Computer => "computer",
+        }
+    }
+}
+
+impl Display for PlayerType {
+    fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
+        formatter.write_str(self.as_str())
+    }
 }
 
 impl FromStr for PlayerType {
@@ -415,6 +468,22 @@ impl TryFrom<&[&str]> for PosValueOpt {
                 fen: fen,
             }),
         }
+    }
+}
+
+impl Display for PosValueOpt {
+    fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
+        match self {
+            PosValueOpt::Val { val, fen } => write!(formatter, "{} {}", val, fen),
+            PosValueOpt::Clear(fen) => write!(formatter, "clear {}", fen),
+            PosValueOpt::ClearAll => formatter.write_str("clearall"),
+        }
+    }
+}
+
+impl From<PosValueOpt> for StrType {
+    fn from(pos_val: PosValueOpt) -> Self {
+        Self(pos_val.to_string())
     }
 }
 

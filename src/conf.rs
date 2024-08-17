@@ -16,7 +16,7 @@ pub struct Config {
     pub nalimov_cache: Option<SpinType<u64>>,
     pub ponder: Option<bool>,
     pub own_book: Option<bool>,
-    pub multi_pv: Option<u64>,
+    pub multi_pv: Option<SpinType<u64>>,
     pub show_curr_line: Option<bool>,
     pub show_refutations: Option<bool>,
     pub limit_strength: Option<bool>,
@@ -55,7 +55,7 @@ impl Iterator for ConfigIter<'_> {
         while let Some(opt) = self.opt_iter.next() {
             match opt {
                 UziOpt::Hash if self.conf.hash_table.is_some() => {
-                    return Some(HasOpt::Hash(self.conf.hash_table.unwrap().clone()));
+                    return Some(HasOpt::Hash(self.conf.hash_table.unwrap()));
                 }
                 UziOpt::NalimovPath if self.conf.nalimov_path.is_some() => {
                     let path = self
@@ -69,9 +69,7 @@ impl Iterator for ConfigIter<'_> {
                     return Some(HasOpt::NalimovPath(StrType(path)));
                 }
                 UziOpt::NalimovCache if self.conf.nalimov_cache.is_some() => {
-                    return Some(HasOpt::NalimovCache(
-                        self.conf.nalimov_cache.unwrap().clone(),
-                    ));
+                    return Some(HasOpt::NalimovCache(self.conf.nalimov_cache.unwrap()));
                 }
                 UziOpt::Ponder if self.conf.ponder.is_some() => {
                     return Some(HasOpt::Ponder(self.conf.ponder.unwrap().into()));
@@ -80,34 +78,52 @@ impl Iterator for ConfigIter<'_> {
                     return Some(HasOpt::OwnBook(self.conf.own_book.unwrap().into()));
                 }
                 UziOpt::MultiPv if self.conf.multi_pv.is_some() => {
-                    todo!();
+                    return Some(HasOpt::MultiPv(self.conf.multi_pv.unwrap()));
                 }
                 UziOpt::ShowCurrLine if self.conf.show_curr_line.is_some() => {
-                    todo!();
+                    return Some(HasOpt::ShowCurrLine(
+                        self.conf.show_curr_line.unwrap().into(),
+                    ));
                 }
                 UziOpt::ShowRefutations if self.conf.show_refutations.is_some() => {
-                    todo!();
+                    return Some(HasOpt::ShowRefutations(
+                        self.conf.show_refutations.unwrap().into(),
+                    ));
                 }
                 UziOpt::LimitStrength if self.conf.limit_strength.is_some() => {
-                    todo!();
+                    return Some(HasOpt::LimitStrength(
+                        self.conf.limit_strength.unwrap().into(),
+                    ));
                 }
                 UziOpt::Elo if self.conf.elo.is_some() => {
-                    todo!();
+                    return Some(HasOpt::Elo(self.conf.elo.unwrap()));
                 }
                 UziOpt::AnalysisMode if self.conf.analysis_mode.is_some() => {
-                    todo!();
+                    return Some(HasOpt::AnalysisMode(
+                        self.conf.analysis_mode.unwrap().into(),
+                    ));
                 }
                 UziOpt::Opponent if self.conf.opponent.is_some() => {
-                    todo!();
+                    return Some(HasOpt::Opp(self.conf.opponent.clone().unwrap().into()));
                 }
                 UziOpt::About if self.conf.about.is_some() => {
-                    todo!();
+                    return Some(HasOpt::About(self.conf.about.clone().unwrap()));
                 }
                 UziOpt::ShredderBasesPath if self.conf.shredder_bases.is_some() => {
-                    todo!();
+                    let path = self
+                        .conf
+                        .shredder_bases
+                        .clone()
+                        .unwrap()
+                        .into_os_string()
+                        .into_string()
+                        .unwrap();
+                    return Some(HasOpt::ShredderBasesPath(StrType(path)));
                 }
-                UziOpt::SetPositionValue if self.conf.pos_value.is_some() => {
-                    todo!();
+                UziOpt::SetPosVal if self.conf.pos_value.is_some() => {
+                    return Some(HasOpt::SetPosVal(
+                        self.conf.pos_value.clone().unwrap().into(),
+                    ));
                 }
                 _ => continue,
             };

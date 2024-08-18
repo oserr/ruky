@@ -40,9 +40,9 @@ pub trait Eng {
 
     fn set_position(&mut self, pos: &Pos) -> Result<(), UziErr>;
 
-    fn go(&self, go_cmd: &Go) -> Result<(), UziErr>;
+    fn go(&mut self, go_cmd: &Go) -> Result<(), UziErr>;
 
-    fn stop(&self) -> Result<(), UziErr>;
+    fn stop(&mut self) -> Result<(), UziErr>;
 
-    fn new_game(&self) -> Result<(), UziErr>;
+    fn new_game(&mut self) -> Result<(), UziErr>;
 }

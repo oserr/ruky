@@ -8,6 +8,7 @@ mod conf;
 mod conv;
 mod eng;
 mod engcmd;
+mod engtx;
 mod err;
 mod guicmd;
 mod opt;

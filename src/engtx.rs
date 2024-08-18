@@ -19,7 +19,7 @@ pub trait EngOutTx {
 }
 
 // A trait for tramitting commands to the GUI. This is injected into the chess
-// engine so it can transmit best moves and info messages.
+// engine so it can transmit best moves and info messages to the GUI.
 pub trait EngTx {
     fn send_best(&self, best: Pm);
     fn send_ponder(&self, best: Pm, ponder: Pm);

@@ -1,7 +1,6 @@
 // A helper class to hold the configuration for the engine, i.e what options are
 // enabled and disabled.
 
-use crate::guicmd::Pos;
 use crate::opt::{HasOpt, Opponent, PosValueOpt, UziOpt, UziOptIter};
 use crate::types::{SpinType, StrType};
 use std::path::PathBuf;
@@ -22,16 +21,19 @@ pub struct Config {
     pub limit_strength: Option<bool>,
     pub elo: Option<SpinType<u16>>,
     pub analysis_mode: Option<bool>,
-    pub shredder_bases: Option<PathBuf>,
     pub opponent: Option<Opponent>,
-    pub pos_value: Option<PosValueOpt>,
-    pub pos: Option<Pos>,
     pub about: Option<StrType>,
+    pub shredder_bases: Option<PathBuf>,
+    pub pos_value: Option<PosValueOpt>,
 }
 
 impl Config {
     fn new() -> Self {
         Self::default()
+    }
+
+    fn iter(&self) -> impl Iterator<Item = HasOpt> + '_ {
+        ConfigIter::new(self)
     }
 }
 
@@ -129,5 +131,53 @@ impl Iterator for ConfigIter<'_> {
             };
         }
         None
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::types::CheckType;
+    use std::str::FromStr;
+
+    #[test]
+    fn conf_iter_no_values() {
+        let conf = Config::new();
+        let mut iter = conf.iter();
+        assert_eq!(iter.next(), None);
+    }
+
+    #[test]
+    fn conf_iter_with_hash_table() {
+        let spin = SpinType::<u64> {
+            default: 1,
+            min: 0,
+            max: 2,
+        };
+        let mut conf = Config::new();
+        conf.hash_table = Some(spin);
+        let mut iter = conf.iter();
+        assert_eq!(iter.next(), Some(HasOpt::Hash(spin)));
+        assert_eq!(iter.next(), None);
+    }
+
+    #[test]
+    fn conf_iter_with_some_values() {
+        let about = StrType("about".into());
+        let some_path = "/some/path".to_string();
+
+        let mut conf = Config::new();
+        conf.nalimov_path = Some(PathBuf::from_str(&some_path).unwrap());
+        conf.own_book = Some(true);
+        conf.show_curr_line = Some(true);
+        conf.about = Some(about.clone());
+
+        let mut iter = conf.iter();
+
+        assert_eq!(iter.next(), Some(HasOpt::NalimovPath(StrType(some_path))));
+        assert_eq!(iter.next(), Some(HasOpt::OwnBook(CheckType(true))));
+        assert_eq!(iter.next(), Some(HasOpt::ShowCurrLine(CheckType(true))));
+        assert_eq!(iter.next(), Some(HasOpt::About(about)));
+        assert_eq!(iter.next(), None);
     }
 }

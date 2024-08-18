@@ -4,7 +4,7 @@
 use std::fmt::{self, Display, Formatter};
 
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
-pub struct CheckType(bool);
+pub struct CheckType(pub bool);
 
 impl Display for CheckType {
     fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {

@@ -4,6 +4,8 @@
 use crate::engcmd::Info;
 use crate::opt::HasOpt;
 use crate::pm::Pm;
+use std::sync::Arc;
+use tokio::runtime::Runtime;
 
 // A trait for tramitting commands from the communcation protocol engine to the
 // GUI.
@@ -24,4 +26,15 @@ pub trait EngTx {
     fn send_best(&self, best: Pm);
     fn send_ponder(&self, best: Pm, ponder: Pm);
     fn send_info(&self, info: Info);
+}
+
+#[derive(Clone, Debug)]
+struct UziEngOut {
+    run_time: Arc<Runtime>,
+}
+
+impl From<Arc<Runtime>> for UziEngOut {
+    fn from(run_time: Arc<Runtime>) -> Self {
+        Self { run_time }
+    }
 }

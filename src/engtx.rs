@@ -22,13 +22,18 @@ pub trait EngOutTx {
 }
 
 // A trait for tramitting commands to the GUI. This is injected into the chess
-// engine so it can transmit best moves and info messages to the GUI.
+// engine so it can transmit best moves and info messages to the GUI. Note that
+// we don't want to inject EngOutTx into the engine, because the Uzi library
+// should handle as much of the protocl as possible. Info data and moves are
+// computed by the actual chess engine, and hence these need to be sent by the
+// engine.
 pub trait EngTx {
     fn send_best(&self, best: Pm);
     fn send_ponder(&self, best: Pm, ponder: Pm);
     fn send_info(&self, info: Info);
 }
 
+// This is the default impl for EngOutTx provided by the library.
 #[derive(Clone, Debug)]
 struct UziOut {
     run_time: Arc<Runtime>,
@@ -88,5 +93,31 @@ impl EngOutTx for UziOut {
 impl From<Arc<Runtime>> for UziOut {
     fn from(run_time: Arc<Runtime>) -> Self {
         Self { run_time }
+    }
+}
+
+// This is the default impl for EngTx provided by the library.
+#[derive(Clone, Debug)]
+struct UziEngTx {
+    uzi_out: Arc<UziOut>,
+}
+
+impl EngTx for UziEngTx {
+    fn send_best(&self, best: Pm) {
+        self.uzi_out.send_best(best);
+    }
+
+    fn send_ponder(&self, best: Pm, ponder: Pm) {
+        self.uzi_out.send_ponder(best, ponder);
+    }
+
+    fn send_info(&self, info: Info) {
+        self.uzi_out.send_info(info);
+    }
+}
+
+impl From<Arc<UziOut>> for UziEngTx {
+    fn from(uzi_out: Arc<UziOut>) -> Self {
+        UziEngTx { uzi_out: uzi_out }
     }
 }

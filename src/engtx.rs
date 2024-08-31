@@ -12,7 +12,7 @@ use tokio::runtime::Runtime;
 // GUI.
 pub trait EngOutTx {
     fn send_name(&self, name: String);
-    fn send_author(&self, name: String);
+    fn send_author(&self, author: String);
     fn send_uciok(&self);
     fn send_ready(&self);
     fn send_best(&self, best: Pm);
@@ -30,51 +30,62 @@ pub trait EngTx {
 }
 
 #[derive(Clone, Debug)]
-struct UziEngOut {
+struct UziOut {
     run_time: Arc<Runtime>,
 }
 
-impl EngOutTx for UziEngOut {
-    fn send_name(&self, name: String) {
+impl UziOut {
+    fn send_cmd(&self, cmd: EngCmd) {
         self.run_time.spawn(async move {
-            let name_cmd = EngCmd::IdName(name);
-            let result = stdout().write(name_cmd.to_string().as_bytes()).await;
+            let result = stdout().write(cmd.to_string().as_bytes()).await;
             if let Err(_) = result {
                 todo!();
             }
         });
     }
+}
 
-    fn send_author(&self, _name: String) {
-        todo!();
+impl EngOutTx for UziOut {
+    fn send_name(&self, name: String) {
+        self.send_cmd(EngCmd::IdName(name));
+    }
+
+    fn send_author(&self, author: String) {
+        self.send_cmd(EngCmd::IdAuthor(author));
     }
 
     fn send_uciok(&self) {
-        todo!();
+        self.send_cmd(EngCmd::UciOk);
     }
 
     fn send_ready(&self) {
-        todo!();
+        self.send_cmd(EngCmd::ReadyOk);
     }
 
-    fn send_best(&self, _best: Pm) {
-        todo!();
+    fn send_best(&self, best: Pm) {
+        self.send_cmd(EngCmd::BestMove {
+            best: best,
+            ponder: None,
+        });
     }
 
-    fn send_ponder(&self, _best: Pm, _ponder: Pm) {
-        todo!();
+    fn send_ponder(&self, best: Pm, ponder: Pm) {
+        self.send_cmd(EngCmd::BestMove {
+            best: best,
+            ponder: Some(ponder),
+        });
     }
 
-    fn send_info(&self, _info: Info) {
-        todo!();
+    fn send_info(&self, info: Info) {
+        self.send_cmd(EngCmd::Info(info));
     }
 
-    fn send_opt(&self, _opt: HasOpt) {
-        todo!();
+    fn send_opt(&self, opt: HasOpt) {
+        self.send_cmd(EngCmd::HasOpt(opt));
     }
 }
 
-impl From<Arc<Runtime>> for UziEngOut {
+impl From<Arc<Runtime>> for UziOut {
     fn from(run_time: Arc<Runtime>) -> Self {
         Self { run_time }
     }

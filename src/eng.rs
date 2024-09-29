@@ -66,6 +66,16 @@ enum EngState {
     Quit,
 }
 
+impl EngState {
+    pub fn is_waiting(&self) -> bool {
+        matches!(self, EngState::Waiting)
+    }
+
+    pub fn is_connected_or_game(&self) -> bool {
+        matches!(self, EngState::Connected | EngState::NewGame)
+    }
+}
+
 // The Uzi [Eng]ine [Con]troller.
 struct EngCon<E: Eng, O: EngOutTx> {
     eng: E,

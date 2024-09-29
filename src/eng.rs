@@ -110,6 +110,8 @@ impl<E: Eng, O: EngOutTx> EngCon<E, O> {
                 for opt in self.conf.iter() {
                     self.eng_out.send_opt(opt);
                 }
+                self.eng_out.send_uciok();
+                self.state = EngState::Connected;
             }
             GuiCmd::IsReady => todo!(),
             GuiCmd::Debug(_is_enabled) => todo!(),

@@ -5,7 +5,7 @@ use crate::conf::Config;
 use crate::engtx::EngOutTx;
 use crate::err::UziErr;
 use crate::guicmd::{Go, GuiCmd, Pos};
-use crate::opt::{Opponent, PosValueOpt};
+use crate::opt::{Opponent, PosValueOpt, SetOpt};
 use std::io::stdin;
 use std::path::Path;
 use std::str::FromStr;
@@ -123,15 +123,49 @@ impl<E: Eng, O: EngOutTx> EngCon<E, O> {
                 self.eng_out.send_uciok();
                 self.state = EngState::Connected;
             }
-            GuiCmd::IsReady => todo!(),
+            GuiCmd::IsReady => self.eng_out.send_ready(),
             GuiCmd::Debug(_is_enabled) => todo!(),
-            GuiCmd::SetOpt(_opt) => todo!(),
+            GuiCmd::SetOpt(opt) => self.set_opt(opt),
             GuiCmd::Pos(_pos) => todo!(),
             GuiCmd::NewGame => todo!(),
             GuiCmd::Go(_go) => todo!(),
             GuiCmd::Stop => todo!(),
             GuiCmd::Ponderhit => todo!(),
             _ => (),
+        }
+    }
+
+    fn set_opt(&mut self, opt: SetOpt) {
+        match opt {
+            SetOpt::Hash(table_size) => {
+                match self.conf.hash_table {
+                    // Log that hash table is not enabled.
+                    None => todo!(),
+                    Some(ref table_opts) => {
+                        if table_size < table_opts.min || table_size > table_opts.max {
+                            // TODO: Log that table_size is out of range.
+                            return;
+                        }
+                        if let Err(_) = self.eng.set_hash_table_size(table_size) {
+                            // TODO: Log some error here.
+                            return;
+                        }
+                    }
+                }
+            }
+            SetOpt::NalimovPath(_path_buf) => todo!(),
+            SetOpt::NalimovCache(_cache_size) => todo!(),
+            SetOpt::Ponder(_enabled) => todo!(),
+            SetOpt::OwnBook(_enabled) => todo!(),
+            SetOpt::MultiPv(_k_best) => todo!(),
+            SetOpt::ShowCurrLine(_enabled) => todo!(),
+            SetOpt::ShowRefutations(_enabled) => todo!(),
+            SetOpt::LimitStrength(_enabled) => todo!(),
+            SetOpt::Elo(_elo) => todo!(),
+            SetOpt::AnalysisMode(_enabled) => todo!(),
+            SetOpt::ShredderBasesPath(_path_buf) => todo!(),
+            SetOpt::Opp(_opponent) => todo!(),
+            SetOpt::SetPosVal(_pos_val) => todo!(),
         }
     }
 }

@@ -6,6 +6,8 @@ use crate::engtx::EngOutTx;
 use crate::err::UziErr;
 use crate::guicmd::{Go, GuiCmd, Pos};
 use crate::opt::{Opponent, PosValueOpt, SetOpt};
+use crate::types::SpinType;
+use std::cmp::PartialOrd;
 use std::io::stdin;
 use std::path::Path;
 use std::str::FromStr;
@@ -137,35 +139,49 @@ impl<E: Eng, O: EngOutTx> EngCon<E, O> {
 
     fn set_opt(&mut self, opt: SetOpt) {
         match opt {
-            SetOpt::Hash(table_size) => {
-                match self.conf.hash_table {
-                    // Log that hash table is not enabled.
-                    None => todo!(),
-                    Some(ref table_opts) => {
-                        if table_size < table_opts.min || table_size > table_opts.max {
-                            // TODO: Log that table_size is out of range.
-                            return;
-                        }
-                        if let Err(_) = self.eng.set_hash_table_size(table_size) {
-                            // TODO: Log some error here.
-                            return;
-                        }
-                    }
-                }
-            }
+            SetOpt::Hash(table_size) => set_spin_opt(table_size, self.conf.hash_table, |x| {
+                self.eng.set_hash_table_size(x)
+            }),
             SetOpt::NalimovPath(_path_buf) => todo!(),
-            SetOpt::NalimovCache(_cache_size) => todo!(),
+            SetOpt::NalimovCache(cache_size) => {
+                set_spin_opt(cache_size, self.conf.nalimov_cache, |x| {
+                    self.eng.set_nalimov_cache(x)
+                })
+            }
             SetOpt::Ponder(_enabled) => todo!(),
             SetOpt::OwnBook(_enabled) => todo!(),
-            SetOpt::MultiPv(_k_best) => todo!(),
+            SetOpt::MultiPv(k_best) => {
+                set_spin_opt(k_best, self.conf.multi_pv, |x| self.eng.set_multi_pv(x))
+            }
             SetOpt::ShowCurrLine(_enabled) => todo!(),
             SetOpt::ShowRefutations(_enabled) => todo!(),
             SetOpt::LimitStrength(_enabled) => todo!(),
-            SetOpt::Elo(_elo) => todo!(),
+            SetOpt::Elo(elo) => set_spin_opt(elo, self.conf.elo, |x| self.eng.set_elo(x)),
             SetOpt::AnalysisMode(_enabled) => todo!(),
             SetOpt::ShredderBasesPath(_path_buf) => todo!(),
             SetOpt::Opp(_opponent) => todo!(),
             SetOpt::SetPosVal(_pos_val) => todo!(),
+        }
+    }
+}
+
+fn set_spin_opt<T, F>(val: T, spin_val: Option<SpinType<T>>, mut setter_fn: F)
+where
+    T: PartialOrd,
+    F: FnMut(T) -> Result<(), UziErr>,
+{
+    match spin_val {
+        // Log that option is not enabled.
+        None => todo!(),
+        Some(ref val_opts) => {
+            if val < val_opts.min || val > val_opts.max {
+                // TODO: Log that value is out of range.
+                return;
+            }
+            if let Err(_) = setter_fn(val) {
+                // TODO: Log some error here.
+                return;
+            }
         }
     }
 }

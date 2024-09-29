@@ -104,7 +104,13 @@ impl<E: Eng, O: EngOutTx> EngCon<E, O> {
 
     fn handle_cmd(&mut self, cmd: GuiCmd) {
         match cmd {
-            GuiCmd::Uci => todo!(),
+            GuiCmd::Uci if self.state == EngState::Waiting => {
+                self.eng_out.send_name(self.conf.id_name.clone());
+                self.eng_out.send_author(self.conf.id_author.clone());
+                for opt in self.conf.iter() {
+                    self.eng_out.send_opt(opt);
+                }
+            }
             GuiCmd::IsReady => todo!(),
             GuiCmd::Debug(_is_enabled) => todo!(),
             GuiCmd::SetOpt(_opt) => todo!(),
@@ -113,6 +119,7 @@ impl<E: Eng, O: EngOutTx> EngCon<E, O> {
             GuiCmd::Go(_go) => todo!(),
             GuiCmd::Stop => todo!(),
             GuiCmd::Ponderhit => todo!(),
+            _ => (),
         }
     }
 }

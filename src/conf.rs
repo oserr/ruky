@@ -30,11 +30,11 @@ pub struct Config {
 }
 
 impl Config {
-    fn new() -> Self {
+    pub fn new() -> Self {
         Self::default()
     }
 
-    fn iter(&self) -> impl Iterator<Item = HasOpt> + '_ {
+    pub fn iter(&self) -> impl Iterator<Item = HasOpt> + '_ {
         ConfigIter::new(self)
     }
 }

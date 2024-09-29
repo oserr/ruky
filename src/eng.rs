@@ -9,13 +9,13 @@ use crate::opt::{Opponent, PosValueOpt, SetOpt};
 use crate::types::SpinType;
 use std::cmp::PartialOrd;
 use std::io::stdin;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::str::FromStr;
 use std::sync::Arc;
 
 pub trait Eng {
     fn hash_table_size(&mut self, table_size: u64) -> Result<(), UziErr>;
-    fn nalimov_path<T: AsRef<Path>>(&mut self, path: T) -> Result<(), UziErr>;
+    fn nalimov_path(&mut self, patho: &Path) -> Result<(), UziErr>;
     fn nalimov_cache(&mut self, cache_size: u64) -> Result<(), UziErr>;
     fn ponder(&mut self, is_enabled: bool) -> Result<(), UziErr>;
     fn own_book(&mut self, is_enabled: bool) -> Result<(), UziErr>;
@@ -25,7 +25,7 @@ pub trait Eng {
     fn limit_strength(&mut self, limit_strength: bool) -> Result<(), UziErr>;
     fn elo(&mut self, elo: u16) -> Result<(), UziErr>;
     fn analysis(&mut self, is_enabled: bool) -> Result<(), UziErr>;
-    fn shredder_bases_path<T: AsRef<Path>>(&mut self, path: T) -> Result<(), UziErr>;
+    fn shredder_bases(&mut self, path: &Path) -> Result<(), UziErr>;
     fn opponent(&mut self, opponent: &Opponent) -> Result<(), UziErr>;
     fn pos_val(&mut self, pos_val: &PosValueOpt) -> Result<(), UziErr>;
     fn position(&mut self, pos: &Pos) -> Result<(), UziErr>;
@@ -123,7 +123,11 @@ impl<E: Eng, O: EngOutTx> EngCon<E, O> {
             SetOpt::Hash(table_size) => set_spin_opt(table_size, self.conf.hash_table, |x| {
                 self.eng.hash_table_size(x)
             }),
-            SetOpt::NalimovPath(_path_buf) => todo!(),
+            SetOpt::NalimovPath(path_buf) => {
+                set_path(path_buf, self.conf.nalimov_path.is_some(), |x| {
+                    self.eng.nalimov_path(x)
+                })
+            }
             SetOpt::NalimovCache(cache_size) => {
                 set_spin_opt(cache_size, self.conf.nalimov_cache, |x| {
                     self.eng.nalimov_cache(x)
@@ -159,10 +163,29 @@ impl<E: Eng, O: EngOutTx> EngCon<E, O> {
                     self.eng.analysis(x)
                 })
             }
-            SetOpt::ShredderBasesPath(_path_buf) => todo!(),
+            SetOpt::ShredderBasesPath(path_buf) => {
+                set_path(path_buf, self.conf.shredder_bases.is_some(), |x| {
+                    self.eng.shredder_bases(x)
+                })
+            }
             SetOpt::Opp(_opponent) => todo!(),
             SetOpt::SetPosVal(_pos_val) => todo!(),
         }
+    }
+}
+
+fn set_path<F>(path_buf: PathBuf, is_supported: bool, mut setter_fn: F)
+where
+    F: FnMut(&Path) -> Result<(), UziErr>,
+{
+    if !is_supported {
+        // TODO: log that feature is not supported.
+        return;
+    }
+
+    if let Err(_) = setter_fn(path_buf.as_ref()) {
+        // TODO: Log some error here.
+        return;
     }
 }
 

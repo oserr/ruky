@@ -10,6 +10,8 @@ use std::path::PathBuf;
 // it is not supported by the chess engine.
 #[derive(Clone, Debug, Default, Eq, Hash, PartialEq)]
 pub struct Config {
+    pub id_name: String,
+    pub id_author: String,
     pub hash_table: Option<SpinType<u64>>,
     pub nalimov_path: Option<PathBuf>,
     pub nalimov_cache: Option<SpinType<u64>>,

@@ -9,7 +9,7 @@ use crate::opt::{Opponent, PosValueOpt, SetOpt};
 use crate::types::SpinType;
 use std::cmp::PartialOrd;
 use std::io::stdin;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 use std::str::FromStr;
 use std::sync::Arc;
 
@@ -124,7 +124,7 @@ impl<E: Eng, O: EngOutTx> EngCon<E, O> {
                 self.eng.hash_table_size(x)
             }),
             SetOpt::NalimovPath(path_buf) => {
-                set_path(path_buf, self.conf.nalimov_path.is_some(), |x| {
+                set_opt_val(path_buf, self.conf.nalimov_path.is_some(), |x| {
                     self.eng.nalimov_path(x)
                 })
             }
@@ -164,26 +164,32 @@ impl<E: Eng, O: EngOutTx> EngCon<E, O> {
                 })
             }
             SetOpt::ShredderBasesPath(path_buf) => {
-                set_path(path_buf, self.conf.shredder_bases.is_some(), |x| {
+                set_opt_val(path_buf, self.conf.shredder_bases.is_some(), |x| {
                     self.eng.shredder_bases(x)
                 })
             }
-            SetOpt::Opp(_opponent) => todo!(),
-            SetOpt::SetPosVal(_pos_val) => todo!(),
+            SetOpt::Opp(opp) => {
+                set_opt_val(opp, self.conf.opponent.is_some(), |x| self.eng.opponent(x))
+            }
+            SetOpt::SetPosVal(pos_val) => {
+                set_opt_val(pos_val, self.conf.pos_value.is_some(), |x| {
+                    self.eng.pos_val(x)
+                })
+            }
         }
     }
 }
 
-fn set_path<F>(path_buf: PathBuf, is_supported: bool, mut setter_fn: F)
+fn set_opt_val<T, F>(val: T, is_supported: bool, mut setter_fn: F)
 where
-    F: FnMut(&Path) -> Result<(), UziErr>,
+    F: FnMut(&T) -> Result<(), UziErr>,
 {
     if !is_supported {
         // TODO: log that feature is not supported.
         return;
     }
 
-    if let Err(_) = setter_fn(path_buf.as_ref()) {
+    if let Err(_) = setter_fn(&val) {
         // TODO: Log some error here.
         return;
     }

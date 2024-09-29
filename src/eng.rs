@@ -35,30 +35,6 @@ pub trait Eng {
     fn quit(&mut self) -> Result<(), UziErr>;
 }
 
-// Represents the current engine state.
-// - Waiting - the engine is still waiting for the GUI to connect.
-// - Connected - the GUI is connected but has not started a new game.
-// - NewGame - The GUI has started a new game.
-// - Go - The engine is analyzing a position.
-#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
-enum EngState {
-    Waiting,
-    Connected,
-    NewGame,
-    Go,
-    Quit,
-}
-
-impl EngState {
-    pub fn is_waiting(&self) -> bool {
-        matches!(self, EngState::Waiting)
-    }
-
-    pub fn is_connected_or_game(&self) -> bool {
-        matches!(self, EngState::Connected | EngState::NewGame)
-    }
-}
-
 // The Uzi [Eng]ine [Con]troller.
 struct EngCon<E: Eng, O: EngOutTx> {
     eng: E,
@@ -106,14 +82,35 @@ impl<E: Eng, O: EngOutTx> EngCon<E, O> {
                 self.eng_out.send_uciok();
                 self.state = EngState::Connected;
             }
-            GuiCmd::IsReady => self.eng_out.send_ready(),
+            GuiCmd::IsReady if !self.state.is_waiting() => self.eng_out.send_ready(),
             GuiCmd::Debug(_is_enabled) => todo!(),
-            GuiCmd::SetOpt(opt) => self.set_opt(opt),
-            GuiCmd::Pos(_pos) => todo!(),
-            GuiCmd::NewGame => todo!(),
-            GuiCmd::Go(_go) => todo!(),
-            GuiCmd::Stop => todo!(),
+            GuiCmd::SetOpt(opt) if self.state.is_connected_or_game() => self.set_opt(opt),
+            GuiCmd::NewGame if !self.state.is_waiting() => {
+                if let Err(_) = self.eng.new_game() {
+                    // TODO: Log some error here.
+                }
+                self.state = EngState::NewGame;
+            }
+            GuiCmd::Pos(pos) if self.state.is_new_game() => {
+                if let Err(_) = self.eng.position(&pos) {
+                    // TODO: Log some error here.
+                }
+                self.state = EngState::GamePosition;
+            }
+            GuiCmd::Go(go) if self.state.is_game_position() => {
+                if let Err(_) = self.eng.go(&go) {
+                    // TODO: Log some error here.
+                }
+                self.state = EngState::Go;
+            }
+            GuiCmd::Stop if self.state.is_go() => {
+                if let Err(_) = self.eng.stop() {
+                    // TODO: Log some error here.
+                }
+                self.state = EngState::GamePosition;
+            }
             GuiCmd::Ponderhit => todo!(),
+            // TODO: Log the command and game state.
             _ => (),
         }
     }
@@ -177,6 +174,47 @@ impl<E: Eng, O: EngOutTx> EngCon<E, O> {
                 })
             }
         }
+    }
+}
+
+// Represents the current engine state.
+// - Waiting - the engine is still waiting for the GUI to connect.
+// - Connected - the GUI is connected but has not started a new game.
+// - NewGame - The GUI has started a new game.
+// - Go - The engine is analyzing a position.
+#[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+enum EngState {
+    Waiting,
+    Connected,
+    NewGame,
+    GamePosition,
+    Go,
+    Quit,
+}
+
+impl EngState {
+    pub fn is_waiting(&self) -> bool {
+        matches!(self, EngState::Waiting)
+    }
+
+    pub fn is_connected(&self) -> bool {
+        matches!(self, EngState::Connected)
+    }
+
+    pub fn is_new_game(&self) -> bool {
+        matches!(self, EngState::NewGame)
+    }
+
+    pub fn is_connected_or_game(&self) -> bool {
+        matches!(self, EngState::Connected | EngState::NewGame)
+    }
+
+    pub fn is_game_position(&self) -> bool {
+        matches!(self, EngState::GamePosition)
+    }
+
+    pub fn is_go(&self) -> bool {
+        matches!(self, EngState::Go)
     }
 }
 

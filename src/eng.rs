@@ -114,7 +114,7 @@ impl<E: Eng, O: EngOutTx> EngCon<E, O> {
 
     fn handle_cmd(&mut self, cmd: GuiCmd) {
         match cmd {
-            GuiCmd::Uci if self.state == EngState::Waiting => {
+            GuiCmd::Uci if self.state.is_waiting() => {
                 self.eng_out.send_name(self.conf.id_name.clone());
                 self.eng_out.send_author(self.conf.id_author.clone());
                 for opt in self.conf.iter() {

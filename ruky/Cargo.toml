@@ -12,3 +12,4 @@ num = "0.4.1"
 rand = "0.8.5"
 serde = { version = "1.0.197", features = ["derive"] }
 thiserror = "1.0.56"
+uzi = { path = "../uzi" }

@@ -36,6 +36,24 @@ pub struct SearchResult {
     pub total_search_time: Duration,
 }
 
+impl SearchResult {
+    pub fn eval_time_per_expansion(&self) -> Duration {
+        self.total_eval_time / self.nodes_expanded
+    }
+
+    pub fn eval_time_per_node(&self) -> Duration {
+        self.total_eval_time / self.nodes_visited
+    }
+
+    pub fn search_time_per_expansion(&self) -> Duration {
+        self.total_search_time / self.nodes_expanded
+    }
+
+    pub fn search_time_per_node(&self) -> Duration {
+        self.total_search_time / self.nodes_visited
+    }
+}
+
 // Same as Bp, but only captures the move without the board.
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct Mp {

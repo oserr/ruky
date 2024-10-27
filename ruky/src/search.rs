@@ -39,6 +39,19 @@ pub struct SearchResult {
 }
 
 impl SearchResult {
+    pub fn with_best(board: Board) -> Self {
+        Self {
+            best: Bp::with_board(board),
+            moves: Vec::new(),
+            expected_value: 0.0,
+            nodes_expanded: 0,
+            nodes_visited: 0,
+            depth: 0,
+            total_eval_time: Duration::ZERO,
+            total_search_time: Duration::ZERO,
+        }
+    }
+
     pub fn eval_time_per_expansion(&self) -> Duration {
         self.total_eval_time / self.nodes_expanded
     }
@@ -71,4 +84,14 @@ pub struct Bp {
     pub board: Board,
     pub prior: f32,
     pub visits: u32,
+}
+
+impl Bp {
+    pub fn with_board(board: Board) -> Self {
+        Self {
+            board: board,
+            prior: 0.0,
+            visits: 0,
+        }
+    }
 }

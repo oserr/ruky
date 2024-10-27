@@ -2,4 +2,5 @@
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub enum RukyErr {
     SearchErr,
+    SearchMissingBoard,
 }

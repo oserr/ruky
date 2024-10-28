@@ -7,6 +7,7 @@ pub mod magics;
 mod piece;
 mod piece_move;
 mod piece_set;
+pub mod random_eng;
 pub mod random_search;
 pub mod ruky;
 pub mod search;

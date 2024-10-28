@@ -32,7 +32,7 @@ pub trait EngTx {
 
 // This is the default impl for EngOutTx provided by the library.
 #[derive(Clone, Debug)]
-struct UziOut {
+pub struct UziOut {
     run_time: Arc<Runtime>,
 }
 

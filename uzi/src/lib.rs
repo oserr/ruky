@@ -4,15 +4,15 @@
 // TODO: Try to remove this at crate level when the lib is more fleshed out.
 #![allow(dead_code)]
 
-mod conf;
+pub mod conf;
 mod conv;
-mod eng;
-mod engcmd;
-mod engtx;
-mod err;
-mod guicmd;
-mod opt;
-mod piece;
-mod pm;
-mod sq;
-mod types;
+pub mod eng;
+pub mod engcmd;
+pub mod engtx;
+pub mod err;
+pub mod guicmd;
+pub mod opt;
+pub mod piece;
+pub mod pm;
+pub mod sq;
+pub mod types;

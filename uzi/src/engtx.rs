@@ -10,14 +10,11 @@ use tokio::runtime::Runtime;
 
 // A trait for tramitting commands from the communcation protocol engine to the
 // GUI.
-pub trait EngOutTx {
+pub trait EngOutTx: EngTx {
     fn send_name(&self, name: String);
     fn send_author(&self, author: String);
     fn send_uciok(&self);
     fn send_ready(&self);
-    fn send_best(&self, best: Pm);
-    fn send_ponder(&self, best: Pm, ponder: Pm);
-    fn send_info(&self, info: Info);
     fn send_opt(&self, opt: HasOpt);
 }
 
@@ -67,6 +64,12 @@ impl EngOutTx for UziOut {
         self.send_cmd(EngCmd::ReadyOk);
     }
 
+    fn send_opt(&self, opt: HasOpt) {
+        self.send_cmd(EngCmd::HasOpt(opt));
+    }
+}
+
+impl EngTx for UziOut {
     fn send_best(&self, best: Pm) {
         self.send_cmd(EngCmd::BestMove {
             best: best,
@@ -84,40 +87,10 @@ impl EngOutTx for UziOut {
     fn send_info(&self, info: Info) {
         self.send_cmd(EngCmd::Info(info));
     }
-
-    fn send_opt(&self, opt: HasOpt) {
-        self.send_cmd(EngCmd::HasOpt(opt));
-    }
 }
 
 impl From<Arc<Runtime>> for UziOut {
     fn from(run_time: Arc<Runtime>) -> Self {
         Self { run_time }
-    }
-}
-
-// This is the default impl for EngTx provided by the library.
-#[derive(Clone, Debug)]
-struct UziEngTx {
-    uzi_out: Arc<UziOut>,
-}
-
-impl EngTx for UziEngTx {
-    fn send_best(&self, best: Pm) {
-        self.uzi_out.send_best(best);
-    }
-
-    fn send_ponder(&self, best: Pm, ponder: Pm) {
-        self.uzi_out.send_ponder(best, ponder);
-    }
-
-    fn send_info(&self, info: Info) {
-        self.uzi_out.send_info(info);
-    }
-}
-
-impl From<Arc<UziOut>> for UziEngTx {
-    fn from(uzi_out: Arc<UziOut>) -> Self {
-        UziEngTx { uzi_out: uzi_out }
     }
 }

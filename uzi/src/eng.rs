@@ -13,26 +13,84 @@ use std::path::Path;
 use std::str::FromStr;
 use std::sync::Arc;
 
+// TODO: Find a better way of conveying the settings, perhaps via the Config.
+#[allow(unused_variables)]
 pub trait Eng {
-    fn hash_table_size(&mut self, table_size: u64) -> Result<(), UziErr>;
-    fn nalimov_path(&mut self, patho: &Path) -> Result<(), UziErr>;
-    fn nalimov_cache(&mut self, cache_size: u64) -> Result<(), UziErr>;
-    fn ponder(&mut self, is_enabled: bool) -> Result<(), UziErr>;
-    fn own_book(&mut self, is_enabled: bool) -> Result<(), UziErr>;
-    fn multi_pv(&mut self, nlines: u64) -> Result<(), UziErr>;
-    fn show_curr_line(&mut self, show_curr_line: bool) -> Result<(), UziErr>;
-    fn show_refutations(&mut self, show_refutations: bool) -> Result<(), UziErr>;
-    fn limit_strength(&mut self, limit_strength: bool) -> Result<(), UziErr>;
-    fn elo(&mut self, elo: u16) -> Result<(), UziErr>;
-    fn analysis(&mut self, is_enabled: bool) -> Result<(), UziErr>;
-    fn shredder_bases(&mut self, path: &Path) -> Result<(), UziErr>;
-    fn opponent(&mut self, opponent: &Opponent) -> Result<(), UziErr>;
-    fn pos_val(&mut self, pos_val: &PosValueOpt) -> Result<(), UziErr>;
-    fn position(&mut self, pos: &Pos) -> Result<(), UziErr>;
-    fn go(&mut self, go_cmd: &Go) -> Result<(), UziErr>;
-    fn stop(&mut self) -> Result<(), UziErr>;
-    fn new_game(&mut self) -> Result<(), UziErr>;
-    fn quit(&mut self) -> Result<(), UziErr>;
+    fn hash_table_size(&mut self, table_size: u64) -> Result<(), UziErr> {
+        Err(UziErr::NotImplemented)
+    }
+
+    fn nalimov_path(&mut self, patho: &Path) -> Result<(), UziErr> {
+        Err(UziErr::NotImplemented)
+    }
+
+    fn nalimov_cache(&mut self, cache_size: u64) -> Result<(), UziErr> {
+        Err(UziErr::NotImplemented)
+    }
+
+    fn ponder(&mut self, is_enabled: bool) -> Result<(), UziErr> {
+        Err(UziErr::NotImplemented)
+    }
+
+    fn own_book(&mut self, is_enabled: bool) -> Result<(), UziErr> {
+        Err(UziErr::NotImplemented)
+    }
+
+    fn multi_pv(&mut self, nlines: u64) -> Result<(), UziErr> {
+        Err(UziErr::NotImplemented)
+    }
+
+    fn show_curr_line(&mut self, show_curr_line: bool) -> Result<(), UziErr> {
+        Err(UziErr::NotImplemented)
+    }
+
+    fn show_refutations(&mut self, show_refutations: bool) -> Result<(), UziErr> {
+        Err(UziErr::NotImplemented)
+    }
+
+    fn limit_strength(&mut self, limit_strength: bool) -> Result<(), UziErr> {
+        Err(UziErr::NotImplemented)
+    }
+
+    fn elo(&mut self, elo: u16) -> Result<(), UziErr> {
+        Err(UziErr::NotImplemented)
+    }
+
+    fn analysis(&mut self, is_enabled: bool) -> Result<(), UziErr> {
+        Err(UziErr::NotImplemented)
+    }
+
+    fn shredder_bases(&mut self, path: &Path) -> Result<(), UziErr> {
+        Err(UziErr::NotImplemented)
+    }
+
+    fn opponent(&mut self, opponent: &Opponent) -> Result<(), UziErr> {
+        Err(UziErr::NotImplemented)
+    }
+
+    fn pos_val(&mut self, pos_val: &PosValueOpt) -> Result<(), UziErr> {
+        Err(UziErr::NotImplemented)
+    }
+
+    fn position(&mut self, pos: &Pos) -> Result<(), UziErr> {
+        Err(UziErr::NotImplemented)
+    }
+
+    fn go(&mut self, go_cmd: &Go) -> Result<(), UziErr> {
+        Err(UziErr::NotImplemented)
+    }
+
+    fn stop(&mut self) -> Result<(), UziErr> {
+        Err(UziErr::NotImplemented)
+    }
+
+    fn new_game(&mut self) -> Result<(), UziErr> {
+        Err(UziErr::NotImplemented)
+    }
+
+    fn quit(&mut self) -> Result<(), UziErr> {
+        Err(UziErr::NotImplemented)
+    }
 }
 
 // The Uzi [Eng]ine [Con]troller.

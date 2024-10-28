@@ -19,4 +19,5 @@ pub enum UziErr {
     SetOptErr,
     UnknownOpt,
     What,
+    NotImplemented,
 }

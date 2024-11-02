@@ -47,6 +47,11 @@ impl<T> Piece<T> {
         }
     }
 
+    // Shorthand for returning the piece with the unit type.
+    pub fn kind(&self) -> Piece<()> {
+        self.with(())
+    }
+
     // Returns payload in the Piece.
     pub fn val(&self) -> T
     where

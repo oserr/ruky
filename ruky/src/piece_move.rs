@@ -70,6 +70,34 @@ impl PieceMove {
             _ => false,
         }
     }
+
+    // Returns source and destination squares.
+    pub fn from_to(&self) -> (Sq, Sq) {
+        match *self {
+            PieceMove::Simple { from, to } => (from, to),
+            PieceMove::Capture { from, to, .. } => (from, to),
+            PieceMove::Castle {
+                king_from, king_to, ..
+            } => (king_from, king_to),
+            PieceMove::EnPassant { from, to, .. } => (from, to),
+            PieceMove::Promo { from, to, .. } => (from, to),
+            PieceMove::PromoCap { from, to, .. } => (from, to),
+        }
+    }
+
+    // Returns true if the move type represents a pawn promotion.
+    pub fn is_promo(&self) -> bool {
+        matches!(*self, PieceMove::Promo { .. } | PieceMove::PromoCap { .. })
+    }
+
+    // Returns true if the move type represents a pawn promotion.
+    pub fn promo(&self) -> Option<Piece<()>> {
+        match *self {
+            PieceMove::Promo { promo, .. } => Some(promo),
+            PieceMove::PromoCap { promo, .. } => Some(promo),
+            _ => None,
+        }
+    }
 }
 
 // Represents a move error.

@@ -237,7 +237,7 @@ impl Board {
 
     // Returns the next board when move piece_move is applied. If the move is
     // illegal or we are in a terminal state, then it returns None.
-    pub fn next_board_from_move(&self, piece_move: Piece<PieceMove>) -> Option<Board> {
+    pub fn next_from_move(&self, piece_move: Piece<PieceMove>) -> Option<Board> {
         if self.is_terminal() {
             return None;
         }
@@ -248,6 +248,50 @@ impl Board {
 
         let mut board = self.clone();
         board.update(piece_move);
+        Some(board)
+    }
+
+    // Returns the next board when all the moves in |moves| are applied to the given
+    // position. If any of the moves are illegal or the the board reaches a
+    // terminal state, then it returns None.
+    pub fn next_from_moves(&self, moves: &[Piece<PieceMove>]) -> Option<Board> {
+        let mut board = self.clone();
+        for pm in moves {
+            if board.is_terminal() {
+                return None;
+            }
+            if !board.is_legal_move(*pm) {
+                return None;
+            }
+            board.update(*pm);
+        }
+        Some(board)
+    }
+
+    // Same as next_from_moves, but moves are simply specified as triplets of (from,
+    // to, optional piece), where from is the source square, to is the
+    // destination square, and the optional piece is for a pawn promotion.
+    pub fn next_from_rc(&self, moves: &[(u8, u8, Option<Piece<()>>)]) -> Option<Board> {
+        let mut board = self.clone();
+        for pm in moves {
+            if board.is_terminal() {
+                return None;
+            }
+            // Find a matching move, or else treat it as an illegal move, in which case
+            // we'll return None.
+            let next_move = board
+                .next_moves()?
+                .iter()
+                .find(|m| {
+                    let move_type = m.val();
+                    let from_to = move_type.from_to();
+                    let s = u8::from(from_to.0);
+                    let d = u8::from(from_to.1);
+                    *pm == (s, d, move_type.promo())
+                })
+                .copied()?;
+            board.update(next_move);
+        }
         Some(board)
     }
 

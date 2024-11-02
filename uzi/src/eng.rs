@@ -94,14 +94,14 @@ pub trait Eng {
 }
 
 // The Uzi [Eng]ine [Con]troller.
-struct EngCon<E: Eng, O: EngOutTx> {
+struct EngController<E: Eng, O: EngOutTx> {
     eng: E,
     eng_out: Arc<O>,
     conf: Config,
     state: EngState,
 }
 
-impl<E: Eng, O: EngOutTx> EngCon<E, O> {
+impl<E: Eng, O: EngOutTx> EngController<E, O> {
     pub fn create(eng: E, eng_out: Arc<O>, conf: Config) -> Self {
         Self {
             eng: eng,

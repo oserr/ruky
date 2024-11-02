@@ -2,20 +2,21 @@ use crate::board::Board;
 use crate::piece::Piece;
 use crate::ruky::Ruky;
 use std::cell::RefCell;
+use std::sync::Arc;
 use uzi::eng::Eng;
-use uzi::engtx::UziOut;
+use uzi::engtx::EngTx;
 use uzi::err::UziErr;
 use uzi::guicmd::{Go, Pos, PosOpt};
 use uzi::piece::Piece as UziPiece;
 
 #[derive(Clone, Debug)]
-struct RandomEng {
+struct RandomEng<E: EngTx> {
     ruky: Ruky,
-    uzi_out: UziOut,
+    uzi_out: Arc<E>,
     board: RefCell<Option<Board>>,
 }
 
-impl Eng for RandomEng {
+impl<E: EngTx> Eng for RandomEng<E> {
     fn position(&mut self, pos: &Pos) -> Result<(), UziErr> {
         let mut board = match pos.pos {
             PosOpt::StartPos => self.ruky.new_board(),

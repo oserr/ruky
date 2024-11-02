@@ -19,6 +19,27 @@ pub enum Pm {
     Promo { from: Sq, to: Sq, promo: Piece },
 }
 
+impl Pm {
+    pub fn is_null(&self) -> bool {
+        matches!(*self, Pm::Null)
+    }
+
+    pub fn promo(&self) -> Option<Piece> {
+        match *self {
+            Pm::Promo { promo, .. } => Some(promo),
+            _ => None,
+        }
+    }
+
+    pub fn from_to(&self) -> Option<(Sq, Sq)> {
+        match *self {
+            Pm::Normal { from, to } => Some((from, to)),
+            Pm::Promo { from, to, .. } => Some((from, to)),
+            _ => None,
+        }
+    }
+}
+
 impl Display for Pm {
     fn fmt(&self, formatter: &mut Formatter<'_>) -> fmt::Result {
         match self {

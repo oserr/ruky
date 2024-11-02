@@ -342,11 +342,11 @@ enum GoParseState {
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub struct Pos {
     // Represents the initial position: either a new game or a FEN string.
-    pos: PosOpt,
+    pub pos: PosOpt,
 
     // Moves to apply to the initial position. If set, the intial position is
     // derived after the moves are applied to the initial position.
-    moves: Option<Vec<Pm>>,
+    pub moves: Option<Vec<Pm>>,
 }
 
 impl Pos {

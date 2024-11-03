@@ -135,8 +135,12 @@ impl Board {
     }
 
     #[inline]
-    fn passant(&self) -> Option<PassantSq> {
+    pub fn passant(&self) -> Option<PassantSq> {
         self.state.passant_sq
+    }
+
+    pub fn last_move(&self) -> Option<Piece<PieceMove>> {
+        self.state.prev_moves.last().copied()
     }
 
     // Updates the game state.

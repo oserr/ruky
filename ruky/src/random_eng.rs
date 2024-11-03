@@ -1,6 +1,10 @@
 use crate::board::Board;
 use crate::piece::Piece;
+use crate::piece_move::PieceMove;
+use crate::random_search::RandomSearch;
 use crate::ruky::Ruky;
+use crate::search::Search;
+use crate::sq::Sq;
 use std::cell::RefCell;
 use std::sync::Arc;
 use uzi::eng::Eng;
@@ -8,6 +12,8 @@ use uzi::engtx::EngTx;
 use uzi::err::UziErr;
 use uzi::guicmd::{Go, Pos, PosOpt};
 use uzi::piece::Piece as UziPiece;
+use uzi::pm::Pm as UziPm;
+use uzi::sq::Sq as UziSq;
 
 #[derive(Clone, Debug)]
 pub struct RandomEng<T: EngTx> {
@@ -64,7 +70,15 @@ impl<E: EngTx> Eng for RandomEng<E> {
     }
 
     fn go(&mut self, _go_cmd: &Go) -> Result<(), UziErr> {
-        todo!()
+        // TODO: Make the errors specific and use the args in the go command.
+        let binding = self.board.borrow();
+        let board = binding.as_ref().ok_or(UziErr::Position)?;
+        let search_result = RandomSearch::new()
+            .search_board(board)
+            .map_err(|_| UziErr::Position)?;
+        let best_move = search_result.best_move().ok_or(UziErr::Position)?;
+        self.uzi_out.send_best(best_move.into());
+        Ok(())
     }
 }
 
@@ -78,5 +92,51 @@ impl From<UziPiece> for Piece<()> {
             UziPiece::Knight => Piece::Knight(()),
             UziPiece::Pawn => Piece::Pawn(()),
         }
+    }
+}
+
+impl<T> From<Piece<T>> for UziPiece {
+    fn from(piece: Piece<T>) -> UziPiece {
+        match piece {
+            Piece::King(_) => UziPiece::King,
+            Piece::Queen(_) => UziPiece::Queen,
+            Piece::Rook(_) => UziPiece::Rook,
+            Piece::Bishop(_) => UziPiece::Bishop,
+            Piece::Knight(_) => UziPiece::Knight,
+            Piece::Pawn(_) => UziPiece::Pawn,
+        }
+    }
+}
+
+impl From<Piece<PieceMove>> for UziPm {
+    fn from(piece_move: Piece<PieceMove>) -> UziPm {
+        match piece_move.val() {
+            PieceMove::Simple { from, to }
+            | PieceMove::Capture { from, to, .. }
+            | PieceMove::EnPassant { from, to, .. } => UziPm::Normal {
+                from: from.into(),
+                to: to.into(),
+            },
+            PieceMove::Castle {
+                king_from, king_to, ..
+            } => UziPm::Normal {
+                from: king_from.into(),
+                to: king_to.into(),
+            },
+            PieceMove::Promo { from, to, promo }
+            | PieceMove::PromoCap {
+                from, to, promo, ..
+            } => UziPm::Promo {
+                from: from.into(),
+                to: to.into(),
+                promo: promo.into(),
+            },
+        }
+    }
+}
+
+impl From<Sq> for UziSq {
+    fn from(sq: Sq) -> UziSq {
+        UziSq::new(sq.into())
     }
 }

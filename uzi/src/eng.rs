@@ -95,7 +95,7 @@ pub trait Eng {
 
 // The Uzi Engine Controller. Handles all the incoming GUI commands to standard,
 // and sends the commands to the engine.
-struct EngController<E: Eng, O: EngOutTx> {
+pub struct EngController<E: Eng, O: EngOutTx> {
     eng: E,
     eng_out: Arc<O>,
     conf: Config,

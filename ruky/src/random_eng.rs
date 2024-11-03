@@ -10,10 +10,20 @@ use uzi::guicmd::{Go, Pos, PosOpt};
 use uzi::piece::Piece as UziPiece;
 
 #[derive(Clone, Debug)]
-struct RandomEng<E: EngTx> {
+pub struct RandomEng<T: EngTx> {
     ruky: Ruky,
-    uzi_out: Arc<E>,
+    uzi_out: Arc<T>,
     board: RefCell<Option<Board>>,
+}
+
+impl<T: EngTx> RandomEng<T> {
+    pub fn new(uzi_out: Arc<T>) -> Self {
+        Self {
+            ruky: Ruky::new(),
+            uzi_out,
+            board: RefCell::new(None),
+        }
+    }
 }
 
 impl<E: EngTx> Eng for RandomEng<E> {

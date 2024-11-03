@@ -67,6 +67,10 @@ impl SearchResult {
     pub fn search_time_per_node(&self) -> Duration {
         self.total_search_time / self.nodes_visited
     }
+
+    pub fn best_move(&self) -> Option<Piece<PieceMove>> {
+        self.best.best_move()
+    }
 }
 
 // Same as Bp, but only captures the move without the board.
@@ -93,5 +97,9 @@ impl Bp {
             prior: 0.0,
             visits: 0,
         }
+    }
+
+    pub fn best_move(&self) -> Option<Piece<PieceMove>> {
+        self.board.last_move()
     }
 }

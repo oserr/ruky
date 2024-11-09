@@ -5,6 +5,7 @@ use crate::random_search::RandomSearch;
 use crate::ruky::Ruky;
 use crate::search::Search;
 use crate::sq::Sq;
+use log;
 use std::cell::RefCell;
 use std::sync::Arc;
 use uzi::eng::Eng;
@@ -34,6 +35,7 @@ impl<T: EngTx> RandomEng<T> {
 
 impl<E: EngTx> Eng for RandomEng<E> {
     fn position(&mut self, pos: &Pos) -> Result<(), UziErr> {
+        log::info!("Executing command position: {:?}", pos);
         let mut board = match pos.pos {
             PosOpt::StartPos => self.ruky.new_board(),
             PosOpt::Fen(ref fen) => self.ruky.from_fen(fen).map_err(|_| UziErr::Position)?,
@@ -58,18 +60,22 @@ impl<E: EngTx> Eng for RandomEng<E> {
             board = board.next_from_rc(&moves).ok_or(UziErr::Position)?;
         }
         self.board.borrow_mut().replace(board);
+        log::info!("The position has been set");
         Ok(())
     }
 
     fn new_game(&mut self) -> Result<(), UziErr> {
+        log::info!("Executing command new_game");
         Ok(())
     }
 
     fn stop(&mut self) -> Result<(), UziErr> {
+        log::info!("Executing command stop");
         Ok(())
     }
 
     fn go(&mut self, _go_cmd: &Go) -> Result<(), UziErr> {
+        log::info!("Executing command go");
         // TODO: Make the errors specific and use the args in the go command.
         let binding = self.board.borrow();
         let board = binding.as_ref().ok_or(UziErr::Position)?;
@@ -77,6 +83,7 @@ impl<E: EngTx> Eng for RandomEng<E> {
             .search_board(board)
             .map_err(|_| UziErr::Position)?;
         let best_move = search_result.best_move().ok_or(UziErr::Position)?;
+        log::info!("Calculated best move: {:?}", best_move);
         self.uzi_out.send_best(best_move.into());
         Ok(())
     }

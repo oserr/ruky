@@ -7,6 +7,7 @@ use crate::err::UziErr;
 use crate::guicmd::{Go, GuiCmd, Pos};
 use crate::opt::{Opponent, PosValueOpt, SetOpt};
 use crate::types::SpinType;
+use log;
 use std::cmp::PartialOrd;
 use std::io::stdin;
 use std::path::Path;
@@ -17,78 +18,97 @@ use std::sync::Arc;
 #[allow(unused_variables)]
 pub trait Eng {
     fn hash_table_size(&mut self, table_size: u64) -> Result<(), UziErr> {
+        log::info!("Eng::hash_table_size is not implemented");
         Err(UziErr::NotImplemented)
     }
 
     fn nalimov_path(&mut self, patho: &Path) -> Result<(), UziErr> {
+        log::info!("Eng::nalimvo_path is not implemented");
         Err(UziErr::NotImplemented)
     }
 
     fn nalimov_cache(&mut self, cache_size: u64) -> Result<(), UziErr> {
+        log::info!("Eng::nalimvo_cache is not implemented");
         Err(UziErr::NotImplemented)
     }
 
     fn ponder(&mut self, is_enabled: bool) -> Result<(), UziErr> {
+        log::info!("Eng::ponder is not implemented");
         Err(UziErr::NotImplemented)
     }
 
     fn own_book(&mut self, is_enabled: bool) -> Result<(), UziErr> {
+        log::info!("Eng::own_book is not implemented");
         Err(UziErr::NotImplemented)
     }
 
     fn multi_pv(&mut self, nlines: u64) -> Result<(), UziErr> {
+        log::info!("Eng::multi_pv is not implemented");
         Err(UziErr::NotImplemented)
     }
 
     fn show_curr_line(&mut self, show_curr_line: bool) -> Result<(), UziErr> {
+        log::info!("Eng::show_curr_line is not implemented");
         Err(UziErr::NotImplemented)
     }
 
     fn show_refutations(&mut self, show_refutations: bool) -> Result<(), UziErr> {
+        log::info!("Eng::show_refutations is not implemented");
         Err(UziErr::NotImplemented)
     }
 
     fn limit_strength(&mut self, limit_strength: bool) -> Result<(), UziErr> {
+        log::info!("Eng::limit_strength is not implemented");
         Err(UziErr::NotImplemented)
     }
 
     fn elo(&mut self, elo: u16) -> Result<(), UziErr> {
+        log::info!("Eng::elo is not implemented");
         Err(UziErr::NotImplemented)
     }
 
     fn analysis(&mut self, is_enabled: bool) -> Result<(), UziErr> {
+        log::info!("Eng::analysis is not implemented");
         Err(UziErr::NotImplemented)
     }
 
     fn shredder_bases(&mut self, path: &Path) -> Result<(), UziErr> {
+        log::info!("Eng::shredder_bases is not implemented");
         Err(UziErr::NotImplemented)
     }
 
     fn opponent(&mut self, opponent: &Opponent) -> Result<(), UziErr> {
+        log::info!("Eng::opponent is not implemented");
         Err(UziErr::NotImplemented)
     }
 
     fn pos_val(&mut self, pos_val: &PosValueOpt) -> Result<(), UziErr> {
+        log::info!("Eng::pos_val is not implemented");
         Err(UziErr::NotImplemented)
     }
 
     fn position(&mut self, pos: &Pos) -> Result<(), UziErr> {
+        log::info!("Eng::position is not implemented");
         Err(UziErr::NotImplemented)
     }
 
     fn go(&mut self, go_cmd: &Go) -> Result<(), UziErr> {
+        log::info!("Eng::go is not implemented");
         Err(UziErr::NotImplemented)
     }
 
     fn stop(&mut self) -> Result<(), UziErr> {
+        log::info!("Eng::stop is not implemented");
         Err(UziErr::NotImplemented)
     }
 
     fn new_game(&mut self) -> Result<(), UziErr> {
+        log::info!("Eng::new_game is not implemented");
         Err(UziErr::NotImplemented)
     }
 
     fn quit(&mut self) -> Result<(), UziErr> {
+        log::info!("Eng::quit is not implemented");
         Err(UziErr::NotImplemented)
     }
 }
@@ -121,8 +141,14 @@ impl<E: Eng, O: EngOutTx> EngController<E, O> {
                     let cmd = GuiCmd::from_str(&line);
                     match cmd {
                         // TODO: log the error.
-                        Err(_) => continue,
-                        Ok(cmd) => self.handle_cmd(cmd),
+                        Err(_) => {
+                            log::warn!("Unable to parse command from line: {}", line);
+                            continue;
+                        }
+                        Ok(cmd) => {
+                            log::info!("Excecuting command: {:?}", cmd);
+                            self.handle_cmd(cmd)
+                        }
                     }
                 }
             }
@@ -170,7 +196,9 @@ impl<E: Eng, O: EngOutTx> EngController<E, O> {
             }
             GuiCmd::Ponderhit => todo!(),
             // TODO: Log the command and game state.
-            _ => (),
+            _ => {
+                log::warn!("Ignoring command in state=[{:?}]: {:?}", self.state, cmd);
+            }
         }
     }
 

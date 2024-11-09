@@ -12,6 +12,7 @@ log = "0.4.22"
 num = "0.4.1"
 rand = "0.8.5"
 serde = { version = "1.0.197", features = ["derive"] }
+simple-logging = "2.0.2"
 thiserror = "1.0.56"
 tokio = { version = "1.39.3", features = ["rt-multi-thread", "io-std", "io-util", "time"] }
 uzi = { path = "../uzi" }

@@ -170,34 +170,35 @@ impl<E: Eng, O: EngOutTx> EngController<E, O> {
             GuiCmd::Debug(_is_enabled) => todo!(),
             GuiCmd::SetOpt(opt) if self.state.is_connected_or_game() => self.set_opt(opt),
             GuiCmd::NewGame if !self.state.is_waiting() => {
-                if let Err(_) = self.eng.new_game() {
-                    // TODO: Log some error here.
+                if let Err(err) = self.eng.new_game() {
+                    log::error!("Error for setting NewGame: {:?}", err);
+                    return;
                 }
                 self.state = EngState::NewGame;
             }
             GuiCmd::Pos(pos) if self.state.is_valid_change_to_pos() => {
-                if let Err(_) = self.eng.position(&pos) {
-                    // TODO: Log some error here.
+                if let Err(err) = self.eng.position(&pos) {
+                    log::error!("Error for setting Pos: {:?}", err);
+                    return;
                 }
                 self.state = EngState::GamePosition;
             }
             GuiCmd::Go(go) if self.state.is_game_position() => {
-                if let Err(_) = self.eng.go(&go) {
-                    // TODO: Log some error here.
+                if let Err(err) = self.eng.go(&go) {
+                    log::error!("Error for setting Go: {:?}", err);
+                    return;
                 }
                 self.state = EngState::Go;
             }
             GuiCmd::Stop if self.state.is_go() => {
-                if let Err(_) = self.eng.stop() {
-                    // TODO: Log some error here.
+                if let Err(err) = self.eng.stop() {
+                    log::error!("Error for setting Stop: {:?}", err);
+                    return;
                 }
                 self.state = EngState::GamePosition;
             }
             GuiCmd::Ponderhit => todo!(),
-            // TODO: Log the command and game state.
-            _ => {
-                log::warn!("Ignoring command in state=[{:?}]: {:?}", self.state, cmd);
-            }
+            _ => log::warn!("Ignoring command in state=[{:?}]: {:?}", self.state, cmd),
         }
     }
 

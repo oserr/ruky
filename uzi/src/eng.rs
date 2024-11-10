@@ -136,13 +136,12 @@ impl<E: Eng, O: EngOutTx> EngController<E, O> {
         for line in stdin().lines() {
             match line {
                 // Here we should shut down gracefully and return an error.
-                Err(_err) => todo!(),
+                Err(_err) => log::error!("Unable to read the next command line."),
                 Ok(line) => {
                     let cmd = GuiCmd::from_str(&line);
                     match cmd {
-                        // TODO: log the error.
                         Err(_) => {
-                            log::warn!("Unable to parse command from line: {}", line);
+                            log::error!("Unable to parse command from line: {}", line);
                             continue;
                         }
                         Ok(cmd) => {

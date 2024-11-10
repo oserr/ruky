@@ -39,8 +39,14 @@ pub struct UziOut {
 impl UziOut {
     fn send_cmd(&self, cmd: EngCmd) {
         self.run_time.spawn(async move {
-            let result = stdout().write(cmd.to_string().as_bytes()).await;
-            if let Err(_) = result {
+            let mut fout = stdout();
+            if let Err(_) = fout.write_all(cmd.to_string().as_bytes()).await {
+                todo!();
+            }
+            if let Err(_) = fout.write_u8(b'\n').await {
+                todo!();
+            }
+            if let Err(_) = fout.flush().await {
                 todo!();
             }
         });

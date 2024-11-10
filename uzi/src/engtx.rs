@@ -4,9 +4,9 @@
 use crate::engcmd::{EngCmd, Info};
 use crate::opt::HasOpt;
 use crate::pm::Pm;
-use std::sync::Arc;
-use tokio::io::{stdout, AsyncWriteExt};
-use tokio::runtime::Runtime;
+use std::io::{stdout, Write};
+use std::sync::mpsc::{channel, Sender};
+use std::thread;
 
 // A trait for tramitting commands from the communcation protocol engine to the
 // GUI.
@@ -33,23 +33,41 @@ pub trait EngTx {
 // This is the default impl for EngOutTx provided by the library.
 #[derive(Clone, Debug)]
 pub struct UziOut {
-    run_time: Arc<Runtime>,
+    sender: Sender<EngCmd>,
+}
+
+// Default initialization for UziOut. It spanws a thread to handle all writing
+// to stdout. It creates a channel -- the receiving part is used in the spawned
+// thread to send messages to the GUI, and the sender part is used by UziOut to
+// enque the messages that need to be sent to the GUI.
+impl Default for UziOut {
+    fn default() -> Self {
+        let (sender, receiver) = channel::<EngCmd>();
+        let mut fout = stdout();
+        thread::spawn(move || {
+            for eng_cmd in receiver.iter() {
+                let buffer = format!("{}\n", eng_cmd);
+                if let Err(_) = fout.write_all(buffer.as_ref()) {
+                    log::error!("Unable to send message [{}] to GUI.", buffer);
+                }
+            }
+        });
+        Self { sender }
+    }
 }
 
 impl UziOut {
+    pub fn new() -> Self {
+        UziOut::default()
+    }
+
     fn send_cmd(&self, cmd: EngCmd) {
-        self.run_time.spawn(async move {
-            let mut fout = stdout();
-            if let Err(_) = fout.write_all(cmd.to_string().as_bytes()).await {
-                todo!();
-            }
-            if let Err(_) = fout.write_u8(b'\n').await {
-                todo!();
-            }
-            if let Err(_) = fout.flush().await {
-                todo!();
-            }
-        });
+        if let Err(cmd) = self.sender.send(cmd) {
+            log::error!(
+                "Unable to send message [{}] via Sender -- channel is broken.",
+                cmd
+            );
+        }
     }
 }
 
@@ -92,11 +110,5 @@ impl EngTx for UziOut {
 
     fn send_info(&self, info: Info) {
         self.send_cmd(EngCmd::Info(info));
-    }
-}
-
-impl From<Arc<Runtime>> for UziOut {
-    fn from(run_time: Arc<Runtime>) -> Self {
-        Self { run_time }
     }
 }

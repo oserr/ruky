@@ -175,7 +175,7 @@ impl<E: Eng, O: EngOutTx> EngController<E, O> {
                 }
                 self.state = EngState::NewGame;
             }
-            GuiCmd::Pos(pos) if self.state.is_new_game() => {
+            GuiCmd::Pos(pos) if self.state.is_valid_change_to_pos() => {
                 if let Err(_) = self.eng.position(&pos) {
                     // TODO: Log some error here.
                 }
@@ -289,6 +289,13 @@ impl EngState {
 
     pub fn is_new_game(&self) -> bool {
         matches!(self, EngState::NewGame)
+    }
+
+    pub fn is_valid_change_to_pos(&self) -> bool {
+        matches!(
+            self,
+            EngState::NewGame | EngState::GamePosition | EngState::Go
+        )
     }
 
     pub fn is_connected_or_game(&self) -> bool {

@@ -1,6 +1,3 @@
 [workspace]
-members = [
-"ruky",
-"uzi",
-]
+members = ["ruky", "uzi", "znn"]
 resolver = "2"

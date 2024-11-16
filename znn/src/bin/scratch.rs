@@ -3,7 +3,7 @@
 
 use burn::backend::candle::{Candle, CandleDevice};
 use burn::tensor::Tensor;
-use znn::net::AlphaZeroNet;
+use znn::nn::AlphaZeroNet;
 
 fn main() {
     let device = CandleDevice::cuda(0);

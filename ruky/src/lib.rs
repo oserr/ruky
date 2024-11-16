@@ -1,6 +1,8 @@
 #![allow(dead_code)]
+
 pub mod bitboard;
 pub mod board;
+mod ecpm;
 pub mod err;
 mod fen;
 pub mod magics;

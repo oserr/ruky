@@ -4,6 +4,7 @@ pub mod board;
 pub mod err;
 mod fen;
 pub mod magics;
+pub mod nn;
 mod piece;
 mod piece_move;
 mod piece_set;

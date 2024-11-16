@@ -3334,6 +3334,7 @@ dependencies = [
 name = "ruky"
 version = "0.1.0"
 dependencies = [
+ "burn",
  "clap",
  "lazy_static",
  "log",

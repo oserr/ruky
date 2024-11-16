@@ -4,10 +4,10 @@
 use burn::{
     nn::{
         conv::{Conv2d, Conv2dConfig},
-        BatchNorm, BatchNormConfig, PaddingConfig2d,
+        BatchNorm, BatchNormConfig, Linear, LinearConfig, PaddingConfig2d,
     },
     prelude::{Backend, Device, Tensor},
-    tensor::activation::relu,
+    tensor::activation::{relu, tanh},
 };
 
 //---------------
@@ -81,5 +81,40 @@ impl<B: Backend> PolicyNet<B> {
         let x = self.batch_norm.forward(x);
         let x = relu(x);
         self.conv2.forward(x)
+    }
+}
+
+//----------------
+// Value head net
+//----------------
+
+struct ValueNet<B: Backend> {
+    conv: Conv2d<B>,
+    batch_norm: BatchNorm<B, 2>,
+    fc1: Linear<B>,
+    fc2: Linear<B>,
+}
+
+impl<B: Backend> ValueNet<B> {
+    pub fn new(device: &Device<B>) -> Self {
+        Self {
+            conv: Conv2dConfig::new([256, 1], [1, 1])
+                .with_padding(PaddingConfig2d::Same)
+                .init(device),
+            batch_norm: BatchNormConfig::new(1).init(device),
+            fc1: LinearConfig::new(64, 256).init(device),
+            fc2: LinearConfig::new(256, 1).init(device),
+        }
+    }
+
+    pub fn forward(&self, x: Tensor<B, 4>) -> Tensor<B, 2> {
+        let x = self.conv.forward(x);
+        let x = self.batch_norm.forward(x);
+        let x = relu(x);
+        let x = x.flatten(1, 3);
+        let x = self.fc1.forward(x);
+        let x = relu(x);
+        let x = self.fc2.forward(x);
+        tanh(x)
     }
 }

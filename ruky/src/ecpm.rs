@@ -1,12 +1,40 @@
 // This module contains logic to encode a piece move into a an encoded move.
 
 use crate::piece::Piece;
+use crate::piece_move::PieceMove;
 
 // Represents the code for a given piece move, i.e, Piece<PieceMove>.
 struct EcMove {
     row: u8,
     col: u8,
     code: u8,
+}
+
+impl From<Piece<PieceMove>> for EcMove {
+    fn from(piece_move: Piece<PieceMove>) -> EcMove {
+        let pm = piece_move.val();
+        let (from_sq, to_sq) = pm.from_to();
+        let (from_row, from_col) = from_sq.rc();
+        let (to_row, to_col) = to_sq.rc();
+        let row_diff = to_row as i8 - from_row as i8;
+        let col_diff = to_col as i8 - from_col as i8;
+
+        assert!(row_diff != 0 || col_diff != 0);
+
+        let code = match piece_move.kind() {
+            Piece::Knight(_) => 56 + encode_knight_move(row_diff, col_diff),
+            Piece::Pawn(_) if pm.is_promo() && !pm.promo().unwrap().is_queen() => {
+                64 + encode_under_promo(col_diff, pm.promo().unwrap())
+            }
+            _ => encode_queen_move(row_diff, col_diff),
+        };
+
+        Self {
+            row: from_row,
+            col: from_col,
+            code,
+        }
+    }
 }
 
 // Converts a knight move to a number in the range [0, 7].

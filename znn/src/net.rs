@@ -14,7 +14,7 @@ use burn::{
 // Residual Block
 //---------------
 
-// ResBlockNset implements the residual block in the AlphaZero network, which
+// ResBlockNet implements the residual block in the AlphaZero network, which
 // has 19 of these blocks connected together.
 struct ResBlockNet<B: Backend> {
     conv1: Conv2d<B>,
@@ -42,7 +42,7 @@ impl<B: Backend> ResBlockNet<B> {
         }
     }
 
-    pub fn formward(&self, x: Tensor<B, 4>) -> Tensor<B, 4> {
+    pub fn forward(&self, x: Tensor<B, 4>) -> Tensor<B, 4> {
         let x = self.conv1.forward(x);
         let x = self.batch_norm1.forward(x);
         let x = relu(x);
@@ -116,5 +116,45 @@ impl<B: Backend> ValueNet<B> {
         let x = relu(x);
         let x = self.fc2.forward(x);
         tanh(x)
+    }
+}
+
+//--------------
+// AlphaZero net
+//--------------
+
+struct AlphaZeroNet<B: Backend> {
+    conv: Conv2d<B>,
+    batch_norm: BatchNorm<B, 2>,
+    res_blocks: Vec<ResBlockNet<B>>,
+    policy_net: PolicyNet<B>,
+    value_net: ValueNet<B>,
+}
+
+impl<B: Backend> AlphaZeroNet<B> {
+    pub fn new(device: &Device<B>) -> Self {
+        Self {
+            conv: Conv2dConfig::new([119, 256], [3, 3])
+                .with_padding(PaddingConfig2d::Same)
+                .init(device),
+            batch_norm: BatchNormConfig::new(256).init(device),
+            res_blocks: std::iter::repeat_with(|| ResBlockNet::new(device))
+                .take(19)
+                .collect(),
+            policy_net: PolicyNet::new(device),
+            value_net: ValueNet::new(device),
+        }
+    }
+
+    pub fn forward(&self, x: Tensor<B, 4>) -> (Tensor<B, 4>, Tensor<B, 2>) {
+        let x = self.conv.forward(x);
+        let x = self.batch_norm.forward(x);
+        let x = self
+            .res_blocks
+            .iter()
+            .fold(x, |acc, res_block| res_block.forward(acc));
+        let policy = self.policy_net.forward(x.clone());
+        let value = self.value_net.forward(x);
+        (policy, value)
     }
 }

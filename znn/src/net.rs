@@ -123,7 +123,7 @@ impl<B: Backend> ValueNet<B> {
 // AlphaZero net
 //--------------
 
-struct AlphaZeroNet<B: Backend> {
+pub struct AlphaZeroNet<B: Backend> {
     conv: Conv2d<B>,
     batch_norm: BatchNorm<B, 2>,
     res_blocks: Vec<ResBlockNet<B>>,

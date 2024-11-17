@@ -29,6 +29,24 @@ trait TensorEncoder<B: Backend> {
 // - 1 for the progress count (i.e. 50 move rule)
 struct AzEncoder;
 
+impl<B: Backend> TensorEncoder<B> for AzEncoder {
+    fn encode_board(_board: &Board) -> Tensor<B, 4> {
+        todo!();
+    }
+
+    fn encode_boards(_boards: &[Board]) -> Tensor<B, 4> {
+        todo!();
+    }
+
+    fn encode_mps(_mps: &[Mp]) -> Tensor<B, 4> {
+        todo!();
+    }
+
+    fn encode_bps(_bps: &[Bp]) -> Tensor<B, 4> {
+        todo!();
+    }
+}
+
 fn encode_pieces(pieces: &PieceSet, data: &mut [f32]) {
     assert!(data.len() == 6 * 64);
     for (piece, chunk) in std::iter::zip(pieces.iter(), data.chunks_exact_mut(64)) {

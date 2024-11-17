@@ -125,6 +125,11 @@ impl Board {
     }
 
     #[inline]
+    pub fn is_white_next(&self) -> bool {
+        matches!(self.state.color(), Color::White)
+    }
+
+    #[inline]
     pub fn half_moves(&self) -> u16 {
         self.state.half_move
     }

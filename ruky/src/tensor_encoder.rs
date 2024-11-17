@@ -4,6 +4,7 @@ use crate::board::Board;
 use crate::piece_set::PieceSet;
 use crate::search::{Bp, Mp};
 use burn::prelude::{Backend, Tensor, TensorData};
+use std::iter::zip;
 
 trait TensorEncoder<B: Backend> {
     fn encode_board(&self, board: &Board) -> Tensor<B, 4>;
@@ -41,7 +42,7 @@ impl<B: Backend> TensorEncoder<B> for AzEncoder<B> {
 
         let mut data = vec![0.0; 119 * 64];
 
-        for (board, chunk) in std::iter::zip(
+        for (board, chunk) in zip(
             boards.into_iter().rev().take(8),
             data.chunks_exact_mut(64 * 14),
         ) {
@@ -65,8 +66,7 @@ impl<B: Backend> TensorEncoder<B> for AzEncoder<B> {
             board.half_moves().into(),
         ];
 
-        for (val, chunk) in std::iter::zip(state_features.iter().rev(), data.rchunks_exact_mut(64))
-        {
+        for (val, chunk) in zip(state_features.iter().rev(), data.rchunks_exact_mut(64)) {
             chunk.fill(*val);
         }
 
@@ -86,7 +86,7 @@ impl<B: Backend> TensorEncoder<B> for AzEncoder<B> {
 
 fn encode_pieces(pieces: &PieceSet, data: &mut [f32]) {
     assert!(data.len() == 6 * 64);
-    for (piece, chunk) in std::iter::zip(pieces.iter(), data.chunks_exact_mut(64)) {
+    for (piece, chunk) in zip(pieces.iter(), data.chunks_exact_mut(64)) {
         for sq in piece.val().sq_iter() {
             chunk[sq.as_usize()] = 1.0;
         }

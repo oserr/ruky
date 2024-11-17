@@ -38,7 +38,9 @@ impl<B: Backend> TensorEncoder<B> for AzEncoder<B> {
 
     fn encode_boards(&self, boards: &[Board]) -> Tensor<B, 4> {
         assert!(!boards.is_empty());
+
         let mut data = vec![0.0; 119 * 64];
+
         for (board, chunk) in std::iter::zip(
             boards.into_iter().rev().take(8),
             data.chunks_exact_mut(64 * 14),
@@ -48,9 +50,28 @@ impl<B: Backend> TensorEncoder<B> for AzEncoder<B> {
             encode_pieces(board.black(), &mut chunk[finish_index..2 * finish_index]);
             // TODO: need to set the repetition count on the last two planes.
         }
+
+        let board = boards
+            .last()
+            .expect("boards should have at least one board.");
+
+        let state_features: [f32; 7] = [
+            board.is_white_next().into(),
+            board.full_moves() as f32,
+            board.has_wk_castle().into(),
+            board.has_wq_castle().into(),
+            board.has_bk_castle().into(),
+            board.has_bq_castle().into(),
+            board.half_moves().into(),
+        ];
+
+        for (val, chunk) in std::iter::zip(state_features.iter().rev(), data.rchunks_exact_mut(64))
+        {
+            chunk.fill(*val);
+        }
+
         let tensor_data = TensorData::new(data, [1, 119, 8, 8]);
 
-        // TODO: finish setting up the rest of the state.
         Tensor::from_data(tensor_data, &self.device)
     }
 

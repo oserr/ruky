@@ -1,6 +1,7 @@
 // This module contains components for encoding boards and moves to tensors.
 
 use crate::board::Board;
+use crate::piece_set::PieceSet;
 use crate::search::{Bp, Mp};
 use burn::prelude::{Backend, Tensor};
 
@@ -27,3 +28,13 @@ trait TensorEncoder<B: Backend> {
 // - 1 for queen castling for the other player
 // - 1 for the progress count (i.e. 50 move rule)
 struct AzEncoder;
+
+fn encode_pieces(pieces: &PieceSet, data: &mut [f32]) {
+    assert!(data.len() == 6 * 64);
+    for (i, piece) in pieces.iter().enumerate() {
+        let offset = i * 64;
+        for sq in piece.val().sq_iter() {
+            data[offset + sq.as_usize()] = 1.0;
+        }
+    }
+}

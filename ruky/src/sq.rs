@@ -19,6 +19,11 @@ impl Sq {
         self.val as i8
     }
 
+    #[inline]
+    pub fn as_usize(&self) -> usize {
+        self.val as usize
+    }
+
     // Creats a Sq from a row and col if the row and col are valid.
     pub fn from_rc(row: u8, col: u8) -> Option<Self> {
         if row < 8 && col < 8 {

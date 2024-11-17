@@ -41,14 +41,20 @@ impl<B: Backend> TensorEncoder<B> for AzEncoder<B> {
         assert!(!boards.is_empty());
 
         let mut data = vec![0.0; 119 * 64];
+        let six_planes = 6 * 64;
 
         for (board, chunk) in zip(
             boards.into_iter().rev().take(8),
             data.chunks_exact_mut(64 * 14),
         ) {
-            let finish_index = 6 * 64;
-            encode_pieces(board.white(), &mut chunk[..finish_index]);
-            encode_pieces(board.black(), &mut chunk[finish_index..2 * finish_index]);
+            if board.is_white_next() {
+                encode_pieces(board.white(), &mut chunk[..six_planes]);
+                encode_pieces(board.black(), &mut chunk[six_planes..2 * six_planes]);
+            } else {
+                // TODO: consider flipping the board to make it from player's perspective.
+                encode_pieces(board.black(), &mut chunk[..six_planes]);
+                encode_pieces(board.white(), &mut chunk[six_planes..2 * six_planes]);
+            }
             // TODO: need to set the repetition count on the last two planes.
         }
 

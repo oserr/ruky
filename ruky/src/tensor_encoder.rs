@@ -31,10 +31,9 @@ struct AzEncoder;
 
 fn encode_pieces(pieces: &PieceSet, data: &mut [f32]) {
     assert!(data.len() == 6 * 64);
-    for (i, piece) in pieces.iter().enumerate() {
-        let offset = i * 64;
+    for (piece, chunk) in std::iter::zip(pieces.iter(), data.chunks_exact_mut(64)) {
         for sq in piece.val().sq_iter() {
-            data[offset + sq.as_usize()] = 1.0;
+            chunk[sq.as_usize()] = 1.0;
         }
     }
 }

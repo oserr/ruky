@@ -3,13 +3,13 @@
 use crate::board::Board;
 use crate::piece_set::PieceSet;
 use crate::search::{Bp, Mp};
-use burn::prelude::{Backend, Tensor};
+use burn::prelude::{Backend, Tensor, TensorData};
 
 trait TensorEncoder<B: Backend> {
-    fn encode_board(board: &Board) -> Tensor<B, 4>;
-    fn encode_boards(boards: &[Board]) -> Tensor<B, 4>;
-    fn encode_mps(mps: &[Mp]) -> Tensor<B, 4>;
-    fn encode_bps(bps: &[Bp]) -> Tensor<B, 4>;
+    fn encode_board(&self, board: &Board) -> Tensor<B, 4>;
+    fn encode_boards(&self, boards: &[Board]) -> Tensor<B, 4>;
+    fn encode_mps(&self, mps: &[Mp]) -> Tensor<B, 4>;
+    fn encode_bps(&self, bps: &[Bp]) -> Tensor<B, 4>;
 }
 
 // AzEncoder represents the AlphaZero encoder, i.e. it encodes the board the
@@ -27,22 +27,38 @@ trait TensorEncoder<B: Backend> {
 // - 1 for king castling for the other player
 // - 1 for queen castling for the other player
 // - 1 for the progress count (i.e. 50 move rule)
-struct AzEncoder;
+struct AzEncoder<B: Backend> {
+    device: B::Device,
+}
 
-impl<B: Backend> TensorEncoder<B> for AzEncoder {
-    fn encode_board(_board: &Board) -> Tensor<B, 4> {
+impl<B: Backend> TensorEncoder<B> for AzEncoder<B> {
+    fn encode_board(&self, _board: &Board) -> Tensor<B, 4> {
         todo!();
     }
 
-    fn encode_boards(_boards: &[Board]) -> Tensor<B, 4> {
+    fn encode_boards(&self, boards: &[Board]) -> Tensor<B, 4> {
+        assert!(!boards.is_empty());
+        let mut data = vec![0.0; 119 * 64];
+        for (board, chunk) in std::iter::zip(
+            boards.into_iter().rev().take(8),
+            data.chunks_exact_mut(64 * 14),
+        ) {
+            let finish_index = 6 * 64;
+            encode_pieces(board.white(), &mut chunk[..finish_index]);
+            encode_pieces(board.black(), &mut chunk[finish_index..2 * finish_index]);
+            // TODO: need to set the repetition count on the last two planes.
+        }
+        let tensor_data = TensorData::new(data, [1, 119, 8, 8]);
+
+        // TODO: finish setting up the rest of the state.
+        Tensor::from_data(tensor_data, &self.device)
+    }
+
+    fn encode_mps(&self, _mps: &[Mp]) -> Tensor<B, 4> {
         todo!();
     }
 
-    fn encode_mps(_mps: &[Mp]) -> Tensor<B, 4> {
-        todo!();
-    }
-
-    fn encode_bps(_bps: &[Bp]) -> Tensor<B, 4> {
+    fn encode_bps(&self, _bps: &[Bp]) -> Tensor<B, 4> {
         todo!();
     }
 }

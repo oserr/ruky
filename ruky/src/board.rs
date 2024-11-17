@@ -104,7 +104,7 @@ impl Board {
     }
 
     #[inline]
-    fn white(&self) -> &PieceSet {
+    pub fn white(&self) -> &PieceSet {
         match self.color() {
             Color::White => &self.state.mine,
             Color::Black => &self.state.other,
@@ -112,7 +112,7 @@ impl Board {
     }
 
     #[inline]
-    fn black(&self) -> &PieceSet {
+    pub fn black(&self) -> &PieceSet {
         match self.color() {
             Color::Black => &self.state.mine,
             Color::White => &self.state.other,

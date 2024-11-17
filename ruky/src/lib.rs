@@ -2,7 +2,7 @@
 
 pub mod bitboard;
 pub mod board;
-mod ecpm;
+mod ecmv;
 pub mod err;
 mod fen;
 pub mod magics;

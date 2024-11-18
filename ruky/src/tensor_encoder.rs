@@ -33,8 +33,27 @@ struct AzEncoder<B: Backend> {
 }
 
 impl<B: Backend> TensorEncoder<B> for AzEncoder<B> {
-    fn encode_board(&self, _board: &Board) -> Tensor<B, 4> {
-        todo!();
+    fn encode_board(&self, board: &Board) -> Tensor<B, 4> {
+        let mut data = vec![0.0; 119 * 64];
+        let six_planes = 6 * 64;
+
+        if board.is_white_next() {
+            encode_pieces(board.white(), &mut data[..six_planes]);
+            encode_pieces(board.black(), &mut data[six_planes..2 * six_planes]);
+        } else {
+            // TODO: consider flipping the board to make it from player's perspective.
+            encode_pieces(board.black(), &mut data[..six_planes]);
+            encode_pieces(board.white(), &mut data[six_planes..2 * six_planes]);
+        }
+        // TODO: need to set the repetition count on the last two planes.
+
+        let state_features = get_state_features(&board);
+        for (val, chunk) in zip(state_features.iter().rev(), data.rchunks_exact_mut(64)) {
+            chunk.fill(*val);
+        }
+
+        let tensor_data = TensorData::new(data, [1, 119, 8, 8]);
+        Tensor::from_data(tensor_data, &self.device)
     }
 
     fn encode_boards(&self, boards: &[Board]) -> Tensor<B, 4> {
@@ -68,7 +87,6 @@ impl<B: Backend> TensorEncoder<B> for AzEncoder<B> {
         }
 
         let tensor_data = TensorData::new(data, [1, 119, 8, 8]);
-
         Tensor::from_data(tensor_data, &self.device)
     }
 

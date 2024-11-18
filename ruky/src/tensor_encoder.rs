@@ -61,16 +61,7 @@ impl<B: Backend> TensorEncoder<B> for AzEncoder<B> {
         let board = boards
             .last()
             .expect("boards should have at least one board.");
-
-        let state_features: [f32; 7] = [
-            board.is_white_next().into(),
-            board.full_moves() as f32,
-            board.has_wk_castle().into(),
-            board.has_wq_castle().into(),
-            board.has_bk_castle().into(),
-            board.has_bq_castle().into(),
-            board.half_moves().into(),
-        ];
+        let state_features = get_state_features(&board);
 
         for (val, chunk) in zip(state_features.iter().rev(), data.rchunks_exact_mut(64)) {
             chunk.fill(*val);
@@ -88,6 +79,18 @@ impl<B: Backend> TensorEncoder<B> for AzEncoder<B> {
     fn encode_bps(&self, _bps: &[Bp]) -> Tensor<B, 4> {
         todo!();
     }
+}
+
+fn get_state_features(board: &Board) -> [f32; 7] {
+    [
+        board.is_white_next().into(),
+        board.full_moves() as f32,
+        board.has_wk_castle().into(),
+        board.has_wq_castle().into(),
+        board.has_bk_castle().into(),
+        board.has_bq_castle().into(),
+        board.half_moves().into(),
+    ]
 }
 
 fn encode_pieces(pieces: &PieceSet, data: &mut [f32]) {

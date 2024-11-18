@@ -37,14 +37,16 @@ impl<B: Backend> TensorEncoder<B> for AzEncoder<B> {
         let mut data = vec![0.0; 119 * 64];
         let six_planes = 6 * 64;
 
-        if board.is_white_next() {
-            encode_pieces(board.white(), &mut data[..six_planes]);
-            encode_pieces(board.black(), &mut data[six_planes..2 * six_planes]);
+        // TODO: For black, might want to flip the board so it's from the player's
+        // perspective.
+        let (next_to_play, after_to_play) = if board.is_white_next() {
+            (board.white(), board.black())
         } else {
-            // TODO: consider flipping the board to make it from player's perspective.
-            encode_pieces(board.black(), &mut data[..six_planes]);
-            encode_pieces(board.white(), &mut data[six_planes..2 * six_planes]);
-        }
+            (board.black(), board.white())
+        };
+
+        encode_pieces(next_to_play, &mut data[..six_planes]);
+        encode_pieces(after_to_play, &mut data[six_planes..2 * six_planes]);
         // TODO: need to set the repetition count on the last two planes.
 
         let state_features = get_state_features(&board);
@@ -66,14 +68,16 @@ impl<B: Backend> TensorEncoder<B> for AzEncoder<B> {
             boards.into_iter().rev().take(8),
             data.chunks_exact_mut(64 * 14),
         ) {
-            if board.is_white_next() {
-                encode_pieces(board.white(), &mut chunk[..six_planes]);
-                encode_pieces(board.black(), &mut chunk[six_planes..2 * six_planes]);
+            // TODO: For black, might want to flip the board so it's from the player's
+            // perspective.
+            let (next_to_play, after_to_play) = if board.is_white_next() {
+                (board.white(), board.black())
             } else {
-                // TODO: consider flipping the board to make it from player's perspective.
-                encode_pieces(board.black(), &mut chunk[..six_planes]);
-                encode_pieces(board.white(), &mut chunk[six_planes..2 * six_planes]);
-            }
+                (board.black(), board.white())
+            };
+
+            encode_pieces(next_to_play, &mut chunk[..six_planes]);
+            encode_pieces(after_to_play, &mut chunk[six_planes..2 * six_planes]);
             // TODO: need to set the repetition count on the last two planes.
         }
 

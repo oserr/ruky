@@ -2,6 +2,7 @@
 // AlphaZero.
 
 use burn::{
+    module::Module,
     nn::{
         conv::{Conv2d, Conv2dConfig},
         BatchNorm, BatchNormConfig, Linear, LinearConfig, PaddingConfig2d,
@@ -16,6 +17,7 @@ use burn::{
 
 // ResBlockNet implements the residual block in the AlphaZero network, which
 // has 19 of these blocks connected together.
+#[derive(Debug, Module)]
 struct ResBlockNet<B: Backend> {
     conv1: Conv2d<B>,
     conv2: Conv2d<B>,
@@ -57,6 +59,7 @@ impl<B: Backend> ResBlockNet<B> {
 // Policy head net
 //----------------
 
+#[derive(Debug, Module)]
 struct PolicyNet<B: Backend> {
     conv1: Conv2d<B>,
     conv2: Conv2d<B>,
@@ -88,6 +91,7 @@ impl<B: Backend> PolicyNet<B> {
 // Value head net
 //----------------
 
+#[derive(Debug, Module)]
 struct ValueNet<B: Backend> {
     conv: Conv2d<B>,
     batch_norm: BatchNorm<B, 2>,
@@ -123,6 +127,7 @@ impl<B: Backend> ValueNet<B> {
 // AlphaZero net
 //--------------
 
+#[derive(Debug, Module)]
 pub struct AlphaZeroNet<B: Backend> {
     conv: Conv2d<B>,
     batch_norm: BatchNorm<B, 2>,
@@ -138,9 +143,7 @@ impl<B: Backend> AlphaZeroNet<B> {
                 .with_padding(PaddingConfig2d::Same)
                 .init(device),
             batch_norm: BatchNormConfig::new(256).init(device),
-            res_blocks: std::iter::repeat_with(|| ResBlockNet::new(device))
-                .take(19)
-                .collect(),
+            res_blocks: vec![ResBlockNet::new(device); 19],
             policy_net: PolicyNet::new(device),
             value_net: ValueNet::new(device),
         }

@@ -15,6 +15,7 @@ pub mod random_search;
 pub mod ruky;
 pub mod search;
 mod sq;
+mod tensor_decoder;
 mod tensor_encoder;
 
 pub use board::{Board, BoardBuilder};

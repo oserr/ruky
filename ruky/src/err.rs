@@ -4,4 +4,5 @@ pub enum RukyErr {
     SearchErr,
     SearchMissingBoard,
     SearchTerminalBoard,
+    Decoding,
 }

@@ -35,8 +35,8 @@ struct AzEncoder<B: Backend> {
 
 impl<B: Backend> TensorEncoder<B> for AzEncoder<B> {
     fn encode_board(&self, board: &Board) -> Tensor<B, 4> {
-        let mut data = vec![0.0; 119 * 64];
-        let six_planes = 6 * 64;
+        let mut data = vec![0.0; N_PLANES * BOARD_SIZE];
+        let six_planes = N_PIECE_TYPES * BOARD_SIZE;
 
         // TODO: For black, might want to flip the board so it's from the player's
         // perspective.
@@ -51,23 +51,26 @@ impl<B: Backend> TensorEncoder<B> for AzEncoder<B> {
         // TODO: need to set the repetition count on the last two planes.
 
         let state_features = get_state_features(&board);
-        for (val, chunk) in zip(state_features.iter().rev(), data.rchunks_exact_mut(64)) {
+        for (val, chunk) in zip(
+            state_features.iter().rev(),
+            data.rchunks_exact_mut(BOARD_SIZE),
+        ) {
             chunk.fill(*val);
         }
 
-        let tensor_data = TensorData::new(data, [1, 119, 8, 8]);
+        let tensor_data = TensorData::new(data, [1, N_PLANES, N_ROWS, N_COLS]);
         Tensor::from_data(tensor_data, &self.device)
     }
 
     fn encode_boards(&self, boards: &[Board]) -> Tensor<B, 4> {
         assert!(!boards.is_empty());
 
-        let mut data = vec![0.0; 119 * 64];
-        let six_planes = 6 * 64;
+        let mut data = vec![0.0; N_PLANES * BOARD_SIZE];
+        let six_planes = N_PIECE_TYPES * BOARD_SIZE;
 
         for (board, chunk) in zip(
             boards.into_iter().rev().take(8),
-            data.chunks_exact_mut(64 * 14),
+            data.chunks_exact_mut(BOARD_SIZE * 14),
         ) {
             // TODO: For black, might want to flip the board so it's from the player's
             // perspective.
@@ -87,39 +90,42 @@ impl<B: Backend> TensorEncoder<B> for AzEncoder<B> {
             .expect("boards should have at least one board.");
         let state_features = get_state_features(&board);
 
-        for (val, chunk) in zip(state_features.iter().rev(), data.rchunks_exact_mut(64)) {
+        for (val, chunk) in zip(
+            state_features.iter().rev(),
+            data.rchunks_exact_mut(BOARD_SIZE),
+        ) {
             chunk.fill(*val);
         }
 
-        let tensor_data = TensorData::new(data, [1, 119, 8, 8]);
+        let tensor_data = TensorData::new(data, [1, N_PLANES, N_ROWS, N_COLS]);
         Tensor::from_data(tensor_data, &self.device)
     }
 
     // Encodes the move probabilities in mps as a tensor.
     fn encode_mps(&self, mps: &[Mp]) -> Tensor<B, 4> {
         assert!(!mps.is_empty());
-        let mut data = vec![0.0; 73 * 64];
+        let mut data = vec![0.0; N_MOVE_TYPES * BOARD_SIZE];
         let total_visits = mps.iter().fold(0, |acc, mp| acc + mp.visits) as f32;
         for mp in mps {
             let ec_move = EcMove::from(mp.pm);
             let index = ec_move.index();
             data[index] = mp.visits as f32 / total_visits;
         }
-        let tensor_data = TensorData::new(data, [1, 73, 8, 8]);
+        let tensor_data = TensorData::new(data, [1, N_MOVE_TYPES, N_ROWS, N_COLS]);
         Tensor::from_data(tensor_data, &self.device)
     }
 
     // Encodes the move probabilities in bps as a tensor.
     fn encode_bps(&self, bps: &[Bp]) -> Tensor<B, 4> {
         assert!(!bps.is_empty());
-        let mut data = vec![0.0; 73 * 64];
+        let mut data = vec![0.0; N_MOVE_TYPES * BOARD_SIZE];
         let total_visits = bps.iter().fold(0, |acc, bp| acc + bp.visits) as f32;
         for bp in bps {
             let ec_move = EcMove::from(bp.last_move());
             let index = ec_move.index();
             data[index] = bp.visits as f32 / total_visits;
         }
-        let tensor_data = TensorData::new(data, [1, 73, 8, 8]);
+        let tensor_data = TensorData::new(data, [1, N_MOVE_TYPES, N_ROWS, N_COLS]);
         Tensor::from_data(tensor_data, &self.device)
     }
 }
@@ -137,10 +143,17 @@ fn get_state_features(board: &Board) -> [f32; 7] {
 }
 
 fn encode_pieces(pieces: &PieceSet, data: &mut [f32]) {
-    assert!(data.len() == 6 * 64);
-    for (piece, chunk) in zip(pieces.iter(), data.chunks_exact_mut(64)) {
+    assert!(data.len() == N_PIECE_TYPES * BOARD_SIZE);
+    for (piece, chunk) in zip(pieces.iter(), data.chunks_exact_mut(BOARD_SIZE)) {
         for sq in piece.val().sq_iter() {
             chunk[sq.as_usize()] = 1.0;
         }
     }
 }
+
+const BOARD_SIZE: usize = 64;
+const N_PIECE_TYPES: usize = 6;
+const N_ROWS: usize = 8;
+const N_COLS: usize = 8;
+const N_PLANES: usize = 119;
+const N_MOVE_TYPES: usize = 6;

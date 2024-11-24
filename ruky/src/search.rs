@@ -68,8 +68,8 @@ impl SearchResult {
         self.total_search_time / self.nodes_visited
     }
 
-    pub fn best_move(&self) -> Option<Piece<PieceMove>> {
-        self.best.best_move()
+    pub fn best_move(&self) -> Piece<PieceMove> {
+        self.best.last_move()
     }
 }
 
@@ -99,7 +99,9 @@ impl Bp {
         }
     }
 
-    pub fn best_move(&self) -> Option<Piece<PieceMove>> {
-        self.board.last_move()
+    pub fn last_move(&self) -> Piece<PieceMove> {
+        self.board
+            .last_move()
+            .expect("Bp without last move is not valid.")
     }
 }

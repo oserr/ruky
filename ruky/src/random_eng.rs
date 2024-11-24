@@ -77,7 +77,7 @@ impl<E: EngTx> Eng for RandomEng<E> {
         let search_result = RandomSearch::new()
             .search_board(board)
             .map_err(|_| UziErr::Position)?;
-        let best_move = search_result.best_move().ok_or(UziErr::Position)?;
+        let best_move = search_result.best_move();
         log::info!("Calculated best move: {:?}", best_move);
         self.uzi_out.send_best(best_move.into());
         Ok(())

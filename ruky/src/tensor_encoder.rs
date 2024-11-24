@@ -1,6 +1,7 @@
 // This module contains components for encoding boards and moves to tensors.
 
 use crate::board::Board;
+use crate::ecmv::EcMove;
 use crate::piece_set::PieceSet;
 use crate::search::{Bp, Mp};
 use burn::prelude::{Backend, Tensor, TensorData};
@@ -94,8 +95,18 @@ impl<B: Backend> TensorEncoder<B> for AzEncoder<B> {
         Tensor::from_data(tensor_data, &self.device)
     }
 
-    fn encode_mps(&self, _mps: &[Mp]) -> Tensor<B, 4> {
-        todo!();
+    // Encodes the move probabilities in mps as a tensor.
+    fn encode_mps(&self, mps: &[Mp]) -> Tensor<B, 4> {
+        assert!(!mps.is_empty());
+        let mut data = vec![0.0; 73 * 64];
+        let total_visits = mps.iter().fold(0, |acc, mp| acc + mp.visits) as f32;
+        for mp in mps {
+            let ec_move = EcMove::from(mp.pm);
+            let index = (64 * ec_move.code) as usize + ec_move.sq_index() as usize;
+            data[index] = mp.visits as f32 / total_visits;
+        }
+        let tensor_data = TensorData::new(data, [1, 73, 8, 8]);
+        Tensor::from_data(tensor_data, &self.device)
     }
 
     fn encode_bps(&self, _bps: &[Bp]) -> Tensor<B, 4> {

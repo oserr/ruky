@@ -15,6 +15,11 @@ impl EcMove {
     pub fn sq_index(&self) -> u8 {
         self.row * 8 + self.col
     }
+
+    // Maps EcMove to a number in [0, code * 64 + row * 8 + col).
+    pub fn index(&self) -> usize {
+        self.code as usize * 64 + (self.row * 8 + self.col) as usize
+    }
 }
 
 impl From<Piece<PieceMove>> for EcMove {

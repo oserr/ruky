@@ -109,8 +109,18 @@ impl<B: Backend> TensorEncoder<B> for AzEncoder<B> {
         Tensor::from_data(tensor_data, &self.device)
     }
 
-    fn encode_bps(&self, _bps: &[Bp]) -> Tensor<B, 4> {
-        todo!();
+    // Encodes the move probabilities in bps as a tensor.
+    fn encode_bps(&self, bps: &[Bp]) -> Tensor<B, 4> {
+        assert!(!bps.is_empty());
+        let mut data = vec![0.0; 73 * 64];
+        let total_visits = bps.iter().fold(0, |acc, bp| acc + bp.visits) as f32;
+        for bp in bps {
+            let ec_move = EcMove::from(bp.last_move());
+            let index = ec_move.index();
+            data[index] = bp.visits as f32 / total_visits;
+        }
+        let tensor_data = TensorData::new(data, [1, 73, 8, 8]);
+        Tensor::from_data(tensor_data, &self.device)
     }
 }
 

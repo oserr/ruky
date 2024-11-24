@@ -4,10 +4,17 @@ use crate::piece::Piece;
 use crate::piece_move::PieceMove;
 
 // Represents the code for a given piece move, i.e, Piece<PieceMove>.
-struct EcMove {
-    row: u8,
-    col: u8,
-    code: u8,
+pub(crate) struct EcMove {
+    pub(crate) row: u8,
+    pub(crate) col: u8,
+    pub(crate) code: u8,
+}
+
+impl EcMove {
+    // Converts the row and column back to a square index.
+    pub fn sq_index(&self) -> u8 {
+        self.row * 8 + self.col
+    }
 }
 
 impl From<Piece<PieceMove>> for EcMove {

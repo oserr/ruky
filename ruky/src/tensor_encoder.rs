@@ -102,7 +102,7 @@ impl<B: Backend> TensorEncoder<B> for AzEncoder<B> {
         let total_visits = mps.iter().fold(0, |acc, mp| acc + mp.visits) as f32;
         for mp in mps {
             let ec_move = EcMove::from(mp.pm);
-            let index = (64 * ec_move.code) as usize + ec_move.sq_index() as usize;
+            let index = ec_move.index();
             data[index] = mp.visits as f32 / total_visits;
         }
         let tensor_data = TensorData::new(data, [1, 73, 8, 8]);

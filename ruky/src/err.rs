@@ -5,4 +5,8 @@ pub enum RukyErr {
     SearchMissingBoard,
     SearchTerminalBoard,
     Decoding,
+    NoMovesButExpected,
+    MoveTensorDim,
+    EvalTensorDim,
+    InputIsNotValid,
 }

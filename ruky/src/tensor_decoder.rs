@@ -2,6 +2,7 @@
 // into boards and moves.
 
 use crate::board::Board;
+use crate::ecmv::EcMove;
 use crate::err::RukyErr;
 use crate::piece::Piece;
 use crate::piece_move::PieceMove;
@@ -49,11 +50,45 @@ struct AzDecoder<B: Backend> {
 
 impl<B: Backend> TensorDecoder<B> for AzDecoder<B> {
     fn decode_boards(
-        _board: &Board,
-        _mv_tensor: Tensor<B, 4>,
-        _eval_tensor: Tensor<B, 4>,
+        board: &Board,
+        mv_tensor: Tensor<B, 4>,
+        eval_tensor: Tensor<B, 4>,
     ) -> Result<DecBoards, RukyErr> {
-        todo!();
+        let mv_tensor_data = mv_tensor.to_data();
+        let mv_data: &[f32] = mv_tensor_data
+            .as_slice()
+            .map_err(|_| RukyErr::InputIsNotValid)?;
+        if mv_data.len() != 73 * 8 * 8 {
+            return Err(RukyErr::MoveTensorDim);
+        }
+
+        let mut total = 0.0;
+        let mut board_probs = Vec::<(Board, f32)>::new();
+
+        for next_board in board.next_boards().ok_or(RukyErr::NoMovesButExpected)? {
+            let last_move = next_board
+                .last_move()
+                .expect("Board should have a last move.");
+            let index = EcMove::from(last_move).index();
+            let prob = mv_data[index].exp();
+            total += prob;
+            board_probs.push((next_board, prob));
+        }
+
+        board_probs.iter_mut().for_each(|(_, prob)| *prob /= total);
+
+        let eval_tensor_data = eval_tensor.to_data();
+        let eval_data = eval_tensor_data
+            .as_slice()
+            .map_err(|_| RukyErr::InputIsNotValid)?;
+        if eval_data.len() != 1 {
+            return Err(RukyErr::EvalTensorDim);
+        }
+
+        Ok(DecBoards {
+            board_probs,
+            value: eval_data[0],
+        })
     }
 
     fn decode_moves(

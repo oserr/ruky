@@ -55,8 +55,8 @@ impl<B: Backend> TensorDecoder<B> for AzDecoder<B> {
         eval_tensor: Tensor<B, 4>,
     ) -> Result<DecBoards, RukyErr> {
         let mv_tensor_data = mv_tensor.to_data();
-        let mv_data: &[f32] = mv_tensor_data
-            .as_slice()
+        let mv_data = mv_tensor_data
+            .as_slice::<f32>()
             .map_err(|_| RukyErr::InputIsNotValid)?;
         if mv_data.len() != 73 * 8 * 8 {
             return Err(RukyErr::MoveTensorDim);

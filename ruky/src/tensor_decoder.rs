@@ -92,10 +92,42 @@ impl<B: Backend> TensorDecoder<B> for AzDecoder<B> {
     }
 
     fn decode_moves(
-        _board: &Board,
-        _mv_tensor: Tensor<B, 4>,
-        _eval_tensor: Tensor<B, 4>,
+        board: &Board,
+        mv_tensor: Tensor<B, 4>,
+        eval_tensor: Tensor<B, 4>,
     ) -> Result<DecMoves, RukyErr> {
-        todo!();
+        let mv_tensor_data = mv_tensor.to_data();
+        let mv_data = mv_tensor_data
+            .as_slice::<f32>()
+            .map_err(|_| RukyErr::InputIsNotValid)?;
+        if mv_data.len() != 73 * 8 * 8 {
+            return Err(RukyErr::MoveTensorDim);
+        }
+
+        let mut total = 0.0;
+        let mut move_probs = Vec::<(Piece<PieceMove>, f32)>::new();
+
+        for next_move in board.next_moves().ok_or(RukyErr::NoMovesButExpected)? {
+            let index = EcMove::from(next_move).index();
+            let prob = mv_data[index].exp();
+            total += prob;
+            move_probs.push((next_move, prob));
+        }
+
+        move_probs.iter_mut().for_each(|(_, prob)| *prob /= total);
+
+        let eval_tensor_data = eval_tensor.to_data();
+        let eval_data = eval_tensor_data
+            .as_slice()
+            .map_err(|_| RukyErr::InputIsNotValid)?;
+        if eval_data.len() != 1 {
+            return Err(RukyErr::EvalTensorDim);
+        }
+
+        Ok(DecMoves {
+            prev_board: board.clone(),
+            move_probs,
+            value: eval_data[0],
+        })
     }
 }

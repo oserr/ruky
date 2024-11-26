@@ -44,7 +44,7 @@ pub trait TensorDecoder<B: Backend> {
 }
 
 #[derive(Clone, Debug)]
-struct AzDecoder<B: Backend> {
+pub(crate) struct AzDecoder<B: Backend> {
     _backend: PhantomData<B>,
 }
 

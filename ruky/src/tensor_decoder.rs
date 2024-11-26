@@ -77,17 +77,9 @@ impl<B: Backend> TensorDecoder<B> for AzDecoder<B> {
 
         board_probs.iter_mut().for_each(|(_, prob)| *prob /= total);
 
-        let eval_tensor_data = eval_tensor.to_data();
-        let eval_data = eval_tensor_data
-            .as_slice()
-            .map_err(|_| RukyErr::InputIsNotValid)?;
-        if eval_data.len() != 1 {
-            return Err(RukyErr::EvalTensorDim);
-        }
-
         Ok(DecBoards {
             board_probs,
-            value: eval_data[0],
+            value: get_value(&eval_tensor)?,
         })
     }
 
@@ -116,18 +108,21 @@ impl<B: Backend> TensorDecoder<B> for AzDecoder<B> {
 
         move_probs.iter_mut().for_each(|(_, prob)| *prob /= total);
 
-        let eval_tensor_data = eval_tensor.to_data();
-        let eval_data = eval_tensor_data
-            .as_slice()
-            .map_err(|_| RukyErr::InputIsNotValid)?;
-        if eval_data.len() != 1 {
-            return Err(RukyErr::EvalTensorDim);
-        }
-
         Ok(DecMoves {
             prev_board: board.clone(),
             move_probs,
-            value: eval_data[0],
+            value: get_value(&eval_tensor)?,
         })
     }
+}
+
+fn get_value<B: Backend>(tensor: &Tensor<B, 4>) -> Result<f32, RukyErr> {
+    let eval_tensor_data = tensor.to_data();
+    let eval_data = eval_tensor_data
+        .as_slice()
+        .map_err(|_| RukyErr::InputIsNotValid)?;
+    if eval_data.len() != 1 {
+        return Err(RukyErr::EvalTensorDim);
+    }
+    Ok(eval_data[0])
 }

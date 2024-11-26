@@ -58,7 +58,7 @@ impl<B: Backend> TensorDecoder<B> for AzDecoder<B> {
         let mv_data = mv_tensor_data
             .as_slice::<f32>()
             .map_err(|_| RukyErr::InputIsNotValid)?;
-        if mv_data.len() != 73 * 8 * 8 {
+        if mv_data.len() != N_POSSIBLE_MOVES {
             return Err(RukyErr::MoveTensorDim);
         }
 
@@ -92,7 +92,7 @@ impl<B: Backend> TensorDecoder<B> for AzDecoder<B> {
         let mv_data = mv_tensor_data
             .as_slice::<f32>()
             .map_err(|_| RukyErr::InputIsNotValid)?;
-        if mv_data.len() != 73 * 8 * 8 {
+        if mv_data.len() != N_POSSIBLE_MOVES {
             return Err(RukyErr::MoveTensorDim);
         }
 
@@ -126,3 +126,5 @@ fn get_value<B: Backend>(tensor: &Tensor<B, 4>) -> Result<f32, RukyErr> {
     }
     Ok(eval_data[0])
 }
+
+const N_POSSIBLE_MOVES: usize = 73 * 8 * 8;

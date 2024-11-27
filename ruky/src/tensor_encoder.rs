@@ -7,7 +7,7 @@ use crate::search::{Bp, Mp};
 use burn::prelude::{Backend, Tensor, TensorData};
 use std::iter::zip;
 
-trait TensorEncoder<B: Backend> {
+pub trait TensorEncoder<B: Backend> {
     fn encode_board(&self, board: &Board) -> Tensor<B, 4>;
     fn encode_boards(&self, boards: &[Board]) -> Tensor<B, 4>;
     fn encode_mps(&self, mps: &[Mp]) -> Tensor<B, 4>;
@@ -29,7 +29,7 @@ trait TensorEncoder<B: Backend> {
 // - 1 for king castling for the other player
 // - 1 for queen castling for the other player
 // - 1 for the progress count (i.e. 50 move rule)
-struct AzEncoder<B: Backend> {
+pub struct AzEncoder<B: Backend> {
     device: B::Device,
 }
 

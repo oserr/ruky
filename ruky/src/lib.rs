@@ -4,6 +4,7 @@ pub mod bitboard;
 pub mod board;
 mod ecmv;
 pub mod err;
+pub mod eval;
 mod fen;
 pub mod magics;
 pub mod nn;

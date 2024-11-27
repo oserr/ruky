@@ -7,6 +7,7 @@ pub mod err;
 pub mod eval;
 mod fen;
 pub mod magics;
+pub mod mcts;
 pub mod nn;
 mod piece;
 mod piece_move;

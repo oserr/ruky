@@ -12,7 +12,7 @@ use std::marker::PhantomData;
 // A structure representing the decoded board states, their probabilities, and
 // the value of the current board state.
 #[derive(Clone, Debug)]
-pub(crate) struct DecBoards {
+pub struct DecBoards {
     // The collection of Board states decoded from a tensor, with a corresponding probability that
     // this is the best move given the current position.
     board_probs: Vec<(Board, f32)>,
@@ -24,7 +24,7 @@ pub(crate) struct DecBoards {
 // Same as DecBoards, but contains the previous board, a collection of the moves
 // and the probabilities.
 #[derive(Clone, Debug)]
-pub(crate) struct DecMoves {
+pub struct DecMoves {
     prev_board: Board,
     move_probs: Vec<(Piece<PieceMove>, f32)>,
     value: f32,
@@ -32,27 +32,30 @@ pub(crate) struct DecMoves {
 
 pub trait TensorDecoder<B: Backend> {
     fn decode_boards(
+        &self,
         board: &Board,
         mv_tensor: Tensor<B, 4>,
-        eval_tensor: Tensor<B, 4>,
+        eval_tensor: Tensor<B, 2>,
     ) -> Result<DecBoards, RukyErr>;
     fn decode_moves(
+        &self,
         board: &Board,
         mv_tensor: Tensor<B, 4>,
-        eval_tensor: Tensor<B, 4>,
+        eval_tensor: Tensor<B, 2>,
     ) -> Result<DecMoves, RukyErr>;
 }
 
 #[derive(Clone, Debug)]
-pub(crate) struct AzDecoder<B: Backend> {
+pub struct AzDecoder<B: Backend> {
     _backend: PhantomData<B>,
 }
 
 impl<B: Backend> TensorDecoder<B> for AzDecoder<B> {
     fn decode_boards(
+        &self,
         board: &Board,
         mv_tensor: Tensor<B, 4>,
-        eval_tensor: Tensor<B, 4>,
+        eval_tensor: Tensor<B, 2>,
     ) -> Result<DecBoards, RukyErr> {
         let mv_tensor_data = mv_tensor.to_data();
         let mv_data = mv_tensor_data
@@ -84,9 +87,10 @@ impl<B: Backend> TensorDecoder<B> for AzDecoder<B> {
     }
 
     fn decode_moves(
+        &self,
         board: &Board,
         mv_tensor: Tensor<B, 4>,
-        eval_tensor: Tensor<B, 4>,
+        eval_tensor: Tensor<B, 2>,
     ) -> Result<DecMoves, RukyErr> {
         let mv_tensor_data = mv_tensor.to_data();
         let mv_data = mv_tensor_data
@@ -116,7 +120,7 @@ impl<B: Backend> TensorDecoder<B> for AzDecoder<B> {
     }
 }
 
-fn get_value<B: Backend>(tensor: &Tensor<B, 4>) -> Result<f32, RukyErr> {
+fn get_value<B: Backend>(tensor: &Tensor<B, 2>) -> Result<f32, RukyErr> {
     let eval_tensor_data = tensor.to_data();
     let eval_data = eval_tensor_data
         .as_slice()

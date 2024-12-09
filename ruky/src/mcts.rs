@@ -76,6 +76,10 @@ impl Node<'_> {
         let num = 1.0 + *self.parent.unwrap().visits.borrow() as f32 + EXPLORE_BASE;
         (num / EXPLORE_BASE).log2() + EXPLORE_INIT
     }
+
+    fn is_terminal(&self) -> bool {
+        self.board.is_terminal()
+    }
 }
 
 const EXPLORE_BASE: f32 = 19652.0;

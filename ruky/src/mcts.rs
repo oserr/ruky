@@ -1,6 +1,7 @@
 // This module contains the components for the MCTS search.
 
 use crate::board::Board;
+use std::cell::RefCell;
 
 #[derive(Debug)]
 struct Node<'a> {
@@ -8,10 +9,10 @@ struct Node<'a> {
     children: Vec<Node<'a>>,
     parent: Option<&'a Node<'a>>,
     prior: f32,
-    visits: u32,
-    value: f32,
     init_value: f32,
-    is_leaf: bool,
+    visits: RefCell<u32>,
+    value: RefCell<f32>,
+    is_leaf: RefCell<bool>,
 }
 
 // Creates a Node from a reference to a Board.
@@ -22,10 +23,10 @@ impl From<&Board> for Node<'_> {
             children: Vec::new(),
             parent: None,
             prior: 0.0,
-            visits: 1,
-            value: 0.0,
             init_value: 0.0,
-            is_leaf: true,
+            visits: RefCell::new(1),
+            value: RefCell::new(0.0),
+            is_leaf: RefCell::new(true),
         }
     }
 }

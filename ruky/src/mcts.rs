@@ -46,4 +46,39 @@ impl Node<'_> {
         node.prior = prior;
         node
     }
+
+    fn choose_next(&self) -> Option<&Node> {
+        self.children.iter().reduce(|acc_node, node| {
+            let acc_node_uct = acc_node.mean_uct();
+            let node_uct = node.mean_uct();
+            if acc_node_uct > node_uct {
+                acc_node
+            } else {
+                node
+            }
+        })
+    }
+
+    fn mean_uct(&self) -> f32 {
+        *self.value.borrow() / *self.visits.borrow() as f32 + self.uct()
+    }
+
+    fn uct(&self) -> f32 {
+        assert!(self.parent.is_some());
+        let term1 = self.explore_rate() * self.prior;
+        let term2 = (*self.parent.unwrap().visits.borrow() as f32).sqrt()
+            / (1 + *self.visits.borrow()) as f32;
+        term1 * term2
+    }
+
+    fn explore_rate(&self) -> f32 {
+        assert!(self.parent.is_some());
+        let num = 1.0 + *self.parent.unwrap().visits.borrow() as f32 + EXPLORE_BASE;
+        (num / EXPLORE_BASE).log2() + EXPLORE_INIT
+    }
 }
+
+const EXPLORE_BASE: f32 = 19652.0;
+const EXPLORE_INIT: f32 = 1.25;
+const DIR_ALPHA: f32 = 0.3;
+const DIR_EXPLORE_FRAC: f32 = 0.25;

@@ -1,37 +1,62 @@
 // This module contains the components for the MCTS search.
 
 use crate::board::Board;
-use std::cell::RefCell;
 
 #[derive(Debug)]
-struct Node<'a> {
+struct NodeTree {
+    children: Vec<Node>,
+}
+
+impl NodeTree {
+    fn choose_next(&self, parent_node: &Node) -> Option<&Node> {
+        assert!(!parent_node.is_leaf);
+        self.children[parent_node.children.0..parent_node.children.1+1]
+            .iter()
+            .reduce(|acc_node, node| {
+                let acc_node_uct = acc_node.mean_uct(parent_node.visits);
+                let node_uct = node.mean_uct(parent_node.visits);
+                if acc_node_uct > node_uct {
+                    acc_node
+                } else {
+                    node
+                }
+            })
+    }
+
+    fn root(&self) -> &Node {
+        &self.children[0]
+    }
+}
+
+#[derive(Debug)]
+struct Node {
     board: Board,
-    children: Vec<Node<'a>>,
-    parent: Option<&'a Node<'a>>,
+    children: (usize, usize),
+    parent: Option<usize>,
     prior: f32,
     init_value: f32,
-    visits: RefCell<u32>,
-    value: RefCell<f32>,
-    is_leaf: RefCell<bool>,
+    visits: u32,
+    value: f32,
+    is_leaf: bool,
 }
 
 // Creates a Node from a reference to a Board.
-impl From<&Board> for Node<'_> {
+impl From<&Board> for Node {
     fn from(board: &Board) -> Self {
         Self {
             board: board.clone(),
-            children: Vec::new(),
+            children: (0, 0),
             parent: None,
             prior: 0.0,
             init_value: 0.0,
-            visits: RefCell::new(1),
-            value: RefCell::new(0.0),
-            is_leaf: RefCell::new(true),
+            visits: 0,
+            value: 0.0,
+            is_leaf: true,
         }
     }
 }
 
-impl Node<'_> {
+impl Node {
     // Creates a Node from a board and a prior.
     fn with_prior(board: &Board, prior: f32) -> Self {
         let mut node = Node::from(board);
@@ -40,46 +65,31 @@ impl Node<'_> {
     }
 
     // Creates a Node from a board, a parent, and a prior.
-    fn with_parent_and_prior<'a>(board: &Board, parent: &'a Node, prior: f32) -> Node<'a> {
+    fn with_parent_and_prior(board: &Board, parent: usize, prior: f32) -> Node {
         let mut node = Node::from(board);
         node.parent = Some(parent);
         node.prior = prior;
         node
     }
 
-    fn choose_next(&self) -> Option<&Node> {
-        self.children.iter().reduce(|acc_node, node| {
-            let acc_node_uct = acc_node.mean_uct();
-            let node_uct = node.mean_uct();
-            if acc_node_uct > node_uct {
-                acc_node
-            } else {
-                node
-            }
-        })
+    fn mean_uct(&self, parent_visits: u32) -> f32 {
+        self.value / self.visits as f32 + self.uct(parent_visits)
     }
 
-    fn mean_uct(&self) -> f32 {
-        *self.value.borrow() / *self.visits.borrow() as f32 + self.uct()
-    }
-
-    fn uct(&self) -> f32 {
-        assert!(self.parent.is_some());
-        let term1 = self.explore_rate() * self.prior;
-        let term2 = (*self.parent.unwrap().visits.borrow() as f32).sqrt()
-            / (1 + *self.visits.borrow()) as f32;
+    fn uct(&self, parent_visits: u32) -> f32 {
+        let term1 = explore_rate(parent_visits) * self.prior;
+        let term2 = (parent_visits as f32).sqrt() / (1 + self.visits) as f32;
         term1 * term2
-    }
-
-    fn explore_rate(&self) -> f32 {
-        assert!(self.parent.is_some());
-        let num = 1.0 + *self.parent.unwrap().visits.borrow() as f32 + EXPLORE_BASE;
-        (num / EXPLORE_BASE).log2() + EXPLORE_INIT
     }
 
     fn is_terminal(&self) -> bool {
         self.board.is_terminal()
     }
+}
+
+fn explore_rate(parent_visits: u32) -> f32 {
+    let num = 1.0 + parent_visits as f32 + EXPLORE_BASE;
+    (num / EXPLORE_BASE).log2() + EXPLORE_INIT
 }
 
 const EXPLORE_BASE: f32 = 19652.0;

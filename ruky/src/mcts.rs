@@ -1,16 +1,37 @@
 // This module contains the components for the MCTS search.
 
 use crate::board::Board;
+use crate::err::RukyErr;
+use crate::eval::Eval;
+use crate::search::{Search, SearchResult};
+use std::sync::Arc;
+
+pub struct Mcts<E: Eval> {
+    search_tree: SearchTree,
+    evaluator: Arc<E>,
+    nsim: u32,
+}
+
+impl<E: Eval> Search for Mcts<E> {
+    fn search_board(&self, board: &Board) -> Result<SearchResult, RukyErr> {
+        let boards = [board.clone()];
+        self.search_game(boards.as_ref())
+    }
+
+    fn search_game(&self, _boards: &[Board]) -> Result<SearchResult, RukyErr> {
+        todo!()
+    }
+}
 
 #[derive(Debug)]
-struct NodeTree {
+struct SearchTree {
     children: Vec<Node>,
 }
 
-impl NodeTree {
+impl SearchTree {
     fn choose_next(&self, parent_node: &Node) -> Option<&Node> {
         assert!(!parent_node.is_leaf);
-        self.children[parent_node.children.0..parent_node.children.1+1]
+        self.children[parent_node.children.0..parent_node.children.1 + 1]
             .iter()
             .reduce(|acc_node, node| {
                 let acc_node_uct = acc_node.mean_uct(parent_node.visits);

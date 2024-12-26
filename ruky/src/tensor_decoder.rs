@@ -15,10 +15,10 @@ use std::marker::PhantomData;
 pub struct DecBoards {
     // The collection of Board states decoded from a tensor, with a corresponding probability that
     // this is the best move given the current position.
-    board_probs: Vec<(Board, f32)>,
+    pub board_probs: Vec<(Board, f32)>,
 
     // The value of the current board state.
-    value: f32,
+    pub value: f32,
 }
 
 // Same as DecBoards, but contains the previous board, a collection of the moves

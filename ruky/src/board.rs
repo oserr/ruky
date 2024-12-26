@@ -310,6 +310,12 @@ impl Board {
         self.state.game_state.is_terminal()
     }
 
+    // Returns true if the current position is mate.
+    #[inline]
+    pub fn is_mate(&self) -> bool {
+        self.state.game_state.is_mate()
+    }
+
     // Returns true if the player moving next is in check.
     #[inline]
     pub fn is_check(&self) -> bool {
@@ -871,6 +877,11 @@ impl GameState {
     // or check mate.
     pub fn is_terminal(&self) -> bool {
         !matches!(*self, GameState::Next(_) | GameState::Check(_))
+    }
+
+    // Returns true if this is mate.
+    pub fn is_mate(&self) -> bool {
+        !matches!(*self, GameState::Mate(_))
     }
 }
 

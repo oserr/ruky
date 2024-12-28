@@ -83,10 +83,11 @@ impl SearchTree {
     fn terminate(&mut self, node_index: usize) {
         let node = &mut self.children[node_index];
         assert!(node.is_terminal());
-        node.value = match node.board.is_mate() {
+        node.init_value = match node.board.is_mate() {
             true => 1.0,
             false => 0.0,
         };
+        node.value = node.init_value;
         self.update_nodes(node_index);
     }
 
@@ -108,7 +109,8 @@ impl SearchTree {
         let last_index = first_index + eval_boards.board_probs.len();
         let node = &mut self.children[node_index];
         node.children = (first_index, last_index);
-        node.value = eval_boards.value;
+        node.init_value = eval_boards.value;
+        node.value = node.init_value;
         self.children.extend(
             eval_boards
                 .board_probs

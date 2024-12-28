@@ -137,13 +137,25 @@ impl From<&Board> for SearchTree {
 
 #[derive(Debug)]
 struct Node {
+    // Represents the current board position.
     board: Board,
+    // Represenst the first and last index in the array where the children are located.
     children: (usize, usize),
+    // If this is a child node, then parent points to the index where the parent is located.
     parent: Option<usize>,
+    // The index where this node is located.
     index: usize,
+    // The prior probability of this node.
     prior: f32,
+    // The number of times this node is visited during search.
     visits: u32,
+    // The total value of the node. This includes all possible variations explored from this node.
     value: f32,
+    // The value of this position, as computed by the evaluator or [0, 1, -1] if this is known to
+    // be a draw, win, or loss from the perspective of the player who made the move leading up to
+    // this position.
+    init_value: f32,
+    // True if this node has not been expanded yet, false otherwise.
     is_leaf: bool,
 }
 
@@ -158,6 +170,7 @@ impl From<Board> for Node {
             prior: 0.0,
             visits: 0,
             value: 0.0,
+            init_value: 0.0,
             is_leaf: true,
         }
     }

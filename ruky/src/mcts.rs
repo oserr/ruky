@@ -35,8 +35,9 @@ impl<E: Eval> Search for Mcts<E> {
             let eval_boards = self.evaluator.eval(board)?;
             search_tree.expand(node_index, eval_boards);
         }
+        let node = search_tree.most_visited();
         // TODO: Fill in the search results.
-        Ok(SearchResult::with_best(board.clone()))
+        Ok(SearchResult::with_best(node.board.clone()))
     }
 }
 
@@ -115,6 +116,14 @@ impl SearchTree {
                 .map(|(board, prior)| Node::from_board_prior_parent(board, prior, node_index)),
         );
         self.update_nodes(node_index);
+    }
+
+    fn most_visited(&self) -> &Node {
+        let (first, last) = self.children[0].children;
+        self.children[first..last]
+            .iter()
+            .max_by_key(|node| node.visits)
+            .expect("Expecting at least one move in non-terminal state.")
     }
 }
 

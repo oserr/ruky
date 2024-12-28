@@ -186,13 +186,6 @@ impl From<&Board> for Node {
 }
 
 impl Node {
-    // Creates a Node from a board and a prior.
-    fn with_prior(board: &Board, prior: f32) -> Self {
-        let mut node = Node::from(board);
-        node.prior = prior;
-        node
-    }
-
     // Creates a Node from a board and a prior, but takes ownership of the board.
     fn from_board_parent_prior_index(
         board: Board,
@@ -204,14 +197,6 @@ impl Node {
         node.parent = Some(parent);
         node.prior = prior;
         node.index = index;
-        node
-    }
-
-    // Creates a Node from a board, a parent, and a prior.
-    fn with_parent_and_prior(board: &Board, parent: usize, prior: f32) -> Node {
-        let mut node = Node::from(board);
-        node.parent = Some(parent);
-        node.prior = prior;
         node
     }
 

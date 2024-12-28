@@ -111,12 +111,12 @@ impl SearchTree {
         node.children = (first_index, last_index);
         node.init_value = eval_boards.value;
         node.value = node.init_value;
-        self.children.extend(
-            eval_boards
-                .board_probs
-                .into_iter()
-                .map(|(board, prior)| Node::from_board_prior_parent(board, prior, node_index)),
-        );
+        self.children
+            .extend(eval_boards.board_probs.into_iter().zip(first_index..).map(
+                |((board, prior), index)| {
+                    Node::from_board_parent_prior_index(board, node_index, prior, index)
+                },
+            ));
         self.update_nodes(node_index);
     }
 
@@ -194,10 +194,16 @@ impl Node {
     }
 
     // Creates a Node from a board and a prior, but takes ownership of the board.
-    fn from_board_prior_parent(board: Board, prior: f32, parent: usize) -> Self {
+    fn from_board_parent_prior_index(
+        board: Board,
+        parent: usize,
+        prior: f32,
+        index: usize,
+    ) -> Self {
         let mut node = Node::from(board);
         node.parent = Some(parent);
         node.prior = prior;
+        node.index = index;
         node
     }
 

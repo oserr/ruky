@@ -40,7 +40,7 @@ impl<B: Backend> Eval for AzEval<B> {
 }
 
 impl<B: Backend> AzEval<B> {
-    fn create(encoder: AzEncoder<B>, decoder: AzDecoder<B>, net: Arc<AlphaZeroNet<B>>) -> Self {
+    pub fn create(encoder: AzEncoder<B>, decoder: AzDecoder<B>, net: Arc<AlphaZeroNet<B>>) -> Self {
         Self {
             encoder,
             decoder,

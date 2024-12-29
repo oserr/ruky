@@ -101,7 +101,8 @@ impl<S: Search> Game<S> {
                 break;
             }
         }
-        let winner = GameWinner::from(moves.last().unwrap().best_board().game_state());
+        let game_state = moves.last().unwrap().best_board().game_state();
+        let winner = GameWinner::from(game_state);
         Ok(GameResult {
             board: self.board.clone(),
             moves,

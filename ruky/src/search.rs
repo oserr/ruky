@@ -21,7 +21,7 @@ pub trait Search {
 pub struct SearchResult {
     // The best move according to the the Search agent.
     pub best: Bp,
-    // The vector of probabilities for each move.
+    // The vector of probabilities for each move. This includes the best move.
     pub moves: Vec<Mp>,
     // The expected value from the best move.
     pub expected_value: f32,

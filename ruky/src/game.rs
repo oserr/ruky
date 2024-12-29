@@ -40,6 +40,11 @@ impl<B: Backend> GameBuilder<B> {
         self.black_sims = sims;
         self
     }
+
+    pub fn max_moves(mut self, max_moves: u32) -> Self {
+        self.max_moves = max_moves;
+        self
+    }
 }
 
 // A struct to represent a game between two players.

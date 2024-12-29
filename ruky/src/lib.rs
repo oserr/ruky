@@ -6,7 +6,7 @@ mod ecmv;
 pub mod err;
 pub mod eval;
 mod fen;
-mod game;
+pub mod game;
 pub mod magics;
 pub mod mcts;
 pub mod nn;

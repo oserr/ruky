@@ -4,7 +4,7 @@ use crate::board::Board;
 use crate::ecmv::EcMove;
 use crate::piece_set::PieceSet;
 use crate::search::{Bp, Mp};
-use burn::prelude::{Backend, Tensor, TensorData};
+use burn::prelude::{Backend, Device, Tensor, TensorData};
 use std::iter::zip;
 
 pub trait TensorEncoder<B: Backend> {
@@ -29,8 +29,15 @@ pub trait TensorEncoder<B: Backend> {
 // - 1 for king castling for the other player
 // - 1 for queen castling for the other player
 // - 1 for the progress count (i.e. 50 move rule)
+#[derive(Clone, Debug)]
 pub struct AzEncoder<B: Backend> {
-    device: B::Device,
+    device: Device<B>,
+}
+
+impl<B: Backend> AzEncoder<B> {
+    pub fn new(device: Device<B>) -> Self {
+        Self { device }
+    }
 }
 
 impl<B: Backend> TensorEncoder<B> for AzEncoder<B> {

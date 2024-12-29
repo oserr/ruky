@@ -2,9 +2,20 @@
 
 use crate::board::{Board, GameState};
 use crate::err::RukyErr;
+use crate::nn::AlphaZeroNet;
 use crate::piece::Color;
 use crate::search::{Search, SearchResult};
+use burn::prelude::Backend;
 use std::rc::Rc;
+use std::sync::Arc;
+
+pub struct GameBuilder<B: Backend> {
+    white_net: Arc<AlphaZeroNet<B>>,
+    black_net: Arc<AlphaZeroNet<B>>,
+    white_simulations: u32,
+    black_simulations: u32,
+    max_moves: u32,
+}
 
 // A struct to represent a game between two players.
 pub struct Game<S: Search> {

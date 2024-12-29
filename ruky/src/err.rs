@@ -10,4 +10,5 @@ pub enum RukyErr {
     MoveTensorDim,
     EvalTensorDim,
     InputIsNotValid,
+    PreconditionErr,
 }

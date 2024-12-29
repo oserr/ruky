@@ -10,9 +10,16 @@ use std::time::Duration;
 
 // TODO: make the Mcts stateful over a game, so that the SearchTree built when
 // evaluating the given position can be re-used after a move is selected.
+#[derive(Clone, Debug)]
 pub struct Mcts<E: Eval> {
     evaluator: Arc<E>,
-    nsim: u32,
+    sims: u32,
+}
+
+impl<E: Eval> Mcts<E> {
+    pub fn create(evaluator: Arc<E>, sims: u32) -> Self {
+        Self { evaluator, sims }
+    }
 }
 
 impl<E: Eval> Search for Mcts<E> {
@@ -26,7 +33,7 @@ impl<E: Eval> Search for Mcts<E> {
         let mut search_tree = SearchTree::from(board);
         let mut max_depth = 0u32;
         // TODO: add timing info.
-        for _ in 0..self.nsim {
+        for _ in 0..self.sims {
             let mut node_index = 0;
             let mut current_depth = 0u32;
             while !search_tree.is_leaf_or_terminal(node_index) {

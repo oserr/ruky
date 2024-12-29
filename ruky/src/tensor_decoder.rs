@@ -45,9 +45,15 @@ pub trait TensorDecoder<B: Backend> {
     ) -> Result<DecMoves, RukyErr>;
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Copy, Debug, Default)]
 pub struct AzDecoder<B: Backend> {
     _backend: PhantomData<B>,
+}
+
+impl<B: Backend> AzDecoder<B> {
+    pub fn new() -> Self {
+        AzDecoder::default()
+    }
 }
 
 impl<B: Backend> TensorDecoder<B> for AzDecoder<B> {

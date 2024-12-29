@@ -5,16 +5,35 @@ use crate::err::RukyErr;
 use crate::nn::AlphaZeroNet;
 use crate::piece::Color;
 use crate::search::{Search, SearchResult};
-use burn::prelude::Backend;
+use burn::prelude::{Backend, Device};
 use std::rc::Rc;
 use std::sync::Arc;
 
 pub struct GameBuilder<B: Backend> {
-    white_net: Arc<AlphaZeroNet<B>>,
-    black_net: Arc<AlphaZeroNet<B>>,
-    white_simulations: u32,
-    black_simulations: u32,
+    white_net: Option<Arc<AlphaZeroNet<B>>>,
+    black_net: Option<Arc<AlphaZeroNet<B>>>,
+    white_sims: u32,
+    black_sims: u32,
     max_moves: u32,
+}
+
+impl<B: Backend> GameBuilder<B> {
+    pub fn new() -> Self {
+        Self {
+            white_net: None,
+            black_net: None,
+            white_sims: 800,
+            black_sims: 800,
+            max_moves: 300,
+        }
+    }
+
+    pub fn device(mut self, device: Device<B>) -> Self {
+        self.white_net.replace(Arc::new(AlphaZeroNet::new(&device)));
+        self.black_net
+            .replace(self.white_net.as_ref().unwrap().clone());
+        self
+    }
 }
 
 // A struct to represent a game between two players.

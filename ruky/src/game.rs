@@ -112,9 +112,9 @@ impl<S: Search> Game<S> {
 
 #[derive(Clone, Debug)]
 pub struct GameResult {
-    board: Board,
-    moves: Vec<SearchResult>,
-    winner: GameWinner,
+    pub board: Board,
+    pub moves: Vec<SearchResult>,
+    pub winner: GameWinner,
 }
 
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]

@@ -12,6 +12,7 @@ fn main() {
         .max_moves(100)
         .build()
         .expect("Expecting a new game.");
+    println!("Starting a game of self play...");
     let result = game.play().expect("Expecting game result.");
     println!(
         "Game finished in {} moves with winner {:?}.",

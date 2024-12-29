@@ -94,7 +94,7 @@ fn encode_under_promo(col_diff: i8, promo: Piece<()>) -> u8 {
 fn encode_queen_move(row_diff: i8, col_diff: i8) -> u8 {
     assert!(row_diff >= -7 && row_diff <= 7);
     assert!(col_diff >= -7 && col_diff <= 7);
-    assert!(col_diff != 0 || col_diff != 0);
+    assert!(row_diff != 0 || col_diff != 0);
 
     if row_diff < 0 {
         let nrows = (row_diff * -1) as u8;

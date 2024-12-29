@@ -34,6 +34,12 @@ impl<B: Backend> GameBuilder<B> {
             .replace(self.white_net.as_ref().unwrap().clone());
         self
     }
+
+    pub fn sims(mut self, sims: u32) -> Self {
+        self.white_sims = sims;
+        self.black_sims = sims;
+        self
+    }
 }
 
 // A struct to represent a game between two players.

@@ -2,16 +2,20 @@
 
 use crate::board::{Board, GameState};
 use crate::err::RukyErr;
+use crate::eval::AzEval;
+use crate::mcts::Mcts;
 use crate::nn::AlphaZeroNet;
 use crate::piece::Color;
 use crate::search::{Search, SearchResult};
+use crate::tensor_decoder::AzDecoder;
+use crate::tensor_encoder::AzEncoder;
 use burn::prelude::{Backend, Device};
-use std::rc::Rc;
 use std::sync::Arc;
 
+// TODO: make this generic over Search once we have different types of Search.
 pub struct GameBuilder<B: Backend> {
-    white_net: Option<Arc<AlphaZeroNet<B>>>,
-    black_net: Option<Arc<AlphaZeroNet<B>>>,
+    board: Option<Board>,
+    device: Option<Device<B>>,
     white_sims: u32,
     black_sims: u32,
     max_moves: u32,
@@ -20,18 +24,21 @@ pub struct GameBuilder<B: Backend> {
 impl<B: Backend> GameBuilder<B> {
     pub fn new() -> Self {
         Self {
-            white_net: None,
-            black_net: None,
+            board: None,
+            device: None,
             white_sims: 800,
             black_sims: 800,
             max_moves: 300,
         }
     }
 
+    pub fn board(mut self, board: Board) -> Self {
+        self.board.replace(board);
+        self
+    }
+
     pub fn device(mut self, device: Device<B>) -> Self {
-        self.white_net.replace(Arc::new(AlphaZeroNet::new(&device)));
-        self.black_net
-            .replace(self.white_net.as_ref().unwrap().clone());
+        self.device.replace(device);
         self
     }
 
@@ -45,18 +52,33 @@ impl<B: Backend> GameBuilder<B> {
         self.max_moves = max_moves;
         self
     }
+
+    pub fn build(self) -> Result<Game<Mcts<AzEval<B>>>, RukyErr> {
+        match (self.board, self.device) {
+            (Some(board), Some(device)) => {
+                let encoder = AzEncoder::new(device.clone());
+                let decoder = AzDecoder::new();
+                let net = Arc::new(AlphaZeroNet::new(&device));
+                let evaluator = Arc::new(AzEval::create(encoder, decoder, net));
+                let white_mcts = Mcts::create(evaluator.clone(), self.white_sims);
+                let black_mcts = Mcts::create(evaluator, self.black_sims);
+                Ok(Game::create(board, white_mcts, black_mcts, self.max_moves))
+            }
+            (_, _) => Err(RukyErr::PreconditionErr),
+        }
+    }
 }
 
 // A struct to represent a game between two players.
 pub struct Game<S: Search> {
     board: Board,
-    white_search: Rc<S>,
-    black_search: Rc<S>,
+    white_search: S,
+    black_search: S,
     max_moves: u32,
 }
 
 impl<S: Search> Game<S> {
-    pub fn create(board: Board, white_search: Rc<S>, black_search: Rc<S>, max_moves: u32) -> Self {
+    pub fn create(board: Board, white_search: S, black_search: S, max_moves: u32) -> Self {
         Self {
             board,
             white_search,

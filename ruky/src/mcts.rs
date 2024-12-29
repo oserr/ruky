@@ -8,6 +8,8 @@ use std::cmp::max;
 use std::sync::Arc;
 use std::time::Duration;
 
+// TODO: make the Mcts stateful over a game, so that the SearchTree built when
+// evaluating the given position can be re-used after a move is selected.
 pub struct Mcts<E: Eval> {
     evaluator: Arc<E>,
     nsim: u32,

@@ -3,8 +3,10 @@
 use crate::board::Board;
 use crate::err::RukyErr;
 use crate::eval::{Eval, EvalBoards};
-use crate::search::{Search, SearchResult};
+use crate::search::{Bp, Mp, Search, SearchResult};
+use std::cmp::max;
 use std::sync::Arc;
+use std::time::Duration;
 
 pub struct Mcts<E: Eval> {
     evaluator: Arc<E>,
@@ -20,13 +22,18 @@ impl<E: Eval> Search for Mcts<E> {
     fn search_game(&self, boards: &[Board]) -> Result<SearchResult, RukyErr> {
         let board = boards.last().ok_or(RukyErr::SearchMissingBoard)?;
         let mut search_tree = SearchTree::from(board);
+        let mut max_depth = 0u32;
+        // TODO: add timing info.
         for _ in 0..self.nsim {
             let mut node_index = 0;
+            let mut current_depth = 0u32;
             while !search_tree.is_leaf_or_terminal(node_index) {
+                current_depth += 1;
                 node_index = search_tree
                     .choose_next(node_index)
                     .ok_or(RukyErr::SearchChooseNext)?;
             }
+            max_depth = max(max_depth, current_depth);
             if search_tree.is_terminal(node_index) {
                 search_tree.terminate(node_index);
                 continue;
@@ -35,9 +42,25 @@ impl<E: Eval> Search for Mcts<E> {
             let eval_boards = self.evaluator.eval(board)?;
             search_tree.expand(node_index, eval_boards);
         }
+        let mut result = SearchResult::from(&search_tree);
+        result.depth = max_depth;
+        Ok(result)
+    }
+}
+
+impl From<&SearchTree> for SearchResult {
+    fn from(search_tree: &SearchTree) -> Self {
         let node = search_tree.most_visited();
-        // TODO: Fill in the search results.
-        Ok(SearchResult::with_best(node.board.clone()))
+        Self {
+            best: Bp::from(node),
+            moves: search_tree.move_probs(),
+            expected_value: node.value,
+            nodes_expanded: 0,
+            nodes_visited: 0,
+            depth: 0,
+            total_eval_time: Duration::ZERO,
+            total_search_time: Duration::ZERO,
+        }
     }
 }
 
@@ -127,6 +150,14 @@ impl SearchTree {
             .max_by_key(|node| node.visits)
             .expect("Expecting at least one move in non-terminal state.")
     }
+
+    fn move_probs(&self) -> Vec<Mp> {
+        let (first, last) = self.children[0].children;
+        self.children[first..last]
+            .iter()
+            .map(|node| Mp::from(node))
+            .collect()
+    }
 }
 
 impl From<&Board> for SearchTree {
@@ -159,6 +190,29 @@ struct Node {
     init_value: f32,
     // True if this node has not been expanded yet, false otherwise.
     is_leaf: bool,
+}
+
+impl From<&Node> for Bp {
+    fn from(node: &Node) -> Self {
+        Self {
+            board: node.board.clone(),
+            prior: node.prior,
+            visits: node.visits,
+        }
+    }
+}
+
+impl From<&Node> for Mp {
+    fn from(node: &Node) -> Self {
+        Self {
+            pm: node
+                .board
+                .last_move()
+                .expect("A move should have led to this node."),
+            prior: node.prior,
+            visits: node.visits,
+        }
+    }
 }
 
 // Creates a Node from a Board by taking ownership of the board.

@@ -6,6 +6,7 @@ use crate::nn::AlphaZeroNet;
 use crate::tensor_decoder::{AzDecoder, DecBoards, TensorDecoder};
 use crate::tensor_encoder::{AzEncoder, TensorEncoder};
 use burn::prelude::Backend;
+use std::sync::Arc;
 
 // Re-use DecBoards and DecMoves as the objects returned by the Eval trait, but
 // give them names more appropriate for the use.
@@ -20,7 +21,7 @@ pub trait Eval {
 pub struct AzEval<B: Backend> {
     encoder: AzEncoder<B>,
     decoder: AzDecoder<B>,
-    net: AlphaZeroNet<B>,
+    net: Arc<AlphaZeroNet<B>>,
 }
 
 impl<B: Backend> Eval for AzEval<B> {
@@ -35,5 +36,15 @@ impl<B: Backend> Eval for AzEval<B> {
         let (mv_tensor, eval_tensor) = self.net.forward(input);
         let board = boards.last().expect("Expecting at least 1 board for eval.");
         self.decoder.decode_boards(board, mv_tensor, eval_tensor)
+    }
+}
+
+impl<B: Backend> AzEval<B> {
+    fn create(encoder: AzEncoder<B>, decoder: AzDecoder<B>, net: Arc<AlphaZeroNet<B>>) -> Self {
+        Self {
+            encoder,
+            decoder,
+            net,
+        }
     }
 }

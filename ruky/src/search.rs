@@ -71,6 +71,10 @@ impl SearchResult {
     pub fn best_move(&self) -> Piece<PieceMove> {
         self.best.last_move()
     }
+
+    pub fn best_board(&self) -> &Board {
+        &self.best.board
+    }
 }
 
 // Same as Bp, but only captures the move without the board.

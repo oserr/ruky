@@ -5,7 +5,7 @@ use burn::{
     module::Module,
     nn::{
         conv::{Conv2d, Conv2dConfig},
-        BatchNorm, BatchNormConfig, Linear, LinearConfig, PaddingConfig2d,
+        BatchNorm, BatchNormConfig, Initializer, Linear, LinearConfig, PaddingConfig2d,
     },
     prelude::{Backend, Device, Tensor},
     tensor::activation::{relu, tanh},
@@ -29,9 +29,17 @@ impl<B: Backend> ResBlockNet<B> {
     pub fn new(device: &Device<B>) -> Self {
         let conv1 = Conv2dConfig::new([256, 256], [3, 3])
             .with_padding(PaddingConfig2d::Same)
+            .with_initializer(Initializer::Normal {
+                mean: 0.0,
+                std: 1.0,
+            })
             .init(device);
         let conv2 = Conv2dConfig::new([256, 256], [3, 3])
             .with_padding(PaddingConfig2d::Same)
+            .with_initializer(Initializer::Normal {
+                mean: 0.0,
+                std: 1.0,
+            })
             .init(device);
         let batch_norm1 = BatchNormConfig::new(256).init(device);
         let batch_norm2 = BatchNormConfig::new(256).init(device);
@@ -71,9 +79,17 @@ impl<B: Backend> PolicyNet<B> {
         Self {
             conv1: Conv2dConfig::new([256, 256], [3, 3])
                 .with_padding(PaddingConfig2d::Same)
+                .with_initializer(Initializer::Normal {
+                    mean: 0.0,
+                    std: 1.0,
+                })
                 .init(device),
             conv2: Conv2dConfig::new([256, 73], [3, 3])
                 .with_padding(PaddingConfig2d::Same)
+                .with_initializer(Initializer::Normal {
+                    mean: 0.0,
+                    std: 1.0,
+                })
                 .init(device),
             batch_norm: BatchNormConfig::new(256).init(device),
         }
@@ -104,10 +120,24 @@ impl<B: Backend> ValueNet<B> {
         Self {
             conv: Conv2dConfig::new([256, 1], [1, 1])
                 .with_padding(PaddingConfig2d::Same)
+                .with_initializer(Initializer::Normal {
+                    mean: 0.0,
+                    std: 1.0,
+                })
                 .init(device),
             batch_norm: BatchNormConfig::new(1).init(device),
-            fc1: LinearConfig::new(64, 256).init(device),
-            fc2: LinearConfig::new(256, 1).init(device),
+            fc1: LinearConfig::new(64, 256)
+                .with_initializer(Initializer::Normal {
+                    mean: 0.0,
+                    std: 1.0,
+                })
+                .init(device),
+            fc2: LinearConfig::new(256, 1)
+                .with_initializer(Initializer::Normal {
+                    mean: 0.0,
+                    std: 1.0,
+                })
+                .init(device),
         }
     }
 
@@ -141,6 +171,10 @@ impl<B: Backend> AlphaZeroNet<B> {
         Self {
             conv: Conv2dConfig::new([119, 256], [3, 3])
                 .with_padding(PaddingConfig2d::Same)
+                .with_initializer(Initializer::Normal {
+                    mean: 0.0,
+                    std: 1.0,
+                })
                 .init(device),
             batch_norm: BatchNormConfig::new(256).init(device),
             res_blocks: vec![ResBlockNet::new(device); 19],

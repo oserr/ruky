@@ -86,4 +86,11 @@ impl Color {
     pub fn is_black(&self) -> bool {
         !self.is_white()
     }
+
+    pub fn flip(&self) -> Color {
+        match self {
+            Color::White => Color::Black,
+            Color::Black => Color::White,
+        }
+    }
 }

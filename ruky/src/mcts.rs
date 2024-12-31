@@ -153,6 +153,7 @@ impl SearchTree {
         while parent.is_some() {
             let node = &mut self.children[parent.unwrap()];
             val *= -1.0;
+            node.visits += 1;
             node.value += val;
             parent = node.parent;
         }
@@ -165,6 +166,7 @@ impl SearchTree {
         node.children = (first_index, last_index);
         node.init_value = eval_boards.value;
         node.value = node.init_value;
+        node.is_leaf = false;
         self.children
             .extend(eval_boards.board_probs.into_iter().zip(first_index..).map(
                 |((board, prior), index)| {

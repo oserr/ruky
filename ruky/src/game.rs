@@ -19,6 +19,7 @@ pub struct GameBuilder<B: Backend> {
     white_sims: u32,
     black_sims: u32,
     max_moves: u32,
+    use_noise: bool,
 }
 
 impl<B: Backend> GameBuilder<B> {
@@ -29,6 +30,7 @@ impl<B: Backend> GameBuilder<B> {
             white_sims: 800,
             black_sims: 800,
             max_moves: 300,
+            use_noise: false,
         }
     }
 
@@ -53,6 +55,11 @@ impl<B: Backend> GameBuilder<B> {
         self
     }
 
+    pub fn use_noise(mut self, use_noise: bool) -> Self {
+        self.use_noise = use_noise;
+        self
+    }
+
     pub fn build(self) -> Result<Game<Mcts<AzEval<B>>>, RukyErr> {
         match (self.board, self.device) {
             (Some(board), Some(device)) => {
@@ -60,8 +67,17 @@ impl<B: Backend> GameBuilder<B> {
                 let decoder = AzDecoder::new();
                 let net = Arc::new(AlphaZeroNet::new(&device));
                 let evaluator = Arc::new(AzEval::create(encoder, decoder, net));
-                let white_mcts = Mcts::create(evaluator.clone(), self.white_sims);
-                let black_mcts = Mcts::create(evaluator, self.black_sims);
+                let (white_mcts, black_mcts) = if self.use_noise {
+                    (
+                        Mcts::create_with_noise(evaluator.clone(), self.white_sims),
+                        Mcts::create_with_noise(evaluator, self.black_sims),
+                    )
+                } else {
+                    (
+                        Mcts::create(evaluator.clone(), self.white_sims),
+                        Mcts::create(evaluator, self.black_sims),
+                    )
+                };
                 Ok(Game::create(board, white_mcts, black_mcts, self.max_moves))
             }
             (_, _) => Err(RukyErr::PreconditionErr),

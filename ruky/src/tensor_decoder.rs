@@ -71,7 +71,8 @@ impl<B: Backend> TensorDecoder<B> for AzDecoder<B> {
             return Err(RukyErr::MoveTensorDim);
         }
 
-        let mut total = 0.0;
+        // TODO: normalize probabilities with the total.
+        // let mut total = 0.0;
         let mut board_probs = Vec::<(Board, f32)>::new();
 
         for next_board in board.next_boards().ok_or(RukyErr::NoMovesButExpected)? {
@@ -80,11 +81,13 @@ impl<B: Backend> TensorDecoder<B> for AzDecoder<B> {
                 .expect("Board should have a last move.");
             let index = EcMove::from(last_move).index();
             let prob = mv_data[index].exp();
-            total += prob;
+            // TODO: uncomment to normalize
+            // total += prob;
             board_probs.push((next_board, prob));
         }
 
-        board_probs.iter_mut().for_each(|(_, prob)| *prob /= total);
+        // TODO: uncomment to normalize
+        // board_probs.iter_mut().for_each(|(_, prob)| *prob /= total);
 
         Ok(DecBoards {
             board_probs,
@@ -111,7 +114,8 @@ impl<B: Backend> TensorDecoder<B> for AzDecoder<B> {
 
         for next_move in board.next_moves().ok_or(RukyErr::NoMovesButExpected)? {
             let index = EcMove::from(next_move).index();
-            let prob = mv_data[index].exp();
+            let prob = mv_data[index];
+            let prob = logit.exp();
             total += prob;
             move_probs.push((next_move, prob));
         }

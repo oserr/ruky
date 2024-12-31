@@ -8,7 +8,7 @@ use burn::{
         BatchNorm, BatchNormConfig, Initializer, Linear, LinearConfig, PaddingConfig2d,
     },
     prelude::{Backend, Device, Tensor},
-    tensor::activation::{relu, tanh},
+    tensor::activation::{relu, softmax, tanh},
 };
 
 //---------------
@@ -53,12 +53,13 @@ impl<B: Backend> ResBlockNet<B> {
     }
 
     pub fn forward(&self, x: Tensor<B, 4>) -> Tensor<B, 4> {
+        let orig_x = x.clone();
         let x = self.conv1.forward(x);
         let x = self.batch_norm1.forward(x);
         let x = relu(x);
         let x = self.conv2.forward(x);
         let x = self.batch_norm2.forward(x);
-        let x = x.clone() + x;
+        let x = x + orig_x;
         relu(x)
     }
 }
@@ -99,7 +100,9 @@ impl<B: Backend> PolicyNet<B> {
         let x = self.conv1.forward(x);
         let x = self.batch_norm.forward(x);
         let x = relu(x);
-        self.conv2.forward(x)
+        let x = self.conv2.forward(x);
+        let x = x.reshape([0, 8, 8, 73]);
+        softmax(x, 3)
     }
 }
 

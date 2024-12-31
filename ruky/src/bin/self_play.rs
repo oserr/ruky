@@ -18,6 +18,18 @@ fn main() {
     let now = Instant::now();
     let result = game.play().expect("Expecting game result.");
     let dur = now.elapsed();
+    let mut color = result.board.color();
+    for (i, search_result) in result.moves.iter().enumerate() {
+        println!(
+            "i={} color={:?} prior={} value={} move={:?}",
+            i,
+            color,
+            search_result.best.prior,
+            search_result.value,
+            search_result.best_move()
+        );
+        color = color.flip();
+    }
     println!(
         "Game finished in {} moves with winner {:?}.",
         result.moves.len(),

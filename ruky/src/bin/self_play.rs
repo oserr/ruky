@@ -12,6 +12,7 @@ fn main() {
         .board(ruky.new_board())
         .sims(800)
         .max_moves(300)
+        .use_noise(true)
         .build()
         .expect("Expecting a new game.");
     println!("Starting a game of self play...");

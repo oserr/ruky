@@ -31,6 +31,10 @@ impl<E: Eval> Search for Mcts<E> {
     fn search_game(&self, boards: &[Board]) -> Result<SearchResult, RukyErr> {
         let board = boards.last().ok_or(RukyErr::SearchMissingBoard)?;
         let mut search_tree = SearchTree::from(board);
+
+        let eval_boards = self.evaluator.eval(board)?;
+        search_tree.expand(0, eval_boards);
+
         let mut max_depth = 0u32;
         // TODO: add timing info.
         for _ in 0..self.sims {

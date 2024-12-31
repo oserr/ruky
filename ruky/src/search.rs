@@ -24,7 +24,7 @@ pub struct SearchResult {
     // The vector of probabilities for each move. This includes the best move.
     pub moves: Vec<Mp>,
     // The expected value from the best move.
-    pub expected_value: f32,
+    pub value: f32,
     // Total nodes expanded in search.
     pub nodes_expanded: u32,
     // Total nodes visited, including repeat visits.
@@ -43,7 +43,7 @@ impl SearchResult {
         Self {
             best: Bp::with_board(board),
             moves: Vec::new(),
-            expected_value: 0.0,
+            value: 0.0,
             nodes_expanded: 0,
             nodes_visited: 0,
             depth: 0,

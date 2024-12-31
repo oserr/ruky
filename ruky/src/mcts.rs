@@ -63,7 +63,7 @@ impl From<&SearchTree> for SearchResult {
         Self {
             best: Bp::from(node),
             moves: search_tree.move_probs(),
-            expected_value: node.value,
+            value: node.value,
             nodes_expanded: 0,
             nodes_visited: 0,
             depth: 0,

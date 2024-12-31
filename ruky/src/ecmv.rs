@@ -151,8 +151,8 @@ impl Direction {
             Direction::East => 3,
             Direction::SouthEast => 4,
             Direction::South => 5,
-            Direction::West => 6,
-            Direction::SouthWest => 7,
+            Direction::SouthWest => 6,
+            Direction::West => 7,
             Direction::NorthWest => 8,
         }
     }

@@ -4,6 +4,8 @@ use crate::board::Board;
 use crate::err::RukyErr;
 use crate::eval::{Eval, EvalBoards};
 use crate::search::{Bp, Mp, Search, SearchResult};
+use rand::thread_rng;
+use rand_distr::{Dirichlet, Distribution};
 use std::cmp::max;
 use std::sync::Arc;
 use std::time::Duration;
@@ -32,7 +34,8 @@ impl<E: Eval> Search for Mcts<E> {
         let board = boards.last().ok_or(RukyErr::SearchMissingBoard)?;
         let mut search_tree = SearchTree::from(board);
 
-        let eval_boards = self.evaluator.eval(board)?;
+        let mut eval_boards = self.evaluator.eval(board)?;
+        add_noise(&mut eval_boards);
         search_tree.expand(0, eval_boards);
 
         let mut max_depth = 0u32;
@@ -285,6 +288,16 @@ impl Node {
 fn explore_rate(parent_visits: u32) -> f32 {
     let num = 1.0 + parent_visits as f32 + EXPLORE_BASE;
     (num / EXPLORE_BASE).log2() + EXPLORE_INIT
+}
+
+// Adds noise to the prior probabilities.
+fn add_noise(eval_boards: &mut EvalBoards) {
+    let dirichlet = Dirichlet::new_with_size(DIR_ALPHA, eval_boards.board_probs.len())
+        .expect("Expecting Dirichlet distribution.");
+    let probs = dirichlet.sample(&mut thread_rng());
+    for (bp, noise) in eval_boards.board_probs.iter_mut().zip(probs) {
+        bp.1 = (1.0 - DIR_EXPLORE_FRAC) * bp.1 + DIR_EXPLORE_FRAC * noise;
+    }
 }
 
 const EXPLORE_BASE: f32 = 19652.0;

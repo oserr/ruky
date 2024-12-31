@@ -16,11 +16,24 @@ use std::time::Duration;
 pub struct Mcts<E: Eval> {
     evaluator: Arc<E>,
     sims: u32,
+    use_noise: bool,
 }
 
 impl<E: Eval> Mcts<E> {
     pub fn create(evaluator: Arc<E>, sims: u32) -> Self {
-        Self { evaluator, sims }
+        Self {
+            evaluator,
+            sims,
+            use_noise: false,
+        }
+    }
+
+    pub fn create_with_noise(evaluator: Arc<E>, sims: u32) -> Self {
+        Self {
+            evaluator,
+            sims,
+            use_noise: true,
+        }
     }
 }
 
@@ -35,7 +48,9 @@ impl<E: Eval> Search for Mcts<E> {
         let mut search_tree = SearchTree::from(board);
 
         let mut eval_boards = self.evaluator.eval(board)?;
-        add_noise(&mut eval_boards);
+        if self.use_noise {
+            add_noise(&mut eval_boards);
+        }
         search_tree.expand(0, eval_boards);
 
         let mut max_depth = 0u32;

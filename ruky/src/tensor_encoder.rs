@@ -41,6 +41,7 @@ impl<B: Backend> AzEncoder<B> {
 }
 
 impl<B: Backend> TensorEncoder<B> for AzEncoder<B> {
+    // Outputs a Tensor with dimensions (1, 119, 8, 8).
     fn encode_board(&self, board: &Board) -> Tensor<B, 4> {
         let mut data = vec![0.0; N_PLANES * BOARD_SIZE];
         let six_planes = N_PIECE_TYPES * BOARD_SIZE;

@@ -29,6 +29,9 @@ fn main() {
             search_result.value,
             search_result.best_move()
         );
+        for mp in &search_result.moves {
+            println!("\tprior={} visits={} move={:?}", mp.prior, mp.visits, mp.pm);
+        }
         color = color.flip();
     }
     println!(

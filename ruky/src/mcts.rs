@@ -104,18 +104,26 @@ impl SearchTree {
     fn choose_next(&self, parent_index: usize) -> Option<usize> {
         let parent_node = &self.children[parent_index];
         assert!(!parent_node.is_leaf);
+        let child_visits = self.child_visits(parent_index);
         self.children[parent_node.children.0..parent_node.children.1]
             .iter()
             .reduce(|acc_node, node| {
-                let acc_node_uct = acc_node.mean_uct(parent_node.visits);
-                let node_uct = node.mean_uct(parent_node.visits);
-                if acc_node_uct > node_uct {
+                let acc_node_score = acc_node.score(parent_node.visits, child_visits);
+                let node_score = node.score(parent_node.visits, child_visits);
+                if acc_node_score > node_score {
                     acc_node
                 } else {
                     node
                 }
             })
             .map(|node| node.index)
+    }
+
+    fn child_visits(&self, parent_index: usize) -> u32 {
+        let parent_node = &self.children[parent_index];
+        self.children[parent_node.children.0..parent_node.children.1]
+            .iter()
+            .fold(0, |visits, node| visits + node.visits)
     }
 
     fn board(&self, node_index: usize) -> &Board {
@@ -287,13 +295,16 @@ impl Node {
         node
     }
 
-    fn mean_uct(&self, parent_visits: u32) -> f32 {
-        self.value / self.visits as f32 + self.uct(parent_visits)
+    fn score(&self, parent_visits: u32, sibling_visits: u32) -> f32 {
+        match self.visits {
+            0 => self.ucb(parent_visits, sibling_visits),
+            _ => self.value / self.visits as f32 + self.ucb(parent_visits, sibling_visits),
+        }
     }
 
-    fn uct(&self, parent_visits: u32) -> f32 {
+    fn ucb(&self, parent_visits: u32, sibling_visits: u32) -> f32 {
         let term1 = explore_rate(parent_visits) * self.prior;
-        let term2 = (parent_visits as f32).sqrt() / (1 + self.visits) as f32;
+        let term2 = (sibling_visits as f32).sqrt() / (1 + self.visits) as f32;
         term1 * term2
     }
 
@@ -304,11 +315,14 @@ impl Node {
 
 fn explore_rate(parent_visits: u32) -> f32 {
     let num = 1.0 + parent_visits as f32 + EXPLORE_BASE;
-    (num / EXPLORE_BASE).log2() + EXPLORE_INIT
+    (num / EXPLORE_BASE).ln() + EXPLORE_INIT
 }
 
 // Adds noise to the prior probabilities.
 fn add_noise(eval_boards: &mut EvalBoards) {
+    if (eval_boards.board_probs.len() < 2) {
+        return;
+    }
     let dirichlet = Dirichlet::new_with_size(DIR_ALPHA, eval_boards.board_probs.len())
         .expect("Expecting Dirichlet distribution.");
     let probs = dirichlet.sample(&mut thread_rng());

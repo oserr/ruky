@@ -4,7 +4,7 @@ use crate::board::Board;
 use crate::err::RukyErr;
 use crate::eval::{Eval, EvalBoards};
 use crate::search::{Bp, Mp, Search, SearchResult};
-use rand::thread_rng;
+use rand::{distributions::weighted::WeightedIndex, thread_rng};
 use rand_distr::{Dirichlet, Distribution};
 use std::cmp::max;
 use std::sync::Arc;
@@ -17,6 +17,7 @@ pub struct Mcts<E: Eval> {
     evaluator: Arc<E>,
     sims: u32,
     use_noise: bool,
+    sample_action: bool,
 }
 
 impl<E: Eval> Mcts<E> {
@@ -25,6 +26,7 @@ impl<E: Eval> Mcts<E> {
             evaluator,
             sims,
             use_noise: false,
+            sample_action: false,
         }
     }
 
@@ -33,6 +35,7 @@ impl<E: Eval> Mcts<E> {
             evaluator,
             sims,
             use_noise: true,
+            sample_action: false,
         }
     }
 }
@@ -46,6 +49,7 @@ impl<E: Eval> Search for Mcts<E> {
     fn search_game(&self, boards: &[Board]) -> Result<SearchResult, RukyErr> {
         let board = boards.last().ok_or(RukyErr::SearchMissingBoard)?;
         let mut search_tree = SearchTree::from(board);
+        search_tree.sample_action = self.sample_action;
 
         let mut eval_boards = self.evaluator.eval(board)?;
         if self.use_noise {
@@ -81,7 +85,7 @@ impl<E: Eval> Search for Mcts<E> {
 
 impl From<&SearchTree> for SearchResult {
     fn from(search_tree: &SearchTree) -> Self {
-        let node = search_tree.most_visited();
+        let node = search_tree.select_action();
         Self {
             best: Bp::from(node),
             moves: search_tree.move_probs(),
@@ -98,6 +102,7 @@ impl From<&SearchTree> for SearchResult {
 #[derive(Debug)]
 struct SearchTree {
     children: Vec<Node>,
+    sample_action: bool,
 }
 
 impl SearchTree {
@@ -192,6 +197,24 @@ impl SearchTree {
             .expect("Expecting at least one move in non-terminal state.")
     }
 
+    fn sample_most_visited(&self) -> &Node {
+        let (first, last) = self.children[0].children;
+        let weights: Vec<_> = self.children[first..last]
+            .iter()
+            .map(|node| node.visits)
+            .collect();
+        let weighted_dist = WeightedIndex::new(&weights).expect("Expecting WeightedIndex.");
+        let index = weighted_dist.sample(&mut thread_rng());
+        &self.children[first + index]
+    }
+
+    fn select_action(&self) -> &Node {
+        match self.sample_action {
+            false => self.most_visited(),
+            true => self.sample_most_visited(),
+        }
+    }
+
     fn move_probs(&self) -> Vec<Mp> {
         let (first, last) = self.children[0].children;
         self.children[first..last]
@@ -205,6 +228,7 @@ impl From<&Board> for SearchTree {
     fn from(board: &Board) -> Self {
         Self {
             children: vec![Node::from(board)],
+            sample_action: false,
         }
     }
 }
@@ -320,7 +344,7 @@ fn explore_rate(parent_visits: u32) -> f32 {
 
 // Adds noise to the prior probabilities.
 fn add_noise(eval_boards: &mut EvalBoards) {
-    if (eval_boards.board_probs.len() < 2) {
+    if eval_boards.board_probs.len() < 2 {
         return;
     }
     let dirichlet = Dirichlet::new_with_size(DIR_ALPHA, eval_boards.board_probs.len())

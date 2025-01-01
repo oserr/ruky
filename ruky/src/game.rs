@@ -78,6 +78,8 @@ impl<B: Backend> GameBuilder<B> {
                         Mcts::create(evaluator, self.black_sims),
                     )
                 };
+                white_mcts.enable_sample_action(true);
+                black_mcts.enable_sample_action(true);
                 Ok(Game::create(board, white_mcts, black_mcts, self.max_moves))
             }
             (_, _) => Err(RukyErr::PreconditionErr),

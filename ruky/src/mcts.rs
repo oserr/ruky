@@ -6,6 +6,7 @@ use crate::eval::{Eval, EvalBoards};
 use crate::search::{Bp, Mp, Search, SearchResult};
 use rand::{distributions::weighted::WeightedIndex, thread_rng};
 use rand_distr::{Dirichlet, Distribution};
+use std::cell::RefCell;
 use std::cmp::max;
 use std::sync::Arc;
 use std::time::Duration;
@@ -17,7 +18,7 @@ pub struct Mcts<E: Eval> {
     evaluator: Arc<E>,
     sims: u32,
     use_noise: bool,
-    sample_action: bool,
+    sample_action: RefCell<bool>,
 }
 
 impl<E: Eval> Mcts<E> {
@@ -26,7 +27,7 @@ impl<E: Eval> Mcts<E> {
             evaluator,
             sims,
             use_noise: false,
-            sample_action: false,
+            sample_action: RefCell::new(false),
         }
     }
 
@@ -35,8 +36,12 @@ impl<E: Eval> Mcts<E> {
             evaluator,
             sims,
             use_noise: true,
-            sample_action: false,
+            sample_action: RefCell::new(false),
         }
+    }
+
+    pub fn enable_sample_action(&self, sample_action: bool) {
+        self.sample_action.replace(sample_action);
     }
 }
 
@@ -52,7 +57,7 @@ impl<E: Eval> Search for Mcts<E> {
             return Err(RukyErr::SearchTerminalBoard);
         }
         let mut search_tree = SearchTree::from(board);
-        search_tree.sample_action = self.sample_action;
+        search_tree.sample_action = *self.sample_action.borrow();
 
         let mut eval_boards = self.evaluator.eval(board)?;
         if self.use_noise {

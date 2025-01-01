@@ -212,9 +212,11 @@ impl SearchTree {
     }
 
     fn select_action(&self) -> &Node {
+        let num_actions = self.num_actions();
+        assert!(num_actions >= 1);
         match self.sample_action {
-            false => self.most_visited(),
-            true => self.sample_most_visited(),
+            true if num_actions > 1 => self.sample_most_visited(),
+            _ => self.most_visited(),
         }
     }
 
@@ -224,6 +226,11 @@ impl SearchTree {
             .iter()
             .map(|node| Mp::from(node))
             .collect()
+    }
+
+    fn num_actions(&self) -> usize {
+        let (first, last) = self.children[0].children;
+        last - first
     }
 }
 

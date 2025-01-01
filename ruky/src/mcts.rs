@@ -48,6 +48,9 @@ impl<E: Eval> Search for Mcts<E> {
 
     fn search_game(&self, boards: &[Board]) -> Result<SearchResult, RukyErr> {
         let board = boards.last().ok_or(RukyErr::SearchMissingBoard)?;
+        if board.is_terminal() {
+            return Err(RukyErr::SearchTerminalBoard);
+        }
         let mut search_tree = SearchTree::from(board);
         search_tree.sample_action = self.sample_action;
 

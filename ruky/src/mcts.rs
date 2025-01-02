@@ -70,7 +70,7 @@ impl<E: Eval> Search for Mcts<E> {
         for _ in 0..self.sims {
             let mut node_index = 0;
             let mut current_depth = 0u32;
-            while !search_tree.is_leaf_or_terminal(node_index) {
+            while search_tree.is_expanded(node_index) {
                 current_depth += 1;
                 node_index = search_tree
                     .choose_next(node_index)
@@ -151,8 +151,8 @@ impl SearchTree {
         self.children[node_index].is_terminal()
     }
 
-    fn is_leaf_or_terminal(&self, node_index: usize) -> bool {
-        self.is_leaf(node_index) || self.is_terminal(node_index)
+    fn is_expanded(&self, node_index: usize) -> bool {
+        !self.is_leaf(node_index) && !self.is_terminal(node_index)
     }
 
     fn terminate(&mut self, node_index: usize) {

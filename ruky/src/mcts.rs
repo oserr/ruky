@@ -9,7 +9,7 @@ use rand_distr::{Dirichlet, Distribution};
 use std::cell::RefCell;
 use std::cmp::max;
 use std::sync::Arc;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 // TODO: make the Mcts stateful over a game, so that the SearchTree built when
 // evaluating the given position can be re-used after a move is selected.
@@ -59,7 +59,11 @@ impl<E: Eval> Search for Mcts<E> {
         let mut search_tree = SearchTree::from(board);
         search_tree.sample_action = *self.sample_action.borrow();
 
+        let mut eval_time = Duration::ZERO;
+        let search_start = Instant::now();
         let mut eval_boards = self.evaluator.eval(board)?;
+        eval_time += search_start.elapsed();
+
         if self.use_noise {
             add_noise(&mut eval_boards);
         }
@@ -83,13 +87,17 @@ impl<E: Eval> Search for Mcts<E> {
                 continue;
             }
             let board = search_tree.board(node_index);
+            let eval_start = Instant::now();
             let eval_boards = self.evaluator.eval(board)?;
+            eval_time += eval_start.elapsed();
             search_tree.expand(node_index, eval_boards);
             nodes_expanded += 1
         }
         let mut result = SearchResult::from(&search_tree);
         result.depth = max_depth;
         result.nodes_expanded = nodes_expanded;
+        result.total_eval_time = eval_time;
+        result.total_search_time = search_start.elapsed();
         Ok(result)
     }
 }

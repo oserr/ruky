@@ -66,6 +66,7 @@ impl<E: Eval> Search for Mcts<E> {
         search_tree.expand(0, eval_boards);
 
         let mut max_depth = 0u32;
+        let mut nodes_expanded = 1;
         // TODO: add timing info.
         for _ in 0..self.sims {
             let mut node_index = 0;
@@ -84,9 +85,11 @@ impl<E: Eval> Search for Mcts<E> {
             let board = search_tree.board(node_index);
             let eval_boards = self.evaluator.eval(board)?;
             search_tree.expand(node_index, eval_boards);
+            nodes_expanded += 1
         }
         let mut result = SearchResult::from(&search_tree);
         result.depth = max_depth;
+        result.nodes_expanded = nodes_expanded;
         Ok(result)
     }
 }

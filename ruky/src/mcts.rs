@@ -71,12 +71,14 @@ impl<E: Eval> Search for Mcts<E> {
 
         let mut max_depth = 0u32;
         let mut nodes_expanded = 1;
+        let mut nodes_visited = 0;
         // TODO: add timing info.
         for _ in 0..self.sims {
             let mut node_index = 0;
             let mut current_depth = 0u32;
             while search_tree.is_expanded(node_index) {
                 current_depth += 1;
+                nodes_visited += 1;
                 node_index = search_tree
                     .choose_next(node_index)
                     .ok_or(RukyErr::SearchChooseNext)?;
@@ -96,6 +98,7 @@ impl<E: Eval> Search for Mcts<E> {
         let mut result = SearchResult::from(&search_tree);
         result.depth = max_depth;
         result.nodes_expanded = nodes_expanded;
+        result.nodes_visited = nodes_visited;
         result.total_eval_time = eval_time;
         result.total_search_time = search_start.elapsed();
         Ok(result)

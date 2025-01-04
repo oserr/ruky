@@ -105,29 +105,19 @@ impl<E: Eval> Search for Mcts<E> {
             self.search_tree.expand(node_index, eval_boards);
             nodes_expanded += 1
         }
-        let mut result = SearchResult::from(&self.search_tree);
-        result.depth = max_depth;
-        result.nodes_expanded = nodes_expanded;
-        result.nodes_visited = nodes_visited;
-        result.total_eval_time = eval_time;
-        result.total_search_time = search_start.elapsed();
-        Ok(result)
-    }
-}
 
-impl From<&SearchTree> for SearchResult {
-    fn from(search_tree: &SearchTree) -> Self {
-        let node = search_tree.select_action();
-        Self {
-            best: Bp::from(node),
-            moves: search_tree.move_probs(),
-            value: node.value,
-            nodes_expanded: 0,
-            nodes_visited: 0,
-            depth: 0,
-            total_eval_time: Duration::ZERO,
-            total_search_time: Duration::ZERO,
-        }
+        let best_node = self.search_tree.select_action();
+        let result = SearchResult {
+            best: Bp::from(best_node),
+            moves: self.search_tree.move_probs(),
+            value: best_node.value,
+            nodes_expanded,
+            nodes_visited,
+            depth: max_depth,
+            total_eval_time: eval_time,
+            total_search_time: search_start.elapsed(),
+        };
+        Ok(result)
     }
 }
 

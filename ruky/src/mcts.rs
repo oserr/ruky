@@ -138,6 +138,10 @@ impl Default for SearchTree {
 }
 
 impl SearchTree {
+    fn new() -> Self {
+        SearchTree::default()
+    }
+
     fn choose_next(&self, parent_index: usize) -> Option<usize> {
         let parent_node = &self.children[parent_index];
         assert!(!parent_node.is_leaf);

@@ -309,7 +309,11 @@ impl SearchTree {
 
     fn add_priors_noise(&mut self, node_index: usize) {
         let (first, last) = self.children[node_index].children;
-        let dirichlet = Dirichlet::new_with_size(DIR_ALPHA, last - first)
+        let n_moves = last - first;
+        if n_moves < 2 {
+            return;
+        }
+        let dirichlet = Dirichlet::new_with_size(DIR_ALPHA, n_moves)
             .expect("Expecting Dirichlet distribution.");
         let probs = dirichlet.sample(&mut thread_rng());
         for (node, noise) in self.children[first..last].iter_mut().zip(probs) {

@@ -255,6 +255,29 @@ impl SearchTree {
         let (first, last) = self.children[0].children;
         last - first
     }
+
+    fn update_root_from_board(&mut self, board: &Board) {
+        if self.children.is_empty() {
+            self.children.push(Node::from(board));
+            return;
+        }
+        let current_root = &self.children[self.root];
+        assert!(!current_root.is_leaf);
+        let (first, last) = current_root.children;
+        match self.children[first..last]
+            .iter()
+            .find(|node| node.board == *board)
+        {
+            Some(ref node) => {
+                self.root = node.index;
+            }
+            None => {
+                self.children.clear();
+                self.children.push(Node::from(board));
+                self.root = 0;
+            }
+        };
+    }
 }
 
 impl From<&Board> for SearchTree {

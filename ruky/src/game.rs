@@ -67,7 +67,7 @@ impl<B: Backend> GameBuilder<B> {
                 let decoder = AzDecoder::new();
                 let net = Arc::new(AlphaZeroNet::new(&device));
                 let evaluator = Arc::new(AzEval::create(encoder, decoder, net));
-                let (white_mcts, black_mcts) = if self.use_noise {
+                let (mut white_mcts, mut black_mcts) = if self.use_noise {
                     (
                         Mcts::create_with_noise(evaluator.clone(), self.white_sims),
                         Mcts::create_with_noise(evaluator, self.black_sims),

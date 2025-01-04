@@ -6,7 +6,6 @@ use crate::eval::{Eval, EvalBoards};
 use crate::search::{Bp, Mp, Search, SearchResult};
 use rand::{distributions::weighted::WeightedIndex, thread_rng};
 use rand_distr::{Dirichlet, Distribution};
-use std::cell::RefCell;
 use std::cmp::max;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
@@ -18,7 +17,7 @@ pub struct Mcts<E: Eval> {
     evaluator: Arc<E>,
     sims: u32,
     use_noise: bool,
-    sample_action: RefCell<bool>,
+    sample_action: bool,
 }
 
 impl<E: Eval> Mcts<E> {
@@ -27,7 +26,7 @@ impl<E: Eval> Mcts<E> {
             evaluator,
             sims,
             use_noise: false,
-            sample_action: RefCell::new(false),
+            sample_action: false,
         }
     }
 
@@ -36,12 +35,12 @@ impl<E: Eval> Mcts<E> {
             evaluator,
             sims,
             use_noise: true,
-            sample_action: RefCell::new(false),
+            sample_action: false,
         }
     }
 
-    pub fn enable_sample_action(&self, sample_action: bool) {
-        self.sample_action.replace(sample_action);
+    pub fn enable_sample_action(&mut self, sample_action: bool) {
+        self.sample_action = sample_action;
     }
 }
 
@@ -57,7 +56,7 @@ impl<E: Eval> Search for Mcts<E> {
             return Err(RukyErr::SearchTerminalBoard);
         }
         let mut search_tree = SearchTree::from(board);
-        search_tree.sample_action = *self.sample_action.borrow();
+        search_tree.sample_action = self.sample_action;
 
         let mut eval_time = Duration::ZERO;
         let search_start = Instant::now();

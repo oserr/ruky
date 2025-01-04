@@ -124,6 +124,7 @@ impl From<&SearchTree> for SearchResult {
 #[derive(Debug)]
 struct SearchTree {
     children: Vec<Node>,
+    root: usize,
     sample_action: bool,
 }
 
@@ -167,6 +168,10 @@ impl SearchTree {
 
     fn is_expanded(&self, node_index: usize) -> bool {
         !self.is_leaf(node_index) && !self.is_terminal(node_index)
+    }
+
+    fn root(&self) -> usize {
+        self.root
     }
 
     fn terminate(&mut self, node_index: usize) {
@@ -257,6 +262,7 @@ impl From<&Board> for SearchTree {
     fn from(board: &Board) -> Self {
         Self {
             children: vec![Node::from(board)],
+            root: 0,
             sample_action: false,
         }
     }

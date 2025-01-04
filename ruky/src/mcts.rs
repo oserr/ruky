@@ -74,7 +74,7 @@ impl<E: Eval> Search for Mcts<E> {
         let mut nodes_visited = 0;
         // TODO: add timing info.
         for _ in 0..self.sims {
-            let mut node_index = 0;
+            let mut node_index = search_tree.root();
             let mut current_depth = 0u32;
             while search_tree.is_expanded(node_index) {
                 current_depth += 1;

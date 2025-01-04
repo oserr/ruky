@@ -127,6 +127,16 @@ struct SearchTree {
     sample_action: bool,
 }
 
+impl Default for SearchTree {
+    fn default() -> Self {
+        Self {
+            children: Vec::new(),
+            root: 0,
+            sample_action: false,
+        }
+    }
+}
+
 impl SearchTree {
     fn choose_next(&self, parent_index: usize) -> Option<usize> {
         let parent_node = &self.children[parent_index];

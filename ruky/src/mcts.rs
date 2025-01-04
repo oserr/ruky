@@ -15,6 +15,7 @@ use std::time::{Duration, Instant};
 #[derive(Clone, Debug)]
 pub struct Mcts<E: Eval> {
     evaluator: Arc<E>,
+    search_tree: SearchTree,
     sims: u32,
     use_noise: bool,
     sample_action: bool,
@@ -24,6 +25,7 @@ impl<E: Eval> Mcts<E> {
     pub fn create(evaluator: Arc<E>, sims: u32) -> Self {
         Self {
             evaluator,
+            search_tree: SearchTree::new(),
             sims,
             use_noise: false,
             sample_action: false,
@@ -33,6 +35,7 @@ impl<E: Eval> Mcts<E> {
     pub fn create_with_noise(evaluator: Arc<E>, sims: u32) -> Self {
         Self {
             evaluator,
+            search_tree: SearchTree::new(),
             sims,
             use_noise: true,
             sample_action: false,
@@ -55,46 +58,54 @@ impl<E: Eval> Search for Mcts<E> {
         if board.is_terminal() {
             return Err(RukyErr::SearchTerminalBoard);
         }
-        let mut search_tree = SearchTree::from(board);
-        search_tree.sample_action = self.sample_action;
-
-        let mut eval_time = Duration::ZERO;
         let search_start = Instant::now();
-        let mut eval_boards = self.evaluator.eval(board)?;
-        eval_time += search_start.elapsed();
+
+        self.search_tree.update_root_from_board(board);
+        let root_index = self.search_tree.root_index();
+        self.search_tree.sample_action = self.sample_action;
+
+        let mut eval_time = if self.search_tree.is_root_leaf() {
+            let eval_time = Instant::now();
+            let eval_boards = self.evaluator.eval(board)?;
+            let eval_time = eval_time.elapsed();
+            self.search_tree.expand(root_index, eval_boards);
+            eval_time
+        } else {
+            Duration::ZERO
+        };
 
         if self.use_noise {
-            add_noise(&mut eval_boards);
+            self.search_tree.add_priors_noise(root_index);
         }
-        search_tree.expand(0, eval_boards);
 
         let mut max_depth = 0u32;
         let mut nodes_expanded = 1;
         let mut nodes_visited = 0;
         // TODO: add timing info.
         for _ in 0..self.sims {
-            let mut node_index = search_tree.root();
+            let mut node_index = root_index;
             let mut current_depth = 0u32;
-            while search_tree.is_expanded(node_index) {
+            while self.search_tree.is_expanded(node_index) {
                 current_depth += 1;
                 nodes_visited += 1;
-                node_index = search_tree
+                node_index = self
+                    .search_tree
                     .choose_next(node_index)
                     .ok_or(RukyErr::SearchChooseNext)?;
             }
             max_depth = max(max_depth, current_depth);
-            if search_tree.is_terminal(node_index) {
-                search_tree.terminate(node_index);
+            if self.search_tree.is_terminal(node_index) {
+                self.search_tree.terminate(node_index);
                 continue;
             }
-            let board = search_tree.board(node_index);
+            let board = self.search_tree.board(node_index);
             let eval_start = Instant::now();
             let eval_boards = self.evaluator.eval(board)?;
             eval_time += eval_start.elapsed();
-            search_tree.expand(node_index, eval_boards);
+            self.search_tree.expand(node_index, eval_boards);
             nodes_expanded += 1
         }
-        let mut result = SearchResult::from(&search_tree);
+        let mut result = SearchResult::from(&self.search_tree);
         result.depth = max_depth;
         result.nodes_expanded = nodes_expanded;
         result.nodes_visited = nodes_visited;
@@ -120,7 +131,7 @@ impl From<&SearchTree> for SearchResult {
     }
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 struct SearchTree {
     children: Vec<Node>,
     root: usize,
@@ -183,8 +194,16 @@ impl SearchTree {
         !self.is_leaf(node_index) && !self.is_terminal(node_index)
     }
 
-    fn root(&self) -> usize {
+    fn root_index(&self) -> usize {
         self.root
+    }
+
+    fn root_node(&self) -> &Node {
+        &self.children[self.root]
+    }
+
+    fn is_root_leaf(&self) -> bool {
+        self.children[self.root].is_leaf
     }
 
     fn terminate(&mut self, node_index: usize) {
@@ -292,6 +311,16 @@ impl SearchTree {
             }
         };
     }
+
+    fn add_priors_noise(&mut self, node_index: usize) {
+        let (first, last) = self.children[node_index].children;
+        let dirichlet = Dirichlet::new_with_size(DIR_ALPHA, last - first)
+            .expect("Expecting Dirichlet distribution.");
+        let probs = dirichlet.sample(&mut thread_rng());
+        for (node, noise) in self.children[first..last].iter_mut().zip(probs) {
+            node.prior = (1.0 - DIR_EXPLORE_FRAC) * node.prior + DIR_EXPLORE_FRAC * noise;
+        }
+    }
 }
 
 impl From<&Board> for SearchTree {
@@ -304,7 +333,7 @@ impl From<&Board> for SearchTree {
     }
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 struct Node {
     // Represents the current board position.
     board: Board,
@@ -411,19 +440,6 @@ impl Node {
 fn explore_rate(parent_visits: u32) -> f32 {
     let num = 1.0 + parent_visits as f32 + EXPLORE_BASE;
     (num / EXPLORE_BASE).ln() + EXPLORE_INIT
-}
-
-// Adds noise to the prior probabilities.
-fn add_noise(eval_boards: &mut EvalBoards) {
-    if eval_boards.board_probs.len() < 2 {
-        return;
-    }
-    let dirichlet = Dirichlet::new_with_size(DIR_ALPHA, eval_boards.board_probs.len())
-        .expect("Expecting Dirichlet distribution.");
-    let probs = dirichlet.sample(&mut thread_rng());
-    for (bp, noise) in eval_boards.board_probs.iter_mut().zip(probs) {
-        bp.1 = (1.0 - DIR_EXPLORE_FRAC) * bp.1 + DIR_EXPLORE_FRAC * noise;
-    }
 }
 
 const EXPLORE_BASE: f32 = 19652.0;

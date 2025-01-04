@@ -7,12 +7,12 @@ use std::time::Duration;
 // A trait for evaluating a chess board position.
 pub trait Search {
     // Computes the best possible move given a single board.
-    fn search_board(&self, board: &Board) -> Result<SearchResult, RukyErr>;
+    fn search_board(&mut self, board: &Board) -> Result<SearchResult, RukyErr>;
 
     // Computes the best move given a series of moves, each move represented as a
     // full board position. Note that we don't need the game to evaluate a
     // position. It is assumed that the last Board represents the current position.
-    fn search_game(&self, boards: &[Board]) -> Result<SearchResult, RukyErr> {
+    fn search_game(&mut self, boards: &[Board]) -> Result<SearchResult, RukyErr> {
         self.search_board(boards.last().ok_or(RukyErr::SearchMissingBoard)?)
     }
 }

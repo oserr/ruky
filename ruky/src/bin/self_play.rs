@@ -7,7 +7,7 @@ use std::time::{Duration, Instant};
 fn main() {
     let ruky = Ruky::new();
     let device = CandleDevice::cuda(0);
-    let game = GameBuilder::<Candle>::new()
+    let mut game = GameBuilder::<Candle>::new()
         .device(device)
         .board(ruky.new_board())
         .sims(800)

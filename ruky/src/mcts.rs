@@ -46,12 +46,12 @@ impl<E: Eval> Mcts<E> {
 }
 
 impl<E: Eval> Search for Mcts<E> {
-    fn search_board(&self, board: &Board) -> Result<SearchResult, RukyErr> {
+    fn search_board(&mut self, board: &Board) -> Result<SearchResult, RukyErr> {
         let boards = [board.clone()];
         self.search_game(boards.as_ref())
     }
 
-    fn search_game(&self, boards: &[Board]) -> Result<SearchResult, RukyErr> {
+    fn search_game(&mut self, boards: &[Board]) -> Result<SearchResult, RukyErr> {
         let board = boards.last().ok_or(RukyErr::SearchMissingBoard)?;
         if board.is_terminal() {
             return Err(RukyErr::SearchTerminalBoard);

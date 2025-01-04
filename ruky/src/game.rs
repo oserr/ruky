@@ -105,7 +105,7 @@ impl<S: Search> Game<S> {
         }
     }
 
-    pub fn play(&self) -> Result<GameResult, RukyErr> {
+    pub fn play(&mut self) -> Result<GameResult, RukyErr> {
         let mut moves = Vec::<SearchResult>::new();
         let mut next_board = &self.board;
         for _ in 0..self.max_moves {

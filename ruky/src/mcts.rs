@@ -117,6 +117,7 @@ impl<E: Eval> Search for Mcts<E> {
             total_eval_time: eval_time,
             total_search_time: search_start.elapsed(),
         };
+        self.search_tree.update_root_from_index(best_node.index);
         Ok(result)
     }
 }
@@ -239,7 +240,7 @@ impl SearchTree {
     }
 
     fn most_visited(&self) -> &Node {
-        let (first, last) = self.children[0].children;
+        let (first, last) = self.children[self.root].children;
         self.children[first..last]
             .iter()
             .max_by_key(|node| node.visits)
@@ -247,7 +248,7 @@ impl SearchTree {
     }
 
     fn sample_most_visited(&self) -> &Node {
-        let (first, last) = self.children[0].children;
+        let (first, last) = self.children[self.root].children;
         let weights: Vec<_> = self.children[first..last]
             .iter()
             .map(|node| node.visits)
@@ -267,7 +268,7 @@ impl SearchTree {
     }
 
     fn move_probs(&self) -> Vec<Mp> {
-        let (first, last) = self.children[0].children;
+        let (first, last) = self.children[self.root].children;
         self.children[first..last]
             .iter()
             .map(|node| Mp::from(node))
@@ -275,7 +276,7 @@ impl SearchTree {
     }
 
     fn num_actions(&self) -> usize {
-        let (first, last) = self.children[0].children;
+        let (first, last) = self.children[self.root].children;
         last - first
     }
 
@@ -300,6 +301,10 @@ impl SearchTree {
                 self.root = 0;
             }
         };
+    }
+
+    fn update_root_from_index(&mut self, new_root: usize) {
+        self.root = new_root;
     }
 
     fn add_priors_noise(&mut self, node_index: usize) {

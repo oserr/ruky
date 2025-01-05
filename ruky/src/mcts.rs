@@ -11,6 +11,16 @@ use std::sync::Arc;
 use std::time::{Duration, Instant};
 
 #[derive(Clone, Debug)]
+pub struct SpMcts<E: Eval> {
+    evaluator: Arc<E>,
+    search_tree: SearchTree,
+    boards: Vec<Board>,
+    sims: u32,
+    use_noise: bool,
+    sample_action: bool,
+}
+
+#[derive(Clone, Debug)]
 pub struct Mcts<E: Eval> {
     evaluator: Arc<E>,
     search_tree: SearchTree,

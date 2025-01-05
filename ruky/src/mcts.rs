@@ -85,6 +85,65 @@ impl<E: Eval> SpSearch for SpMcts<E> {
 }
 
 #[derive(Clone, Debug)]
+pub struct SpMctsBuilder<E: Eval> {
+    eval: Option<Arc<E>>,
+    board: Option<Board>,
+    sims: u32,
+    use_noise: bool,
+    sample_action: bool,
+}
+
+impl<E: Eval> SpMctsBuilder<E> {
+    fn new() -> Self {
+        Self {
+            eval: None,
+            board: None,
+            sims: 800,
+            use_noise: true,
+            sample_action: true,
+        }
+    }
+
+    fn eval(mut self, evaluator: Arc<E>) -> Self {
+        self.eval.replace(evaluator);
+        self
+    }
+
+    fn board(mut self, board: Board) -> Self {
+        self.board.replace(board);
+        self
+    }
+
+    fn sims(mut self, sims: u32) -> Self {
+        self.sims = sims;
+        self
+    }
+
+    fn use_noise(mut self, use_noise: bool) -> Self {
+        self.use_noise = use_noise;
+        self
+    }
+
+    fn sample_action(mut self, sample_action: bool) -> Self {
+        self.sample_action = sample_action;
+        self
+    }
+
+    fn build(self) -> Result<SpMcts<E>, RukyErr> {
+        match (self.eval, self.board) {
+            (Some(eval), Some(board)) => Ok(SpMcts {
+                evaluator: eval,
+                search_tree: SearchTree::from(board),
+                sims: self.sims,
+                use_noise: self.use_noise,
+                sample_action: self.sample_action,
+            }),
+            _ => Err(RukyErr::PreconditionErr),
+        }
+    }
+}
+
+#[derive(Clone, Debug)]
 pub struct Mcts<E: Eval> {
     evaluator: Arc<E>,
     search_tree: SearchTree,
@@ -398,13 +457,19 @@ impl SearchTree {
     }
 }
 
-impl From<&Board> for SearchTree {
-    fn from(board: &Board) -> Self {
+impl From<Board> for SearchTree {
+    fn from(board: Board) -> Self {
         Self {
             children: vec![Node::from(board)],
             root: 0,
             sample_action: false,
         }
+    }
+}
+
+impl From<&Board> for SearchTree {
+    fn from(board: &Board) -> Self {
+        SearchTree::from(board.clone())
     }
 }
 

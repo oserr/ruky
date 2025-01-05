@@ -1,5 +1,5 @@
 use burn::backend::candle::{Candle, CandleDevice};
-use ruky::game::GameBuilder;
+use ruky::game::TrGameBuilder;
 use ruky::Ruky;
 use std::time::{Duration, Instant};
 
@@ -7,12 +7,13 @@ use std::time::{Duration, Instant};
 fn main() {
     let ruky = Ruky::new();
     let device = CandleDevice::cuda(0);
-    let mut game = GameBuilder::<Candle>::new()
+    let mut game = TrGameBuilder::<Candle>::new()
         .device(device)
         .board(ruky.new_board())
         .sims(800)
         .max_moves(300)
         .use_noise(true)
+        .sample_action(true)
         .build()
         .expect("Expecting a new game.");
     println!("Starting a game of self play...");

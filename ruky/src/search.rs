@@ -17,6 +17,11 @@ pub trait Search {
     }
 }
 
+// A trait for evaluting chess positions during self-play training games.
+pub trait SpSearch {
+    fn search(&mut self) -> Result<SearchResult, RukyErr>;
+}
+
 #[derive(Clone, Debug, PartialEq)]
 pub struct SearchResult {
     // The best move according to the the Search agent.

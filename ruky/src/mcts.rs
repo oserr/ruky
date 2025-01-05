@@ -3,7 +3,7 @@
 use crate::board::Board;
 use crate::err::RukyErr;
 use crate::eval::{Eval, EvalBoards};
-use crate::search::{Bp, Mp, Search, SearchResult};
+use crate::search::{Bp, Mp, Search, SearchResult, SpSearch};
 use rand::{distributions::weighted::WeightedIndex, thread_rng};
 use rand_distr::{Dirichlet, Distribution};
 use std::cmp::max;
@@ -14,10 +14,74 @@ use std::time::{Duration, Instant};
 pub struct SpMcts<E: Eval> {
     evaluator: Arc<E>,
     search_tree: SearchTree,
-    boards: Vec<Board>,
     sims: u32,
     use_noise: bool,
     sample_action: bool,
+}
+
+impl<E: Eval> SpSearch for SpMcts<E> {
+    fn search(&mut self) -> Result<SearchResult, RukyErr> {
+        let search_start = Instant::now();
+
+        let root_index = self.search_tree.root_index();
+        self.search_tree.sample_action = self.sample_action;
+
+        let mut eval_time = if self.search_tree.is_root_leaf() {
+            let eval_time = Instant::now();
+            let eval_boards = self.evaluator.eval(self.search_tree.root_board())?;
+            let eval_time = eval_time.elapsed();
+            self.search_tree.expand(root_index, eval_boards);
+            eval_time
+        } else {
+            Duration::ZERO
+        };
+
+        if self.use_noise {
+            self.search_tree.add_priors_noise(root_index);
+        }
+
+        let mut max_depth = 0u32;
+        let mut nodes_expanded = 1;
+        let mut nodes_visited = 0;
+
+        for _ in 0..self.sims {
+            let mut node_index = root_index;
+            let mut current_depth = 0u32;
+            while self.search_tree.is_expanded(node_index) {
+                current_depth += 1;
+                nodes_visited += 1;
+                node_index = self
+                    .search_tree
+                    .choose_next(node_index)
+                    .ok_or(RukyErr::SearchChooseNext)?;
+            }
+            max_depth = max(max_depth, current_depth);
+            if self.search_tree.is_terminal(node_index) {
+                self.search_tree.terminate(node_index);
+                continue;
+            }
+            let board = self.search_tree.board(node_index);
+            let eval_start = Instant::now();
+            let eval_boards = self.evaluator.eval(board)?;
+            eval_time += eval_start.elapsed();
+            self.search_tree.expand(node_index, eval_boards);
+            nodes_expanded += 1
+        }
+
+        let best_node = self.search_tree.select_action();
+        let result = SearchResult {
+            best: Bp::from(best_node),
+            moves: self.search_tree.move_probs(),
+            value: best_node.value,
+            nodes_expanded,
+            nodes_visited,
+            depth: max_depth,
+            total_eval_time: eval_time,
+            total_search_time: search_start.elapsed(),
+        };
+        self.search_tree.update_root_from_index(best_node.index);
+        Ok(result)
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -199,6 +263,10 @@ impl SearchTree {
 
     fn root_node(&self) -> &Node {
         &self.children[self.root]
+    }
+
+    fn root_board(&self) -> &Board {
+        &self.root_node().board
     }
 
     fn is_root_leaf(&self) -> bool {

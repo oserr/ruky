@@ -139,7 +139,7 @@ impl<E: Eval> SpMctsBuilder<E> {
         match (self.eval, self.board) {
             (Some(eval), Some(board)) => Ok(SpMcts {
                 evaluator: eval,
-                search_tree: SearchTree::from(board),
+                search_tree: SearchTree::with_capacity(board, 6_000_000),
                 sims: self.sims,
                 use_noise: self.use_noise,
                 sample_action: self.sample_action,

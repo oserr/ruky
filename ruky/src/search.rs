@@ -22,6 +22,11 @@ pub trait SpSearch {
     fn search(&mut self) -> Result<SearchResult, RukyErr>;
 }
 
+// A trait for representing the size of a tree.
+pub trait TreeSize {
+    fn total_tree_nodes(&self) -> usize;
+}
+
 #[derive(Clone, Debug, PartialEq)]
 pub struct SearchResult {
     // The best move according to the the Search agent.

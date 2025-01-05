@@ -6,11 +6,47 @@ use crate::eval::AzEval;
 use crate::mcts::Mcts;
 use crate::nn::AlphaZeroNet;
 use crate::piece::Color;
-use crate::search::{Search, SearchResult};
+use crate::search::{Search, SearchResult, SpSearch};
 use crate::tensor_decoder::AzDecoder;
 use crate::tensor_encoder::AzEncoder;
 use burn::prelude::{Backend, Device};
 use std::sync::Arc;
+
+pub struct TrainingGame<S: SpSearch> {
+    board: Board,
+    // Search is used for white and black pieces.
+    wb_search: S,
+    max_moves: u32,
+}
+
+impl<S: SpSearch> TrainingGame<S> {
+    pub fn create(board: Board, wb_search: S, max_moves: u32) -> Self {
+        Self {
+            board,
+            wb_search,
+            max_moves,
+        }
+    }
+
+    pub fn play(&mut self) -> Result<GameResult, RukyErr> {
+        let mut moves = Vec::<SearchResult>::new();
+        for _ in 0..self.max_moves {
+            let result = self.wb_search.search()?;
+            moves.push(result);
+            let board = moves.last().unwrap().best_board();
+            if board.is_terminal() {
+                break;
+            }
+        }
+        let game_state = moves.last().unwrap().best_board().game_state();
+        let winner = GameWinner::from(game_state);
+        Ok(GameResult {
+            board: self.board.clone(),
+            moves,
+            winner,
+        })
+    }
+}
 
 // TODO: make this generic over Search once we have different types of Search.
 pub struct GameBuilder<B: Backend> {

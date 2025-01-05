@@ -59,10 +59,11 @@ fn main() {
         result.winner
     );
     println!(
-        "Time spent in play: mins=[{}] secs=[{}] millis=[{}]",
+        "Time spent in play: mins=[{}] secs=[{}] millis=[{}] total_tree_nodes=[{}]",
         as_mins(&dur),
         dur.as_secs_f32(),
         dur.as_millis(),
+        result.total_tree_nodes,
     );
 }
 

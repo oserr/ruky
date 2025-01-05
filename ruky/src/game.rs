@@ -6,7 +6,7 @@ use crate::eval::AzEval;
 use crate::mcts::{Mcts, SpMcts, SpMctsBuilder};
 use crate::nn::AlphaZeroNet;
 use crate::piece::Color;
-use crate::search::{Search, SearchResult, SpSearch};
+use crate::search::{Search, SearchResult, SpSearch, TreeSize};
 use crate::tensor_decoder::AzDecoder;
 use crate::tensor_encoder::AzEncoder;
 use burn::prelude::{Backend, Device};
@@ -85,14 +85,14 @@ impl<B: Backend> TrGameBuilder<B> {
 }
 
 #[derive(Clone, Debug)]
-pub struct TrainingGame<S: SpSearch> {
+pub struct TrainingGame<S: SpSearch + TreeSize> {
     board: Board,
     // Search is used for white and black pieces.
     wb_search: S,
     max_moves: u32,
 }
 
-impl<S: SpSearch> TrainingGame<S> {
+impl<S: SpSearch + TreeSize> TrainingGame<S> {
     pub fn create(board: Board, wb_search: S, max_moves: u32) -> Self {
         Self {
             board,
@@ -117,6 +117,7 @@ impl<S: SpSearch> TrainingGame<S> {
             board: self.board.clone(),
             moves,
             winner,
+            total_tree_nodes: self.wb_search.total_tree_nodes(),
         })
     }
 }
@@ -234,6 +235,7 @@ impl<S: Search> Game<S> {
             board: self.board.clone(),
             moves,
             winner,
+            total_tree_nodes: 0,
         })
     }
 }
@@ -243,6 +245,7 @@ pub struct GameResult {
     pub board: Board,
     pub moves: Vec<SearchResult>,
     pub winner: GameWinner,
+    pub total_tree_nodes: usize,
 }
 
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]

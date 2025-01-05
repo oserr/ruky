@@ -94,7 +94,7 @@ pub struct SpMctsBuilder<E: Eval> {
 }
 
 impl<E: Eval> SpMctsBuilder<E> {
-    fn new() -> Self {
+    pub fn new() -> Self {
         Self {
             eval: None,
             board: None,
@@ -104,32 +104,32 @@ impl<E: Eval> SpMctsBuilder<E> {
         }
     }
 
-    fn eval(mut self, evaluator: Arc<E>) -> Self {
+    pub fn eval(mut self, evaluator: Arc<E>) -> Self {
         self.eval.replace(evaluator);
         self
     }
 
-    fn board(mut self, board: Board) -> Self {
+    pub fn board(mut self, board: Board) -> Self {
         self.board.replace(board);
         self
     }
 
-    fn sims(mut self, sims: u32) -> Self {
+    pub fn sims(mut self, sims: u32) -> Self {
         self.sims = sims;
         self
     }
 
-    fn use_noise(mut self, use_noise: bool) -> Self {
+    pub fn use_noise(mut self, use_noise: bool) -> Self {
         self.use_noise = use_noise;
         self
     }
 
-    fn sample_action(mut self, sample_action: bool) -> Self {
+    pub fn sample_action(mut self, sample_action: bool) -> Self {
         self.sample_action = sample_action;
         self
     }
 
-    fn build(self) -> Result<SpMcts<E>, RukyErr> {
+    pub fn build(self) -> Result<SpMcts<E>, RukyErr> {
         match (self.eval, self.board) {
             (Some(eval), Some(board)) => Ok(SpMcts {
                 evaluator: eval,

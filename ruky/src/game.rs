@@ -3,7 +3,7 @@
 use crate::board::{Board, GameState};
 use crate::err::RukyErr;
 use crate::eval::AzEval;
-use crate::mcts::Mcts;
+use crate::mcts::{Mcts, SpMcts, SpMctsBuilder};
 use crate::nn::AlphaZeroNet;
 use crate::piece::Color;
 use crate::search::{Search, SearchResult, SpSearch};
@@ -11,6 +11,78 @@ use crate::tensor_decoder::AzDecoder;
 use crate::tensor_encoder::AzEncoder;
 use burn::prelude::{Backend, Device};
 use std::sync::Arc;
+
+pub struct TrGameBuilder<B: Backend> {
+    board: Option<Board>,
+    device: Option<Device<B>>,
+    sims: u32,
+    max_moves: u32,
+    use_noise: bool,
+    sample_action: bool,
+}
+
+impl<B: Backend> TrGameBuilder<B> {
+    pub fn new() -> Self {
+        Self {
+            board: None,
+            device: None,
+            sims: 800,
+            max_moves: 300,
+            use_noise: true,
+            sample_action: true,
+        }
+    }
+
+    pub fn board(mut self, board: Board) -> Self {
+        self.board.replace(board);
+        self
+    }
+
+    pub fn device(mut self, device: Device<B>) -> Self {
+        self.device.replace(device);
+        self
+    }
+
+    pub fn sims(mut self, sims: u32) -> Self {
+        self.sims = sims;
+        self
+    }
+
+    pub fn max_moves(mut self, max_moves: u32) -> Self {
+        self.max_moves = max_moves;
+        self
+    }
+
+    pub fn use_noise(mut self, use_noise: bool) -> Self {
+        self.use_noise = use_noise;
+        self
+    }
+
+    pub fn sample_action(mut self, sample_action: bool) -> Self {
+        self.sample_action = sample_action;
+        self
+    }
+
+    pub fn build(self) -> Result<TrainingGame<SpMcts<AzEval<B>>>, RukyErr> {
+        match (self.board, self.device) {
+            (Some(board), Some(device)) => {
+                let encoder = AzEncoder::new(device.clone());
+                let decoder = AzDecoder::new();
+                let net = Arc::new(AlphaZeroNet::new(&device));
+                let eval = Arc::new(AzEval::create(encoder, decoder, net));
+                let mcts = SpMctsBuilder::new()
+                    .eval(eval)
+                    .board(board.clone())
+                    .sims(self.sims)
+                    .use_noise(self.use_noise)
+                    .sample_action(self.sample_action)
+                    .build()?;
+                Ok(TrainingGame::create(board, mcts, self.max_moves))
+            }
+            (_, _) => Err(RukyErr::PreconditionErr),
+        }
+    }
+}
 
 #[derive(Clone, Debug)]
 pub struct TrainingGame<S: SpSearch> {

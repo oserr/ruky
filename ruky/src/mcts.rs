@@ -3,7 +3,7 @@
 use crate::board::Board;
 use crate::err::RukyErr;
 use crate::eval::{Eval, EvalBoards};
-use crate::search::{Bp, Mp, Search, SearchResult, SpSearch};
+use crate::search::{Bp, Mp, Search, SearchResult, SpSearch, TreeSize};
 use rand::{distributions::weighted::WeightedIndex, thread_rng};
 use rand_distr::{Dirichlet, Distribution};
 use std::cmp::max;
@@ -17,6 +17,12 @@ pub struct SpMcts<E: Eval> {
     sims: u32,
     use_noise: bool,
     sample_action: bool,
+}
+
+impl<E: Eval> TreeSize for SpMcts<E> {
+    fn total_tree_nodes(&self) -> usize {
+        self.search_tree.children.len()
+    }
 }
 
 impl<E: Eval> SpSearch for SpMcts<E> {

@@ -12,6 +12,7 @@ use crate::tensor_encoder::AzEncoder;
 use burn::prelude::{Backend, Device};
 use std::sync::Arc;
 
+#[derive(Clone, Debug)]
 pub struct TrainingGame<S: SpSearch> {
     board: Board,
     // Search is used for white and black pieces.

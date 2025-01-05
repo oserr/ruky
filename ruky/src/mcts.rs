@@ -81,7 +81,7 @@ impl<E: Eval> Search for Mcts<E> {
         let mut max_depth = 0u32;
         let mut nodes_expanded = 1;
         let mut nodes_visited = 0;
-        // TODO: add timing info.
+
         for _ in 0..self.sims {
             let mut node_index = root_index;
             let mut current_depth = 0u32;

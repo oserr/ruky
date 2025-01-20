@@ -1,6 +1,7 @@
 // This module contains components for building a multi-threaded MCTS.
 
 use crate::eval::Eval;
+use rayon::ThreadPool;
 use std::sync::Arc;
 
 // Represents a Multi-thread self-play MCTS.
@@ -34,6 +35,7 @@ use std::sync::Arc;
 #[derive(Debug)]
 pub struct MtSpMcts<E: Eval> {
     evaluator: Arc<E>,
+    worker_pool: ThreadPool,
     sims: u32,
     // If true, noise is added to the move priors for the root node.
     use_noise: bool,

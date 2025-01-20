@@ -1,6 +1,7 @@
 // This module contains components for building a multi-threaded MCTS.
 
 use crate::eval::Eval;
+use crossbeam::channel::{Receiver, Sender};
 use rayon::ThreadPool;
 use std::sync::Arc;
 
@@ -35,7 +36,13 @@ use std::sync::Arc;
 #[derive(Debug)]
 pub struct MtSpMcts<E: Eval> {
     evaluator: Arc<E>,
-    worker_pool: ThreadPool,
+    work_pool: ThreadPool,
+    // Sends encoding and decoding work to the workers.
+    work_tx: Sender<Task>,
+    // Receives encoded work from the workers.
+    encoded_rx: Receiver<Task>,
+    // Receives decoded work from the workers.
+    decoded_rx: Receiver<Task>,
     sims: u32,
     // If true, noise is added to the move priors for the root node.
     use_noise: bool,
@@ -46,4 +53,11 @@ pub struct MtSpMcts<E: Eval> {
     batch_size: u8,
     // The number of workers to use for encoding and decoding board positions.
     num_workers: u8,
+}
+
+// An enum to represent the different types of work.
+#[derive(Clone, Debug)]
+pub enum Task {
+    Decode,
+    Encode,
 }

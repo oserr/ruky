@@ -3341,6 +3341,7 @@ dependencies = [
  "num",
  "rand",
  "rand_distr",
+ "rayon",
  "serde",
  "simple-logging",
  "thiserror",

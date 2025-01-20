@@ -1,5 +1,8 @@
 // This module contains components for building a multi-threaded MCTS.
 
+use crate::eval::Eval;
+use std::sync::Arc;
+
 // Represents a Multi-thread self-play MCTS.
 //
 // The parallel MCTS uses a leader-worker architecture, with three different
@@ -29,4 +32,16 @@
 //
 // TODO: flesh out implemention.
 #[derive(Debug)]
-pub struct MtSpMcts {}
+pub struct MtSpMcts<E: Eval> {
+    evaluator: Arc<E>,
+    sims: u32,
+    // If true, noise is added to the move priors for the root node.
+    use_noise: bool,
+    // If true, the MCTS samples from the moves, rather than returning the move
+    // with the highest visit count.
+    sample_action: bool,
+    // The maximum number of boards that are sent for eval to the evaluator.
+    batch_size: u8,
+    // The number of workers to use for encoding and decoding board positions.
+    num_workers: u8,
+}

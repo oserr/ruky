@@ -39,10 +39,9 @@ pub struct MtSpMcts<E: Eval> {
     work_pool: ThreadPool,
     // Sends encoding and decoding work to the workers.
     work_tx: Sender<Task>,
-    // Receives encoded work from the workers.
-    encoded_rx: Receiver<Task>,
     // Receives decoded work from the workers.
     decoded_rx: Receiver<Task>,
+    // The total number of simulations to run.
     sims: u32,
     // If true, noise is added to the move priors for the root node.
     use_noise: bool,

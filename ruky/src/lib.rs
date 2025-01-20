@@ -9,6 +9,7 @@ mod fen;
 pub mod game;
 pub mod magics;
 pub mod mcts;
+pub mod mt_mcts;
 pub mod nn;
 mod piece;
 mod piece_move;

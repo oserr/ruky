@@ -346,6 +346,13 @@ impl Node {
     }
 }
 
+// An enum to represent the result of a rollout.
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub enum RolloutType {
+    Terminal { node_id: usize, depth: u32 },
+    Leaf { node_id: usize, depth: u32 },
+}
+
 fn explore_rate(parent_visits: u32) -> f32 {
     let num = 1.0 + parent_visits as f32 + EXPLORE_BASE;
     (num / EXPLORE_BASE).ln() + EXPLORE_INIT

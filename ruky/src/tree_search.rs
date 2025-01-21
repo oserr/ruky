@@ -1,7 +1,7 @@
 // This module contains a TreeSearch component.
 
 use crate::eval::EvalBoards;
-use crate::search::{Bp, Mp};
+use crate::search::{Bp, Mp, TreeSize};
 use crate::Board;
 use rand::{distributions::weighted::WeightedIndex, thread_rng};
 use rand_distr::{Dirichlet, Distribution};
@@ -10,7 +10,7 @@ use rand_distr::{Dirichlet, Distribution};
 pub struct TreeSearch {
     children: Vec<Node>,
     root: usize,
-    sample_action: bool,
+    pub sample_action: bool,
 }
 
 impl Default for TreeSearch {
@@ -20,6 +20,12 @@ impl Default for TreeSearch {
             root: 0,
             sample_action: false,
         }
+    }
+}
+
+impl TreeSize for TreeSearch {
+    fn total_tree_nodes(&self) -> usize {
+        self.children.len()
     }
 }
 

@@ -377,6 +377,20 @@ pub enum RolloutType {
     Leaf { node_id: usize, depth: u32 },
 }
 
+impl RolloutType {
+    pub fn is_terminal(&self) -> bool {
+        matches!(self, RolloutType::Terminal { .. })
+    }
+
+    pub fn info(&self) -> (usize, u32) {
+        match self {
+            RolloutType::Terminal { node_id, depth } | RolloutType::Leaf { node_id, depth } => {
+                (*node_id, *depth)
+            }
+        }
+    }
+}
+
 fn explore_rate(parent_visits: u32) -> f32 {
     let num = 1.0 + parent_visits as f32 + EXPLORE_BASE;
     (num / EXPLORE_BASE).ln() + EXPLORE_INIT

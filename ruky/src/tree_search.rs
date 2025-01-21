@@ -1,5 +1,6 @@
 // This module contains a TreeSearch component.
 
+use crate::err::RukyErr;
 use crate::eval::EvalBoards;
 use crate::search::{Bp, Mp, TreeSize};
 use crate::Board;
@@ -41,6 +42,29 @@ impl TreeSearch {
             children,
             root: 0,
             sample_action: false,
+        }
+    }
+
+    pub fn rollout(&mut self) -> Result<RolloutType, RukyErr> {
+        let mut node_index = self.root_index();
+        let mut depth = 0u32;
+        while self.is_expanded(node_index) {
+            depth += 1;
+            node_index = self
+                .choose_next(node_index)
+                .ok_or(RukyErr::SearchChooseNext)?;
+        }
+        if self.is_terminal(node_index) {
+            self.terminate(node_index);
+            Ok(RolloutType::Terminal {
+                node_id: node_index,
+                depth,
+            })
+        } else {
+            Ok(RolloutType::Leaf {
+                node_id: node_index,
+                depth,
+            })
         }
     }
 

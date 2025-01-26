@@ -7,6 +7,20 @@ use crate::search::{Bp, Mp};
 use burn::prelude::{Backend, Device, Tensor, TensorData};
 use std::iter::zip;
 
+// Creates a vector of floats for writing the encoded data for |batch_size|
+// board positions.
+pub fn get_batch_vec(batch_size: impl Into<usize>) -> Vec<f32> {
+    vec![0.0; batch_size.into() * N_PLANES * BOARD_SIZE]
+}
+
+// Returns a pair representing the first and last index in a range for a given
+// |batch|.
+pub fn get_batch_range(batch: impl Into<usize>) -> (usize, usize) {
+    let first = batch.into() * N_PLANES * BOARD_SIZE;
+    let last = first + N_PLANES * BOARD_SIZE;
+    (first, last)
+}
+
 pub trait TensorEncoder<B: Backend> {
     fn encode_board(&self, board: &Board) -> Tensor<B, 4>;
     fn encode_boards(&self, boards: &[Board]) -> Tensor<B, 4>;

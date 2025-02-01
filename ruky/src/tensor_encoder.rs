@@ -6,6 +6,7 @@ use crate::piece_set::PieceSet;
 use crate::search::{Bp, Mp};
 use burn::prelude::{Backend, Device, Tensor, TensorData};
 use std::iter::zip;
+use std::ops::Range;
 
 // Creates a vector of floats for writing the encoded data for |batch_size|
 // board positions.
@@ -15,10 +16,10 @@ pub fn get_batch_vec(batch_size: impl Into<usize>) -> Vec<f32> {
 
 // Returns a pair representing the first and last index in a range for a given
 // |batch|.
-pub fn get_batch_range(batch: impl Into<usize>) -> (usize, usize) {
+pub fn get_batch_range(batch: impl Into<usize>) -> Range<usize> {
     let first = batch.into() * N_PLANES * BOARD_SIZE;
     let last = first + N_PLANES * BOARD_SIZE;
-    (first, last)
+    first..last
 }
 
 pub trait TensorEncoder<B: Backend> {

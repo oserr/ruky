@@ -3,11 +3,12 @@
 use crate::err::RukyErr;
 use crate::eval::Eval;
 use crate::search::{Bp, SearchResult, SpSearch};
+use crate::tensor_encoder::{get_batch_range, get_batch_vec};
 use crate::tree_search::TreeSearch;
 use crossbeam::channel::{Receiver, Sender};
 use rayon::ThreadPool;
 use std::cmp::{max, min};
-use std::sync::Arc;
+use std::sync::{Arc, Condvar, Mutex};
 use std::time::{Duration, Instant};
 
 // Represents a Multi-thread self-play MCTS.
@@ -90,10 +91,12 @@ impl<E: Eval> SpSearch for MtSpMcts<E> {
             let mut batch_count = 0;
             let total_batch_count = min(self.sims - completed_sims, self.batch_size.into());
             // Todo: create big enough vector to be able to hold total batch count.
+            let mut data = get_batch_vec(total_batch_count as usize);
+            let mutex_cond = Arc::new((Mutex::new(0), Condvar::new()));
 
             while batch_count < total_batch_count && completed_sims < self.sims {
                 let rollout = self.tree_search.rollout()?;
-                let (_node_id, depth) = rollout.info();
+                let (node_id, depth) = rollout.info();
 
                 max_depth = max(max_depth, depth);
                 nodes_visited += depth;
@@ -102,6 +105,14 @@ impl<E: Eval> SpSearch for MtSpMcts<E> {
                 if rollout.is_terminal() {
                     continue;
                 }
+
+                let _enc_task = EncTask {
+                    node_id,
+                    mutex_cond: mutex_cond.clone(),
+                    data: data
+                        .get_mut(get_batch_range(batch_count as usize))
+                        .expect("Expecting batch of data."),
+                };
                 batch_count += 1;
                 // TODO: Add encoding work task, and do incomplete update.
             }
@@ -137,8 +148,15 @@ impl<E: Eval> SpSearch for MtSpMcts<E> {
 }
 
 // An enum to represent the different types of work.
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub enum Task {
     Decode,
     Encode,
+}
+
+#[derive(Debug)]
+struct EncTask<'a> {
+    node_id: usize,
+    mutex_cond: Arc<(Mutex<u32>, Condvar)>,
+    data: &'a mut [f32],
 }

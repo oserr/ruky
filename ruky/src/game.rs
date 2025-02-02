@@ -4,6 +4,7 @@ use crate::board::{Board, GameState};
 use crate::err::RukyErr;
 use crate::eval::AzEval;
 use crate::mcts::{Mcts, SpMcts, SpMctsBuilder};
+use crate::mt_mcts::MtSpMcts;
 use crate::nn::AlphaZeroNet;
 use crate::piece::Color;
 use crate::search::{Search, SearchResult, SpSearch, TreeSize};
@@ -23,6 +24,83 @@ pub struct ParTrGameBuilder<B: Backend> {
     sample_action: bool,
     batch_size: Option<u32>,
     num_workers: Option<u32>,
+}
+
+impl<B: Backend> ParTrGameBuilder<B> {
+    pub fn new() -> Self {
+        Self {
+            board: None,
+            device: None,
+            sims: 800,
+            max_moves: 300,
+            use_noise: true,
+            sample_action: true,
+            batch_size: None,
+            num_workers: None,
+        }
+    }
+
+    pub fn board(mut self, board: Board) -> Self {
+        self.board.replace(board);
+        self
+    }
+
+    pub fn device(mut self, device: Device<B>) -> Self {
+        self.device.replace(device);
+        self
+    }
+
+    pub fn sims(mut self, sims: u32) -> Self {
+        self.sims = sims;
+        self
+    }
+
+    pub fn max_moves(mut self, max_moves: u32) -> Self {
+        self.max_moves = max_moves;
+        self
+    }
+
+    pub fn use_noise(mut self, use_noise: bool) -> Self {
+        self.use_noise = use_noise;
+        self
+    }
+
+    pub fn sample_action(mut self, sample_action: bool) -> Self {
+        self.sample_action = sample_action;
+        self
+    }
+
+    pub fn batch_size(mut self, batch_size: u32) -> Self {
+        self.batch_size.replace(batch_size);
+        self
+    }
+
+    pub fn num_workers(mut self, num_workers: u32) -> Self {
+        self.num_workers.replace(num_workers);
+        self
+    }
+
+    pub fn build(self) -> Result<TrainingGame<MtSpMcts<AzEval<B>>>, RukyErr> {
+        match (self.board, self.device) {
+            (Some(board), Some(device)) => {
+                let encoder = AzEncoder::new(device.clone());
+                let decoder = AzDecoder::new();
+                let net = Arc::new(AlphaZeroNet::new(&device));
+                let eval = Arc::new(AzEval::create(encoder, decoder, net));
+                let mcts = MtSpMcts::create(
+                    eval,
+                    board.clone(),
+                    self.sims,
+                    self.use_noise,
+                    self.sample_action,
+                    self.batch_size.unwrap_or(16),
+                    self.num_workers.unwrap_or(16),
+                );
+                Ok(TrainingGame::create(board, mcts, self.max_moves))
+            }
+            (_, _) => Err(RukyErr::PreconditionErr),
+        }
+    }
 }
 
 pub struct TrGameBuilder<B: Backend> {

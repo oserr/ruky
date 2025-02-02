@@ -3,7 +3,7 @@
 use crate::err::RukyErr;
 use crate::eval::Eval;
 use crate::search::{Bp, SearchResult, SpSearch};
-use crate::tensor_encoder::enc_board;
+use crate::tensor_encoder::{enc_board, get_batch_vec, single_batch_size};
 use crate::tree_search::TreeSearch;
 use crate::Board;
 use crossbeam::channel::{unbounded, Receiver, Sender};
@@ -174,12 +174,25 @@ impl<E: Eval> SpSearch for MtSpMcts<E> {
                 self.work_tx
                     .send(Task::Encode(enc_task))
                     .expect("Encoding task should be transmitted.");
+                self.tree_search.incomplete_update(node_id);
                 batch_count += 1;
-                // TODO: call incomplete update here
+            }
+
+            let mut data = get_batch_vec(batch_count as usize);
+            let enc_results = self
+                .encoded_rx
+                .iter()
+                .take(batch_count as usize)
+                .collect::<Vec<_>>();
+
+            for (data_batch, enc_result) in data
+                .chunks_exact_mut(single_batch_size())
+                .zip(enc_results.iter())
+            {
+                data_batch.copy_from_slice(enc_result.enc_data.as_ref());
             }
 
             // TODO:
-            // - wait until workers are done with encoding.
             // - send for eval
             // - add decoding work tasks
             // - do complete update

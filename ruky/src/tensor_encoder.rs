@@ -22,6 +22,10 @@ pub fn get_batch_range(batch: impl Into<usize>) -> Range<usize> {
     first..last
 }
 
+pub fn single_batch_size() -> usize {
+    N_PLANES * BOARD_SIZE
+}
+
 // Encodes a single board as a vector of floats.
 pub fn enc_board(board: &Board) -> Vec<f32> {
     let mut data = vec![0.0; N_PLANES * BOARD_SIZE];

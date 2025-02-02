@@ -178,6 +178,11 @@ impl TreeSearch {
         }
     }
 
+    pub fn complete_expand(&mut self, node_index: usize, eval_boards: EvalBoards) {
+        self.only_expand(node_index, eval_boards);
+        self.complete_update(node_index);
+    }
+
     pub fn expand(&mut self, node_index: usize, eval_boards: EvalBoards) {
         self.only_expand(node_index, eval_boards);
         self.update_nodes(node_index);

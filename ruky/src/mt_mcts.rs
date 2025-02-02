@@ -234,8 +234,14 @@ struct EncTask {
     board: Board,
 }
 
-// A struct representing a decoded result.
-struct EncResult {}
+// A struct representing an encoded result.
+#[derive(Clone, Debug)]
+struct EncResult {
+    node_id: usize,
+    board: Board,
+    moves: Vec<Board>,
+    enc_data: Vec<f32>,
+}
 
 impl EncTask {
     fn run_task(&self) -> EncResult {

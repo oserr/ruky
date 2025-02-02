@@ -194,16 +194,15 @@ impl<E: Eval> SpSearch for MtSpMcts<E> {
                 data_batch.copy_from_slice(enc_result.enc_data.as_ref());
             }
 
+            let eval_start = Instant::now();
+            let (_mv_data, _eval_data) =
+                self.evaluator.eval_batch_data(batch_count as usize, data)?;
+            eval_time += eval_start.elapsed();
+
             // TODO:
-            // - send for eval
             // - add decoding work tasks
             // - do complete update
 
-            let board = self.tree_search.board(root_index);
-            let eval_start = Instant::now();
-            let eval_boards = self.evaluator.eval(board)?;
-            eval_time += eval_start.elapsed();
-            self.tree_search.expand(root_index, eval_boards);
             nodes_expanded += 1;
         }
 

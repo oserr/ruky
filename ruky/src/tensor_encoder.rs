@@ -22,6 +22,34 @@ pub fn get_batch_range(batch: impl Into<usize>) -> Range<usize> {
     first..last
 }
 
+// Encodes a single board as a vector of floats.
+pub fn enc_board(board: &Board) -> Vec<f32> {
+    let mut data = vec![0.0; N_PLANES * BOARD_SIZE];
+    let six_planes = N_PIECE_TYPES * BOARD_SIZE;
+
+    // TODO: For black, might want to flip the board so it's from the player's
+    // perspective.
+    let (next_to_play, after_to_play) = if board.is_white_next() {
+        (board.white(), board.black())
+    } else {
+        (board.black(), board.white())
+    };
+
+    encode_pieces(next_to_play, &mut data[..six_planes]);
+    encode_pieces(after_to_play, &mut data[six_planes..2 * six_planes]);
+    // TODO: need to set the repetition count on the last two planes.
+
+    let state_features = get_state_features(&board);
+    for (val, chunk) in zip(
+        state_features.iter().rev(),
+        data.rchunks_exact_mut(BOARD_SIZE),
+    ) {
+        chunk.fill(*val);
+    }
+
+    data
+}
+
 pub trait TensorEncoder<B: Backend> {
     fn encode_board(&self, board: &Board) -> Tensor<B, 4>;
     fn encode_boards(&self, boards: &[Board]) -> Tensor<B, 4>;
@@ -58,29 +86,7 @@ impl<B: Backend> AzEncoder<B> {
 impl<B: Backend> TensorEncoder<B> for AzEncoder<B> {
     // Outputs a Tensor with dimensions (1, 119, 8, 8).
     fn encode_board(&self, board: &Board) -> Tensor<B, 4> {
-        let mut data = vec![0.0; N_PLANES * BOARD_SIZE];
-        let six_planes = N_PIECE_TYPES * BOARD_SIZE;
-
-        // TODO: For black, might want to flip the board so it's from the player's
-        // perspective.
-        let (next_to_play, after_to_play) = if board.is_white_next() {
-            (board.white(), board.black())
-        } else {
-            (board.black(), board.white())
-        };
-
-        encode_pieces(next_to_play, &mut data[..six_planes]);
-        encode_pieces(after_to_play, &mut data[six_planes..2 * six_planes]);
-        // TODO: need to set the repetition count on the last two planes.
-
-        let state_features = get_state_features(&board);
-        for (val, chunk) in zip(
-            state_features.iter().rev(),
-            data.rchunks_exact_mut(BOARD_SIZE),
-        ) {
-            chunk.fill(*val);
-        }
-
+        let data = enc_board(board);
         let tensor_data = TensorData::new(data, [1, N_PLANES, N_ROWS, N_COLS]);
         Tensor::from_data(tensor_data, &self.device)
     }

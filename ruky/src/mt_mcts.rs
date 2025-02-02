@@ -3,7 +3,7 @@
 use crate::err::RukyErr;
 use crate::eval::{Eval, EvalBoards};
 use crate::search::{Bp, SearchResult, SpSearch};
-use crate::tensor_decoder::N_POSSIBLE_MOVES;
+use crate::tensor_decoder::{dec_boards, N_POSSIBLE_MOVES};
 use crate::tensor_encoder::{enc_board, get_batch_vec, single_batch_size};
 use crate::tree_search::TreeSearch;
 use crate::Board;
@@ -261,8 +261,11 @@ struct DecResult {
 }
 
 impl DecTask {
-    fn run_task(&self) -> DecResult {
-        todo!();
+    fn run_task(self) -> DecResult {
+        DecResult {
+            node_id: self.node_id,
+            eval_boards: dec_boards(self.moves, self.value, self.enc_moves),
+        }
     }
 }
 

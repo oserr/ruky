@@ -11,7 +11,7 @@ use std::marker::PhantomData;
 
 // dec_boards returns a DecBoards by decoding the moves in |enc_moves| given
 // legal |moves|.
-fn dec_boards(moves: Vec<Board>, value: f32, enc_moves: Vec<f32>) -> DecBoards {
+pub fn dec_boards(moves: Vec<Board>, value: f32, enc_moves: Vec<f32>) -> DecBoards {
     assert_eq!(moves.len(), N_POSSIBLE_MOVES);
 
     let mut total = 0.0;

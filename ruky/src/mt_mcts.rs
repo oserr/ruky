@@ -5,8 +5,8 @@ use crate::eval::Eval;
 use crate::search::{Bp, SearchResult, SpSearch};
 use crate::tensor_encoder::{get_batch_range, get_batch_vec};
 use crate::tree_search::TreeSearch;
-use crossbeam::channel::{Receiver, Sender};
-use rayon::ThreadPool;
+use crossbeam::channel::{unbounded, Receiver, Sender};
+use rayon::{ThreadPool, ThreadPoolBuilder};
 use std::cmp::{max, min};
 use std::sync::{Arc, Condvar, Mutex};
 use std::time::{Duration, Instant};
@@ -40,14 +40,14 @@ use std::time::{Duration, Instant};
 //
 // TODO: flesh out implemention.
 #[derive(Debug)]
-pub struct MtSpMcts<E: Eval> {
+pub struct MtSpMcts<'a, E: Eval> {
     evaluator: Arc<E>,
     tree_search: TreeSearch,
     work_pool: ThreadPool,
     // Sends encoding and decoding work to the workers.
-    work_tx: Sender<Task>,
+    work_tx: Sender<Task<'a>>,
     // Receives decoded work from the workers.
-    decoded_rx: Receiver<Task>,
+    decoded_rx: Receiver<DecResult>,
     // The total number of simulations to run.
     sims: u32,
     // If true, noise is added to the move priors for the root node.
@@ -56,12 +56,67 @@ pub struct MtSpMcts<E: Eval> {
     // with the highest visit count.
     sample_action: bool,
     // The maximum number of boards that are sent for eval to the evaluator.
-    batch_size: u8,
+    batch_size: u32,
     // The number of workers to use for encoding and decoding board positions.
-    num_workers: u8,
+    num_workers: u32,
 }
 
-impl<E: Eval> SpSearch for MtSpMcts<E> {
+impl<E: Eval> MtSpMcts<'_, E> {
+    // Initialiazes the MCTS by creating a tool of worker threads to parallelize
+    // encoding and decoding tasks.
+    pub fn create(
+        evaluator: Arc<E>,
+        tree_search: TreeSearch,
+        sims: u32,
+        use_noise: bool,
+        sample_action: bool,
+        batch_size: u32,
+        num_workers: u32,
+    ) -> Self {
+        let work_pool = ThreadPoolBuilder::new()
+            .num_threads(num_workers as usize)
+            .build()
+            .expect("Expecting thread pool.");
+
+        let (work_tx, work_rx) = unbounded();
+        let (decoded_tx, decoded_rx) = unbounded();
+
+        for _ in 0..num_workers {
+            let work_rx = work_rx.clone();
+            let decoded_tx = decoded_tx.clone();
+            work_pool.scope(|s| {
+                s.spawn(move |_| {
+                    for work in work_rx {
+                        match work {
+                            Task::Encode(enc_task) => enc_task.run_task(),
+                            Task::Decode(dec_task) => {
+                                let result = dec_task.run_task();
+                                if let Err(_) = decoded_tx.send(result) {
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                })
+            });
+        }
+
+        Self {
+            evaluator,
+            tree_search,
+            work_pool,
+            work_tx,
+            decoded_rx,
+            sims,
+            use_noise,
+            sample_action,
+            batch_size,
+            num_workers,
+        }
+    }
+}
+
+impl<E: Eval> SpSearch for MtSpMcts<'_, E> {
     fn search(&mut self) -> Result<SearchResult, RukyErr> {
         let search_start = Instant::now();
 
@@ -149,14 +204,34 @@ impl<E: Eval> SpSearch for MtSpMcts<E> {
 
 // An enum to represent the different types of work.
 #[derive(Debug)]
-pub enum Task {
-    Decode,
-    Encode,
+enum Task<'a> {
+    Decode(DecTask),
+    Encode(EncTask<'a>),
 }
 
+// A struct representing a decoding task.
+#[derive(Debug)]
+struct DecTask {}
+
+// A struct representing a decoded result.
+struct DecResult {}
+
+impl DecTask {
+    fn run_task(&self) -> DecResult {
+        todo!();
+    }
+}
+
+// A struct representing an encoding task.
 #[derive(Debug)]
 struct EncTask<'a> {
     node_id: usize,
     mutex_cond: Arc<(Mutex<u32>, Condvar)>,
     data: &'a mut [f32],
+}
+
+impl<'a> EncTask<'_> {
+    fn run_task(&self) {
+        todo!();
+    }
 }

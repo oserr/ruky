@@ -12,6 +12,19 @@ use crate::tensor_encoder::AzEncoder;
 use burn::prelude::{Backend, Device};
 use std::sync::Arc;
 
+// Parallel training game builder.
+#[derive(Clone, Debug)]
+pub struct ParTrGameBuilder<B: Backend> {
+    board: Option<Board>,
+    device: Option<Device<B>>,
+    sims: u32,
+    max_moves: u32,
+    use_noise: bool,
+    sample_action: bool,
+    batch_size: Option<u32>,
+    num_workers: Option<u32>,
+}
+
 pub struct TrGameBuilder<B: Backend> {
     board: Option<Board>,
     device: Option<Device<B>>,

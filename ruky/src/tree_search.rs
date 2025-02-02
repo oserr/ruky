@@ -75,8 +75,9 @@ impl TreeSearch {
         self.children[parent_node.children.0..parent_node.children.1]
             .iter()
             .reduce(|acc_node, node| {
-                let acc_node_score = acc_node.score(parent_node.visits, child_visits);
-                let node_score = node.score(parent_node.visits, child_visits);
+                let parent_visits = parent_node.total_visits();
+                let acc_node_score = acc_node.score(parent_visits, child_visits);
+                let node_score = node.score(parent_visits, child_visits);
                 if acc_node_score > node_score {
                     acc_node
                 } else {

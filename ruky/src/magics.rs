@@ -199,7 +199,7 @@ fn get_magic_hash(blocking: BitBoard, magic: u64, rshift: u8) -> usize {
 }
 
 pub fn create_rand_iter() -> impl Iterator<Item = u64> {
-    let mut rng = rand::thread_rng();
+    let mut rng = rand::rng();
     std::iter::from_fn(move || Some(rng.next_u64() & rng.next_u64() & rng.next_u64()))
 }
 

@@ -4,8 +4,8 @@ use crate::err::RukyErr;
 use crate::eval::EvalBoards;
 use crate::search::{Bp, Mp, TreeSize};
 use crate::Board;
-use rand::{distributions::weighted::WeightedIndex, thread_rng};
-use rand_distr::{Dirichlet, Distribution};
+use rand::{distr::weighted::WeightedIndex, rng};
+use rand_distr::{Distribution, Gamma};
 
 #[derive(Clone, Debug)]
 pub struct TreeSearch {
@@ -194,7 +194,7 @@ impl TreeSearch {
             .map(|node| node.visits)
             .collect();
         let weighted_dist = WeightedIndex::new(&weights).expect("Expecting WeightedIndex.");
-        let index = weighted_dist.sample(&mut thread_rng());
+        let index = weighted_dist.sample(&mut rng());
         &self.children[first + index]
     }
 
@@ -253,10 +253,9 @@ impl TreeSearch {
         if n_moves < 2 {
             return;
         }
-        let dirichlet = Dirichlet::new_with_size(DIR_ALPHA, n_moves)
-            .expect("Expecting Dirichlet distribution.");
-        let probs = dirichlet.sample(&mut thread_rng());
-        for (node, noise) in self.children[first..last].iter_mut().zip(probs) {
+        let gamma = Gamma::new(DIR_ALPHA, 1.0).expect("Expecting Dirichlet distribution.");
+        for node in self.children[first..last].iter_mut() {
+            let noise = gamma.sample(&mut rng());
             node.prior = (1.0 - DIR_EXPLORE_FRAC) * node.prior + DIR_EXPLORE_FRAC * noise;
         }
     }

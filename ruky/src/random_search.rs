@@ -14,7 +14,7 @@ impl RandomSearch {
 impl Search for RandomSearch {
     fn search_board(&mut self, board: &Board) -> Result<SearchResult, RukyErr> {
         let mut boards = board.next_boards().ok_or(RukyErr::SearchTerminalBoard)?;
-        let index = rand::thread_rng().gen_range(0..boards.len());
+        let index = rand::rng().random_range(0..boards.len());
         let best = boards.swap_remove(index);
         Ok(SearchResult::with_best(best))
     }

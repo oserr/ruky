@@ -164,7 +164,7 @@ impl<B: Backend> TensorEncoder<B> for AzEncoder<B> {
     }
 
     fn encode_batch_data(&self, batch_size: usize, data: Vec<f32>) -> Tensor<B, 4> {
-        let tensor_data = TensorData::new(data, [batch_size, N_MOVE_TYPES, N_ROWS, N_COLS]);
+        let tensor_data = TensorData::new(data, [batch_size, N_PLANES, N_ROWS, N_COLS]);
         Tensor::from_data(tensor_data, &self.device)
     }
 }

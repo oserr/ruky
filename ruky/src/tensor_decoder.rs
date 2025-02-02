@@ -156,4 +156,4 @@ fn get_value<B: Backend>(tensor: &Tensor<B, 2>) -> Result<f32, RukyErr> {
     Ok(eval_data[0])
 }
 
-const N_POSSIBLE_MOVES: usize = 73 * 8 * 8;
+pub(crate) const N_POSSIBLE_MOVES: usize = 73 * 8 * 8;

@@ -1,7 +1,7 @@
 // This module contains components for building a multi-threaded MCTS.
 
 use crate::err::RukyErr;
-use crate::eval::Eval;
+use crate::eval::{Eval, EvalBoards};
 use crate::search::{Bp, SearchResult, SpSearch};
 use crate::tensor_decoder::N_POSSIBLE_MOVES;
 use crate::tensor_encoder::{enc_board, get_batch_vec, single_batch_size};
@@ -255,7 +255,10 @@ struct DecTask {
 }
 
 // A struct representing a decoded result.
-struct DecResult {}
+struct DecResult {
+    node_id: usize,
+    eval_boards: EvalBoards,
+}
 
 impl DecTask {
     fn run_task(&self) -> DecResult {

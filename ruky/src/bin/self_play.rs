@@ -1,5 +1,5 @@
 use burn::backend::candle::{Candle, CandleDevice};
-use ruky::game::TrGameBuilder;
+use ruky::game::ParTrGameBuilder;
 use ruky::Ruky;
 use std::time::{Duration, Instant};
 
@@ -7,7 +7,7 @@ use std::time::{Duration, Instant};
 fn main() {
     let ruky = Ruky::new();
     let device = CandleDevice::cuda(0);
-    let mut game = TrGameBuilder::<Candle>::new()
+    let mut game = ParTrGameBuilder::<Candle>::new()
         .device(device)
         .board(ruky.new_board())
         .sims(800)

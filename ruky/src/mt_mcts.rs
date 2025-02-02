@@ -2,7 +2,7 @@
 
 use crate::err::RukyErr;
 use crate::eval::{Eval, EvalBoards};
-use crate::search::{Bp, SearchResult, SpSearch};
+use crate::search::{Bp, SearchResult, SpSearch, TreeSize};
 use crate::tensor_decoder::{dec_boards, N_POSSIBLE_MOVES};
 use crate::tensor_encoder::{enc_board, get_batch_vec, single_batch_size};
 use crate::tree_search::TreeSearch;
@@ -124,6 +124,12 @@ impl<E: Eval> MtSpMcts<E> {
             batch_size,
             num_workers,
         }
+    }
+}
+
+impl<E: Eval> TreeSize for MtSpMcts<E> {
+    fn total_tree_nodes(&self) -> usize {
+        self.tree_search.total_tree_nodes()
     }
 }
 

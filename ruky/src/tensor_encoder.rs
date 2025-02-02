@@ -59,6 +59,7 @@ pub trait TensorEncoder<B: Backend> {
     fn encode_boards(&self, boards: &[Board]) -> Tensor<B, 4>;
     fn encode_mps(&self, mps: &[Mp]) -> Tensor<B, 4>;
     fn encode_bps(&self, bps: &[Bp]) -> Tensor<B, 4>;
+    fn encode_batch_data(&self, batch_size: usize, data: Vec<f32>) -> Tensor<B, 4>;
 }
 
 // AzEncoder represents the AlphaZero encoder, i.e. it encodes the board the
@@ -159,6 +160,11 @@ impl<B: Backend> TensorEncoder<B> for AzEncoder<B> {
             data[index] = bp.visits as f32 / total_visits;
         }
         let tensor_data = TensorData::new(data, [1, N_MOVE_TYPES, N_ROWS, N_COLS]);
+        Tensor::from_data(tensor_data, &self.device)
+    }
+
+    fn encode_batch_data(&self, batch_size: usize, data: Vec<f32>) -> Tensor<B, 4> {
+        let tensor_data = TensorData::new(data, [batch_size, N_MOVE_TYPES, N_ROWS, N_COLS]);
         Tensor::from_data(tensor_data, &self.device)
     }
 }

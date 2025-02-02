@@ -3,12 +3,12 @@
 use crate::err::RukyErr;
 use crate::eval::Eval;
 use crate::search::{Bp, SearchResult, SpSearch};
-use crate::tensor_encoder::{get_batch_range, get_batch_vec};
 use crate::tree_search::TreeSearch;
+use crate::Board;
 use crossbeam::channel::{unbounded, Receiver, Sender};
 use rayon::{ThreadPool, ThreadPoolBuilder};
 use std::cmp::{max, min};
-use std::sync::{Arc, Condvar, Mutex};
+use std::sync::Arc;
 use std::time::{Duration, Instant};
 
 // Represents a Multi-thread self-play MCTS.
@@ -40,12 +40,14 @@ use std::time::{Duration, Instant};
 //
 // TODO: flesh out implemention.
 #[derive(Debug)]
-pub struct MtSpMcts<'a, E: Eval> {
+pub struct MtSpMcts<E: Eval> {
     evaluator: Arc<E>,
     tree_search: TreeSearch,
     work_pool: ThreadPool,
     // Sends encoding and decoding work to the workers.
-    work_tx: Sender<Task<'a>>,
+    work_tx: Sender<Task>,
+    // Receives encoded work from the workers.
+    encoded_rx: Receiver<EncResult>,
     // Receives decoded work from the workers.
     decoded_rx: Receiver<DecResult>,
     // The total number of simulations to run.
@@ -61,7 +63,7 @@ pub struct MtSpMcts<'a, E: Eval> {
     num_workers: u32,
 }
 
-impl<E: Eval> MtSpMcts<'_, E> {
+impl<E: Eval> MtSpMcts<E> {
     // Initialiazes the MCTS by creating a tool of worker threads to parallelize
     // encoding and decoding tasks.
     pub fn create(
@@ -79,25 +81,30 @@ impl<E: Eval> MtSpMcts<'_, E> {
             .expect("Expecting thread pool.");
 
         let (work_tx, work_rx) = unbounded();
+        let (encoded_tx, encoded_rx) = unbounded();
         let (decoded_tx, decoded_rx) = unbounded();
 
         for _ in 0..num_workers {
             let work_rx = work_rx.clone();
             let decoded_tx = decoded_tx.clone();
-            work_pool.scope(|s| {
-                s.spawn(move |_| {
-                    for work in work_rx {
-                        match work {
-                            Task::Encode(enc_task) => enc_task.run_task(),
-                            Task::Decode(dec_task) => {
-                                let result = dec_task.run_task();
-                                if let Err(_) = decoded_tx.send(result) {
-                                    break;
-                                }
+            let encoded_tx = encoded_tx.clone();
+            work_pool.spawn(move || {
+                for work in work_rx {
+                    match work {
+                        Task::Encode(enc_task) => {
+                            let result = enc_task.run_task();
+                            if let Err(_) = encoded_tx.send(result) {
+                                break;
+                            }
+                        }
+                        Task::Decode(dec_task) => {
+                            let result = dec_task.run_task();
+                            if let Err(_) = decoded_tx.send(result) {
+                                break;
                             }
                         }
                     }
-                })
+                }
             });
         }
 
@@ -106,6 +113,7 @@ impl<E: Eval> MtSpMcts<'_, E> {
             tree_search,
             work_pool,
             work_tx,
+            encoded_rx,
             decoded_rx,
             sims,
             use_noise,
@@ -116,7 +124,7 @@ impl<E: Eval> MtSpMcts<'_, E> {
     }
 }
 
-impl<E: Eval> SpSearch for MtSpMcts<'_, E> {
+impl<E: Eval> SpSearch for MtSpMcts<E> {
     fn search(&mut self) -> Result<SearchResult, RukyErr> {
         let search_start = Instant::now();
 
@@ -145,9 +153,6 @@ impl<E: Eval> SpSearch for MtSpMcts<'_, E> {
         while completed_sims < self.sims {
             let mut batch_count = 0;
             let total_batch_count = min(self.sims - completed_sims, self.batch_size.into());
-            // Todo: create big enough vector to be able to hold total batch count.
-            let mut data = get_batch_vec(total_batch_count as usize);
-            let mutex_cond = Arc::new((Mutex::new(0), Condvar::new()));
 
             while batch_count < total_batch_count && completed_sims < self.sims {
                 let rollout = self.tree_search.rollout()?;
@@ -161,13 +166,13 @@ impl<E: Eval> SpSearch for MtSpMcts<'_, E> {
                     continue;
                 }
 
-                let _enc_task = EncTask {
+                let enc_task = EncTask {
                     node_id,
-                    mutex_cond: mutex_cond.clone(),
-                    data: data
-                        .get_mut(get_batch_range(batch_count as usize))
-                        .expect("Expecting batch of data."),
+                    board: self.tree_search.board(node_id).clone(),
                 };
+                self.work_tx
+                    .send(Task::Encode(enc_task))
+                    .expect("Encoding task should be transmitted.");
                 batch_count += 1;
                 // TODO: Add encoding work task, and do incomplete update.
             }
@@ -204,9 +209,9 @@ impl<E: Eval> SpSearch for MtSpMcts<'_, E> {
 
 // An enum to represent the different types of work.
 #[derive(Debug)]
-enum Task<'a> {
+enum Task {
     Decode(DecTask),
-    Encode(EncTask<'a>),
+    Encode(EncTask),
 }
 
 // A struct representing a decoding task.
@@ -224,14 +229,16 @@ impl DecTask {
 
 // A struct representing an encoding task.
 #[derive(Debug)]
-struct EncTask<'a> {
+struct EncTask {
     node_id: usize,
-    mutex_cond: Arc<(Mutex<u32>, Condvar)>,
-    data: &'a mut [f32],
+    board: Board,
 }
 
-impl<'a> EncTask<'_> {
-    fn run_task(&self) {
+// A struct representing a decoded result.
+struct EncResult {}
+
+impl EncTask {
+    fn run_task(&self) -> EncResult {
         todo!();
     }
 }

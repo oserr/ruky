@@ -216,10 +216,14 @@ impl<E: Eval> SpSearch for MtSpMcts<E> {
                     .expect("Decoding task should be transmitted.");
             }
 
-            // TODO:
-            // - do complete update
-
-            nodes_expanded += 1;
+            for DecResult {
+                node_id,
+                eval_boards,
+            } in self.decoded_rx.iter().take(batch_count as usize)
+            {
+                self.tree_search.complete_expand(node_id, eval_boards);
+                nodes_expanded += 1;
+            }
         }
 
         let best_node = self.tree_search.select_action();

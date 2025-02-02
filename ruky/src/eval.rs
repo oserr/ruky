@@ -16,6 +16,11 @@ pub type EvalBoards = DecBoards;
 pub trait Eval {
     fn eval(&self, board: &Board) -> Result<EvalBoards, RukyErr>;
     fn eval_boards(&self, boards: &[Board]) -> Result<EvalBoards, RukyErr>;
+    fn eval_batch_data(
+        &self,
+        batch_size: usize,
+        data: Vec<f32>,
+    ) -> Result<(Vec<f32>, Vec<f32>), RukyErr>;
 }
 
 pub struct AzEval<B: Backend> {
@@ -36,6 +41,25 @@ impl<B: Backend> Eval for AzEval<B> {
         let (mv_tensor, eval_tensor) = self.net.forward(input);
         let board = boards.last().expect("Expecting at least 1 board for eval.");
         self.decoder.decode_boards(board, mv_tensor, eval_tensor)
+    }
+
+    fn eval_batch_data(
+        &self,
+        batch_size: usize,
+        data: Vec<f32>,
+    ) -> Result<(Vec<f32>, Vec<f32>), RukyErr> {
+        let input = self.encoder.encode_batch_data(batch_size, data);
+        let (mv_tensor, eval_tensor) = self.net.forward(input);
+        // TODO: Use into instead to avoid creating copy.
+        let mv_data = mv_tensor
+            .into_data()
+            .to_vec()
+            .expect("Expecing data from move tensor.");
+        let eval_data = eval_tensor
+            .into_data()
+            .to_vec()
+            .expect("Expecting data from eval tensor.");
+        Ok((mv_data, eval_data))
     }
 }
 

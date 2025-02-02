@@ -185,6 +185,8 @@ impl<E: Eval> SpSearch for MtSpMcts<E> {
                 .take(batch_count as usize)
                 .collect::<Vec<_>>();
 
+            assert_eq!(enc_results.len(), batch_count as usize);
+
             for (data_batch, enc_result) in data
                 .chunks_exact_mut(single_batch_size())
                 .zip(enc_results.iter())

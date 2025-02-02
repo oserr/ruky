@@ -195,6 +195,26 @@ impl TreeSearch {
         self.update_nodes(node_index);
     }
 
+    fn expand_with_fn<F>(&mut self, node_index: usize, eval_boards: EvalBoards, mut update_fn: F)
+    where
+        F: FnMut(usize),
+    {
+        let first_index = self.children.len();
+        let last_index = first_index + eval_boards.board_probs.len();
+        let node = &mut self.children[node_index];
+        node.children = (first_index, last_index);
+        node.init_value = eval_boards.value;
+        node.value = node.init_value;
+        node.is_leaf = false;
+        self.children
+            .extend(eval_boards.board_probs.into_iter().zip(first_index..).map(
+                |((board, prior), index)| {
+                    Node::from_board_parent_prior_index(board, node_index, prior, index)
+                },
+            ));
+        update_fn(node_index);
+    }
+
     pub fn most_visited(&self) -> &Node {
         let (first, last) = self.children[self.root].children;
         self.children[first..last]

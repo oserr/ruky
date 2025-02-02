@@ -71,7 +71,7 @@ impl<E: Eval> MtSpMcts<E> {
     // encoding and decoding tasks.
     pub fn create(
         evaluator: Arc<E>,
-        tree_search: TreeSearch,
+        board: Board,
         sims: u32,
         use_noise: bool,
         sample_action: bool,
@@ -113,7 +113,7 @@ impl<E: Eval> MtSpMcts<E> {
 
         Self {
             evaluator,
-            tree_search,
+            tree_search: TreeSearch::with_capacity(board, 5_000_000),
             work_pool,
             work_tx,
             encoded_rx,

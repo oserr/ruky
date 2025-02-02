@@ -3,12 +3,14 @@
 use crate::err::RukyErr;
 use crate::eval::Eval;
 use crate::search::{Bp, SearchResult, SpSearch};
+use crate::tensor_decoder::N_POSSIBLE_MOVES;
 use crate::tensor_encoder::{enc_board, get_batch_vec, single_batch_size};
 use crate::tree_search::TreeSearch;
 use crate::Board;
 use crossbeam::channel::{unbounded, Receiver, Sender};
 use rayon::{ThreadPool, ThreadPoolBuilder};
 use std::cmp::{max, min};
+use std::iter::zip;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 
@@ -195,12 +197,26 @@ impl<E: Eval> SpSearch for MtSpMcts<E> {
             }
 
             let eval_start = Instant::now();
-            let (_mv_data, _eval_data) =
+            let (mv_data, value_data) =
                 self.evaluator.eval_batch_data(batch_count as usize, data)?;
             eval_time += eval_start.elapsed();
 
+            for ((enc_moves, value), enc_result) in zip(
+                mv_data.chunks_exact(N_POSSIBLE_MOVES).zip(value_data),
+                enc_results,
+            ) {
+                let dec_task = DecTask {
+                    node_id: enc_result.node_id,
+                    moves: enc_result.moves,
+                    enc_moves: enc_moves.to_vec(),
+                    value,
+                };
+                self.work_tx
+                    .send(Task::Decode(dec_task))
+                    .expect("Decoding task should be transmitted.");
+            }
+
             // TODO:
-            // - add decoding work tasks
             // - do complete update
 
             nodes_expanded += 1;
@@ -234,7 +250,7 @@ enum Task {
 struct DecTask {
     node_id: usize,
     moves: Vec<Board>,
-    enc_data: Vec<f32>,
+    enc_moves: Vec<f32>,
     value: f32,
 }
 

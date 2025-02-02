@@ -178,9 +178,25 @@ impl TreeSearch {
         }
     }
 
+    // Similar to complete_upate, but it only updates the visit counts.
+    pub fn complete_visits(&mut self, node_index: usize) {
+        let node = &mut self.children[node_index];
+        node.partial_visits -= 1;
+        node.visits += 1;
+        let mut parent = node.parent;
+        while parent.is_some() {
+            let node = &mut self.children[parent.unwrap()];
+            node.partial_visits -= 1;
+            node.visits += 1;
+            parent = node.parent;
+        }
+    }
+
     pub fn complete_expand(&mut self, node_index: usize, eval_boards: EvalBoards) {
-        self.only_expand(node_index, eval_boards);
-        self.complete_update(node_index);
+        match self.only_expand(node_index, eval_boards) {
+            true => self.complete_update(node_index),
+            false => self.complete_visits(node_index),
+        }
     }
 
     pub fn expand(&mut self, node_index: usize, eval_boards: EvalBoards) {
@@ -188,10 +204,14 @@ impl TreeSearch {
         self.update_nodes(node_index);
     }
 
-    fn only_expand(&mut self, node_index: usize, eval_boards: EvalBoards) {
+    fn only_expand(&mut self, node_index: usize, eval_boards: EvalBoards) -> bool {
         let first_index = self.children.len();
         let last_index = first_index + eval_boards.board_probs.len();
         let node = &mut self.children[node_index];
+        // The node has already been expanded, hence no need to re-expand.
+        if !node.is_leaf {
+            return false;
+        }
         node.children = (first_index, last_index);
         node.init_value = eval_boards.value;
         node.value = node.init_value;
@@ -202,6 +222,7 @@ impl TreeSearch {
                     Node::from_board_parent_prior_index(board, node_index, prior, index)
                 },
             ));
+        true
     }
 
     pub fn most_visited(&self) -> &Node {

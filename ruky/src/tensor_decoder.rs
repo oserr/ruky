@@ -9,6 +9,25 @@ use crate::piece_move::PieceMove;
 use burn::prelude::{Backend, Tensor};
 use std::marker::PhantomData;
 
+fn dec_boards(moves: Vec<Board>, enc_moves: &[f32], value: f32) -> DecBoards {
+    assert_eq!(moves.len(), N_POSSIBLE_MOVES);
+
+    let mut total = 0.0;
+    let mut board_probs = Vec::<(Board, f32)>::new();
+
+    for board in moves {
+        let last_move = board.last_move().expect("Board should have a last move.");
+        let index = EcMove::from(last_move).index();
+        let prob = enc_moves[index].exp();
+        total += prob;
+        board_probs.push((board, prob));
+    }
+
+    board_probs.iter_mut().for_each(|(_, prob)| *prob /= total);
+
+    DecBoards { board_probs, value }
+}
+
 // A structure representing the decoded board states, their probabilities, and
 // the value of the current board state.
 #[derive(Clone, Debug)]

@@ -3,6 +3,7 @@
 use crate::err::RukyErr;
 use crate::eval::Eval;
 use crate::search::{Bp, SearchResult, SpSearch};
+use crate::tensor_encoder::enc_board;
 use crate::tree_search::TreeSearch;
 use crate::Board;
 use crossbeam::channel::{unbounded, Receiver, Sender};
@@ -244,7 +245,18 @@ struct EncResult {
 }
 
 impl EncTask {
-    fn run_task(&self) -> EncResult {
-        todo!();
+    fn run_task(self) -> EncResult {
+        let moves = self
+            .board
+            .next_boards()
+            .expect("Expecting moves from non-terminal board.");
+        let enc_data = enc_board(&self.board);
+
+        EncResult {
+            node_id: self.node_id,
+            board: self.board,
+            moves,
+            enc_data,
+        }
     }
 }

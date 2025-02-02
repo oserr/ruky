@@ -90,7 +90,7 @@ impl TreeSearch {
         let parent_node = &self.children[parent_index];
         self.children[parent_node.children.0..parent_node.children.1]
             .iter()
-            .fold(0, |visits, node| visits + node.visits)
+            .fold(0, |visits, node| visits + node.total_visits())
     }
 
     pub fn board(&self, node_index: usize) -> &Board {
@@ -146,6 +146,17 @@ impl TreeSearch {
             val *= -1.0;
             node.visits += 1;
             node.value += val;
+            parent = node.parent;
+        }
+    }
+
+    pub fn incomplete_update(&mut self, node_index: usize) {
+        let node = &mut self.children[node_index];
+        node.partial_visits += 1;
+        let mut parent = node.parent;
+        while parent.is_some() {
+            let node = &mut self.children[parent.unwrap()];
+            node.partial_visits += 1;
             parent = node.parent;
         }
     }
@@ -280,6 +291,8 @@ pub struct Node {
     pub prior: f32,
     // The number of times this node is visited during search.
     pub visits: u32,
+    // The number of incomplete visits this node has received.
+    pub partial_visits: u32,
     // The total value of the node. This includes all possible variations explored from this node.
     pub value: f32,
     // The value of this position, as computed by the evaluator or [0, 1, -1] if this is known to
@@ -323,6 +336,7 @@ impl From<Board> for Node {
             index: 0,
             prior: 0.0,
             visits: 0,
+            partial_visits: 0,
             value: 0.0,
             init_value: 0.0,
             is_leaf: true,
@@ -361,12 +375,16 @@ impl Node {
 
     pub fn ucb(&self, parent_visits: u32, sibling_visits: u32) -> f32 {
         let term1 = explore_rate(parent_visits) * self.prior;
-        let term2 = (sibling_visits as f32).sqrt() / (1 + self.visits) as f32;
+        let term2 = (sibling_visits as f32).sqrt() / (1 + self.total_visits()) as f32;
         term1 * term2
     }
 
     pub fn is_terminal(&self) -> bool {
         self.board.is_terminal()
+    }
+
+    pub fn total_visits(&self) -> u32 {
+        self.visits + self.partial_visits
     }
 }
 

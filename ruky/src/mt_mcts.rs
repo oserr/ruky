@@ -175,6 +175,7 @@ impl<E: Eval> SpSearch for MtSpMcts<E> {
                     .send(Task::Encode(enc_task))
                     .expect("Encoding task should be transmitted.");
                 batch_count += 1;
+                // TODO: call incomplete update here
             }
 
             // TODO:

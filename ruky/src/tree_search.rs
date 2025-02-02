@@ -162,6 +162,22 @@ impl TreeSearch {
         }
     }
 
+    pub fn complete_update(&mut self, node_index: usize) {
+        let node = &mut self.children[node_index];
+        node.partial_visits -= 1;
+        node.visits += 1;
+        let mut val = node.value;
+        let mut parent = node.parent;
+        while parent.is_some() {
+            let node = &mut self.children[parent.unwrap()];
+            val *= -1.0;
+            node.partial_visits -= 1;
+            node.visits += 1;
+            node.value += val;
+            parent = node.parent;
+        }
+    }
+
     pub fn expand(&mut self, node_index: usize, eval_boards: EvalBoards) {
         let first_index = self.children.len();
         let last_index = first_index + eval_boards.board_probs.len();

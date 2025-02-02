@@ -230,8 +230,13 @@ enum Task {
 }
 
 // A struct representing a decoding task.
-#[derive(Debug)]
-struct DecTask {}
+#[derive(Clone, Debug)]
+struct DecTask {
+    node_id: usize,
+    moves: Vec<Board>,
+    enc_data: Vec<f32>,
+    value: f32,
+}
 
 // A struct representing a decoded result.
 struct DecResult {}

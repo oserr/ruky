@@ -163,6 +163,7 @@ impl<E: Eval> SpSearch for MtSpMcts<E> {
             let mut batch_count = 0;
             let total_batch_count = min(self.sims - completed_sims, self.batch_size.into());
 
+            // Run enough rollouts to collect enough samples for a full batch.
             while batch_count < total_batch_count && completed_sims < self.sims {
                 let rollout = self.tree_search.rollout()?;
                 let (node_id, depth) = rollout.info();
@@ -175,10 +176,15 @@ impl<E: Eval> SpSearch for MtSpMcts<E> {
                     continue;
                 }
 
+                // Create an Encoding task.
                 let enc_task = EncTask {
                     node_id,
                     board: self.tree_search.board(node_id).clone(),
                 };
+
+                // Add encoding task to queue of workers. Blocks until task is
+                // added to the queue, but encoding task is executed by worker
+                // thread.
                 self.work_tx
                     .send(Task::Encode(enc_task))
                     .expect("Encoding task should be transmitted.");
@@ -186,11 +192,16 @@ impl<E: Eval> SpSearch for MtSpMcts<E> {
                 batch_count += 1;
             }
 
+            // We are finished.
             if batch_count == 0 {
                 break;
             }
 
+            // Create a data vector where board state is encoded.
             let mut data = get_batch_vec(batch_count as usize);
+
+            // Collect the results from the encoded tasks. This blocks until all
+            // tasks are encoded.
             let enc_results = self
                 .encoded_rx
                 .iter()
@@ -199,6 +210,7 @@ impl<E: Eval> SpSearch for MtSpMcts<E> {
 
             assert_eq!(enc_results.len(), batch_count as usize);
 
+            // Copy the encoded data to the input vector.
             for (data_batch, enc_result) in data
                 .chunks_exact_mut(single_batch_size())
                 .zip(enc_results.iter())
@@ -206,6 +218,7 @@ impl<E: Eval> SpSearch for MtSpMcts<E> {
                 data_batch.copy_from_slice(enc_result.enc_data.as_ref());
             }
 
+            // Evalute batch of boards.
             let eval_start = Instant::now();
             let (mv_data, value_data) =
                 self.evaluator.eval_batch_data(batch_count as usize, data)?;
@@ -215,17 +228,21 @@ impl<E: Eval> SpSearch for MtSpMcts<E> {
                 mv_data.chunks_exact(N_POSSIBLE_MOVES).zip(value_data),
                 enc_results,
             ) {
+                // Create a decoding tasks.
                 let dec_task = DecTask {
                     node_id: enc_result.node_id,
                     moves: enc_result.moves,
                     enc_moves: enc_moves.to_vec(),
                     value,
                 };
+                // Add the decoding task to the queue of workers.
                 self.work_tx
                     .send(Task::Decode(dec_task))
                     .expect("Decoding task should be transmitted.");
             }
 
+            // Collect the results from the decoding tasks and complete the
+            // update for each rollout.
             for DecResult {
                 node_id,
                 eval_boards,

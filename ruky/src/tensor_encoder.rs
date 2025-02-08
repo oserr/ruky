@@ -22,7 +22,7 @@ pub fn get_batch_range(batch: impl Into<usize>) -> Range<usize> {
     first..last
 }
 
-pub fn single_batch_size() -> usize {
+pub const fn single_batch_size() -> usize {
     N_PLANES * BOARD_SIZE
 }
 

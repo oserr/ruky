@@ -4,7 +4,7 @@ use crate::err::RukyErr;
 use crate::eval::{Eval, EvalBoards};
 use crate::search::{Bp, SearchResult, SpSearch, TreeSize};
 use crate::tensor_decoder::{dec_boards, N_POSSIBLE_MOVES};
-use crate::tensor_encoder::{enc_board, get_batch_vec, single_batch_size};
+use crate::tensor_encoder::{enc_boards, get_batch_vec, single_batch_size};
 use crate::tree_search::TreeSearch;
 use crate::Board;
 use crossbeam::channel::{unbounded, Receiver, Sender};
@@ -179,7 +179,7 @@ impl<E: Eval> SpSearch for MtSpMcts<E> {
                 // Create an Encoding task.
                 let enc_task = EncTask {
                     node_id,
-                    board: self.tree_search.board(node_id).clone(),
+                    boards: self.tree_search.collect_last_boards(node_id),
                 };
 
                 // Add encoding task to queue of workers. Blocks until task is
@@ -304,7 +304,7 @@ impl DecTask {
 #[derive(Debug)]
 struct EncTask {
     node_id: usize,
-    board: Board,
+    boards: Vec<Board>,
 }
 
 // A struct representing an encoded result.
@@ -317,16 +317,15 @@ struct EncResult {
 }
 
 impl EncTask {
-    fn run_task(self) -> EncResult {
-        let moves = self
-            .board
+    fn run_task(mut self) -> EncResult {
+        let moves = self.boards[0]
             .next_boards()
             .expect("Expecting moves from non-terminal board.");
-        let enc_data = enc_board(&self.board);
+        let enc_data = enc_boards(&self.boards);
 
         EncResult {
             node_id: self.node_id,
-            board: self.board,
+            board: self.boards.swap_remove(0),
             moves,
             enc_data,
         }

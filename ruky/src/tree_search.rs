@@ -308,12 +308,12 @@ impl TreeSearch {
 
     // Collects the last |num_boards| leading up to board at |node_index|, starting
     // with the board at |node_index|.
-    pub fn collect_last_boards(&self, node_index: usize, num_boards: usize) -> Vec<Board> {
+    pub fn collect_last_boards(&self, node_index: usize) -> Vec<Board> {
         let mut boards: Vec<Board> = Vec::new();
         let node = &self.children[node_index];
         boards.push(node.board.clone());
         let mut parent = node.parent;
-        while boards.len() < num_boards && parent.is_some() {
+        while boards.len() < MAX_ENC_BOARDS && parent.is_some() {
             let node = &self.children[parent.unwrap()];
             boards.push(node.board.clone());
             parent = node.parent;
@@ -479,3 +479,6 @@ const EXPLORE_BASE: f32 = 19652.0;
 const EXPLORE_INIT: f32 = 1.25;
 const DIR_ALPHA: f32 = 0.3;
 const DIR_EXPLORE_FRAC: f32 = 0.25;
+
+// The maximum number of boards to collect for encoding.
+const MAX_ENC_BOARDS: usize = 8;

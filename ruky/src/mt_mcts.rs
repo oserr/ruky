@@ -186,6 +186,10 @@ impl<E: Eval> SpSearch for MtSpMcts<E> {
                 batch_count += 1;
             }
 
+            if batch_count == 0 {
+                break;
+            }
+
             let mut data = get_batch_vec(batch_count as usize);
             let enc_results = self
                 .encoded_rx

@@ -14,6 +14,8 @@ fn main() {
         .max_moves(300)
         .use_noise(true)
         .sample_action(true)
+        .batch_size(30)
+        .num_workers(30)
         .build()
         .expect("Expecting a new game.");
     println!("Starting a game of self play...");

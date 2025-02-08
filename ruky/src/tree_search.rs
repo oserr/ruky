@@ -305,6 +305,21 @@ impl TreeSearch {
             node.prior = (1.0 - DIR_EXPLORE_FRAC) * node.prior + DIR_EXPLORE_FRAC * noise;
         }
     }
+
+    // Collects the last |num_boards| leading up to board at |node_index|, starting
+    // with the board at |node_index|.
+    pub fn collect_last_boards(&self, node_index: usize, num_boards: usize) -> Vec<Board> {
+        let mut boards: Vec<Board> = Vec::new();
+        let node = &self.children[node_index];
+        boards.push(node.board.clone());
+        let mut parent = node.parent;
+        while boards.len() < num_boards && parent.is_some() {
+            let node = &self.children[parent.unwrap()];
+            boards.push(node.board.clone());
+            parent = node.parent;
+        }
+        boards
+    }
 }
 
 impl From<Board> for TreeSearch {

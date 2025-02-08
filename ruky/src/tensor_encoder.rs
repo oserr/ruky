@@ -136,40 +136,7 @@ impl<B: Backend> TensorEncoder<B> for AzEncoder<B> {
     }
 
     fn encode_boards(&self, boards: &[Board]) -> Tensor<B, 4> {
-        assert!(!boards.is_empty());
-
-        let mut data = vec![0.0; N_PLANES * BOARD_SIZE];
-        let six_planes = N_PIECE_TYPES * BOARD_SIZE;
-
-        for (board, chunk) in zip(
-            boards.into_iter().rev().take(8),
-            data.chunks_exact_mut(BOARD_SIZE * 14),
-        ) {
-            // TODO: For black, might want to flip the board so it's from the player's
-            // perspective.
-            let (next_to_play, after_to_play) = if board.is_white_next() {
-                (board.white(), board.black())
-            } else {
-                (board.black(), board.white())
-            };
-
-            encode_pieces(next_to_play, &mut chunk[..six_planes]);
-            encode_pieces(after_to_play, &mut chunk[six_planes..2 * six_planes]);
-            // TODO: need to set the repetition count on the last two planes.
-        }
-
-        let board = boards
-            .last()
-            .expect("boards should have at least one board.");
-        let state_features = get_state_features(&board);
-
-        for (val, chunk) in zip(
-            state_features.iter().rev(),
-            data.rchunks_exact_mut(BOARD_SIZE),
-        ) {
-            chunk.fill(*val);
-        }
-
+        let data = enc_boards(boards);
         let tensor_data = TensorData::new(data, [1, N_PLANES, N_ROWS, N_COLS]);
         Tensor::from_data(tensor_data, &self.device)
     }

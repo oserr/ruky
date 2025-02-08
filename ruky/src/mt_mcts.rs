@@ -67,7 +67,7 @@ pub struct MtSpMcts<E: Eval> {
 }
 
 impl<E: Eval> MtSpMcts<E> {
-    // Initialiazes the MCTS by creating a tool of worker threads to parallelize
+    // Initialiazes the MCTS by creating a pool of worker threads to parallelize
     // encoding and decoding tasks.
     pub fn create(
         evaluator: Arc<E>,

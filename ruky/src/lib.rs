@@ -21,6 +21,7 @@ pub mod search;
 mod sq;
 pub mod tensor_decoder;
 pub mod tensor_encoder;
+pub mod trainer;
 pub mod tree_search;
 
 pub use board::{Board, BoardBuilder};

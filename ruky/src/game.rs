@@ -211,6 +211,10 @@ impl<S: SpSearch + TreeSize> TrainingGame<S> {
             total_tree_nodes: self.wb_search.total_tree_nodes(),
         })
     }
+
+    pub fn reset(&mut self) {
+        self.wb_search.reset();
+    }
 }
 
 // TODO: make this generic over Search once we have different types of Search.

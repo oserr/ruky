@@ -20,6 +20,7 @@ pub trait Search {
 // A trait for evaluting chess positions during self-play training games.
 pub trait SpSearch {
     fn search(&mut self) -> Result<SearchResult, RukyErr>;
+    fn clear(&mut self) {}
 }
 
 // A trait for representing the size of a tree.

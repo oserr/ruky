@@ -45,6 +45,14 @@ impl TreeSearch {
         }
     }
 
+    pub fn reset(&mut self) {
+        let node = Node::from(self.board(0).clone());
+        self.children.clear();
+        self.children.push(node);
+        self.root = 0;
+        self.sample_action = false;
+    }
+
     pub fn rollout(&mut self) -> Result<RolloutType, RukyErr> {
         let mut node_index = self.root_index();
         let mut depth = 0u32;

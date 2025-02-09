@@ -267,6 +267,10 @@ impl<E: Eval> SpSearch for MtSpMcts<E> {
         self.tree_search.update_root_from_index(best_node.index);
         Ok(result)
     }
+
+    fn reset(&mut self) {
+        self.tree_search.reset();
+    }
 }
 
 // An enum to represent the different types of work.

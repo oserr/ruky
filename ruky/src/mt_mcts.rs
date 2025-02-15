@@ -263,6 +263,8 @@ impl<E: Eval> SpSearch for MtSpMcts<E> {
             depth: max_depth,
             total_eval_time: eval_time,
             total_search_time: search_start.elapsed(),
+            avg_move_gen_time: Duration::ZERO,
+            max_move_gen_time: Duration::ZERO,
         };
         self.tree_search.update_root_from_index(best_node.index);
         Ok(result)

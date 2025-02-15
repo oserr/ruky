@@ -47,6 +47,10 @@ pub struct SearchResult {
     pub total_eval_time: Duration,
     // Total time spent in search mode - includes eval mode + search time.
     pub total_search_time: Duration,
+    // The average time to generate moves.
+    pub avg_move_gen_time: Duration,
+    // The maximum time taken to generate moves.
+    pub max_move_gen_time: Duration,
 }
 
 impl SearchResult {
@@ -60,6 +64,8 @@ impl SearchResult {
             depth: 0,
             total_eval_time: Duration::ZERO,
             total_search_time: Duration::ZERO,
+            avg_move_gen_time: Duration::ZERO,
+            max_move_gen_time: Duration::ZERO,
         }
     }
 

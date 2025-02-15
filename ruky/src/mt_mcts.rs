@@ -318,6 +318,10 @@ struct EncResult {
     board: Board,
     moves: Vec<Board>,
     enc_data: Vec<f32>,
+    // The time taken to compute next moves.
+    move_gen_time: Duration,
+    // The total time taken to generate next moves and encode result.
+    total_enc_time: Duration,
 }
 
 impl EncTask {
@@ -332,6 +336,8 @@ impl EncTask {
             board: self.boards.swap_remove(0),
             moves,
             enc_data,
+            move_gen_time: Duration::ZERO,
+            total_enc_time: Duration::ZERO,
         }
     }
 }

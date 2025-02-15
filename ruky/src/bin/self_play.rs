@@ -30,12 +30,12 @@ fn main() {
         println!(
             "i={} color={:?} prior={} value={} move={:?}
             \tnodes_expanded={} nodes_visited={} depth={}
-            \teval_time_per_expansion_millis={}
-            \tsearch_time_per_expansion_millis={}
-            \ttotal_eval_time: mins={} secs={} ns={},
-            \ttotal_search_time: mins={} secs={} ns={},
-            \tavg_move_gen_time: ns={}
-            \tmax_move_gen_time: ns={}",
+            \teval_time_per_expansion: micros={}
+            \tsearch_time_per_expansion: micros={}
+            \ttotal_eval_time: mins={} secs={} millis={}
+            \ttotal_search_time: mins={} secs={} millis={}
+            \tavg_move_gen_time: micros={} ns={}
+            \tmax_move_gen_time: micros={} ns={}",
             i,
             color,
             search_result.best.prior,
@@ -44,15 +44,17 @@ fn main() {
             search_result.nodes_expanded,
             search_result.nodes_visited,
             search_result.depth,
-            eval_time_per_expansion.as_millis(),
-            search_time_per_expansion.as_millis(),
+            eval_time_per_expansion.as_micros(),
+            search_time_per_expansion.as_micros(),
             as_mins(&search_result.total_eval_time),
             search_result.total_eval_time.as_secs_f32(),
-            search_result.total_eval_time.as_nanos(),
+            search_result.total_eval_time.as_millis(),
             as_mins(&search_result.total_search_time),
             search_result.total_search_time.as_secs_f32(),
-            search_result.total_search_time.as_nanos(),
+            search_result.total_search_time.as_millis(),
+            search_result.avg_move_gen_time.as_micros(),
             search_result.avg_move_gen_time.as_nanos(),
+            search_result.max_move_gen_time.as_micros(),
             search_result.max_move_gen_time.as_nanos(),
         );
         if verbose {

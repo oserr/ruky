@@ -136,6 +136,7 @@ impl<E: Eval> TreeSize for MtSpMcts<E> {
 impl<E: Eval> SpSearch for MtSpMcts<E> {
     fn search(&mut self) -> Result<SearchResult, RukyErr> {
         let search_start = Instant::now();
+        let mut total_evals = 0;
 
         let root_index = self.tree_search.root_index();
         self.tree_search.sample_action = self.sample_action;
@@ -145,6 +146,7 @@ impl<E: Eval> SpSearch for MtSpMcts<E> {
             let eval_boards = self.evaluator.eval(self.tree_search.root_board())?;
             let eval_time = eval_time.elapsed();
             self.tree_search.expand(root_index, eval_boards);
+            total_evals += 1;
             eval_time
         } else {
             Duration::ZERO
@@ -227,6 +229,7 @@ impl<E: Eval> SpSearch for MtSpMcts<E> {
             let (mv_data, value_data) =
                 self.evaluator.eval_batch_data(batch_count as usize, data)?;
             eval_time += eval_start.elapsed();
+            total_evals += 1;
 
             for ((enc_moves, value), enc_result) in zip(
                 mv_data.chunks_exact(N_POSSIBLE_MOVES).zip(value_data),
@@ -265,6 +268,7 @@ impl<E: Eval> SpSearch for MtSpMcts<E> {
             nodes_expanded,
             nodes_visited,
             depth: max_depth,
+            total_evals,
             total_eval_time: eval_time,
             total_search_time: search_start.elapsed(),
             avg_move_gen_time: total_move_gen_time / nodes_expanded,

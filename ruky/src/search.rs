@@ -42,6 +42,8 @@ pub struct SearchResult {
     pub nodes_visited: u32,
     // The maximum depth of a branch explored during search.
     pub depth: u32,
+    // Total number of evals. This can differ from nodes_expanded if batching is used.
+    pub total_evals: u32,
     // Total time spent in eval mode - the component of the engine that computes the score for a
     // given position.
     pub total_eval_time: Duration,
@@ -62,6 +64,7 @@ impl SearchResult {
             nodes_expanded: 0,
             nodes_visited: 0,
             depth: 0,
+            total_evals: 0,
             total_eval_time: Duration::ZERO,
             total_search_time: Duration::ZERO,
             avg_move_gen_time: Duration::ZERO,

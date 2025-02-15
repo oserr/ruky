@@ -27,12 +27,14 @@ fn main() {
     for (i, search_result) in result.moves.iter().enumerate() {
         let eval_time_per_expansion = search_result.eval_time_per_expansion();
         let search_time_per_expansion = search_result.search_time_per_expansion();
+        let avg_eval_time = search_result.avg_eval_time();
         println!(
             "i={} color={:?} prior={} value={} move={:?}
             \tnodes_expanded={} nodes_visited={} depth={}
             \teval_time_per_expansion: micros={}
             \tsearch_time_per_expansion: micros={}
             \ttotal_eval_time: mins={} secs={} millis={}
+            \tavg_eval_time: micros={} ns={}
             \ttotal_search_time: mins={} secs={} millis={}
             \tavg_move_gen_time: micros={} ns={}
             \tmax_move_gen_time: micros={} ns={}",
@@ -49,6 +51,8 @@ fn main() {
             as_mins(&search_result.total_eval_time),
             search_result.total_eval_time.as_secs_f32(),
             search_result.total_eval_time.as_millis(),
+            avg_eval_time.as_micros(),
+            avg_eval_time.as_nanos(),
             as_mins(&search_result.total_search_time),
             search_result.total_search_time.as_secs_f32(),
             search_result.total_search_time.as_millis(),

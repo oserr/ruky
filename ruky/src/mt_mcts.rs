@@ -326,18 +326,21 @@ struct EncResult {
 
 impl EncTask {
     fn run_task(mut self) -> EncResult {
+        let now = Instant::now();
         let moves = self.boards[0]
             .next_boards()
             .expect("Expecting moves from non-terminal board.");
+        let move_gen_time = now.elapsed();
         let enc_data = enc_boards(&self.boards);
+        let total_enc_time = now.elapsed();
 
         EncResult {
             node_id: self.node_id,
             board: self.boards.swap_remove(0),
             moves,
             enc_data,
-            move_gen_time: Duration::ZERO,
-            total_enc_time: Duration::ZERO,
+            move_gen_time,
+            total_enc_time,
         }
     }
 }

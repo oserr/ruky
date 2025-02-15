@@ -154,6 +154,8 @@ impl<E: Eval> SpSearch for MtSpMcts<E> {
             self.tree_search.add_priors_noise(root_index);
         }
 
+        let mut total_move_gen_time = Duration::ZERO;
+        let mut max_move_gen_time = Duration::ZERO;
         let mut max_depth = 0u32;
         let mut nodes_expanded = 0;
         let mut nodes_visited = 0;
@@ -216,6 +218,8 @@ impl<E: Eval> SpSearch for MtSpMcts<E> {
                 .zip(enc_results.iter())
             {
                 data_batch.copy_from_slice(enc_result.enc_data.as_ref());
+                total_move_gen_time += enc_result.move_gen_time;
+                max_move_gen_time = max(max_move_gen_time, enc_result.move_gen_time);
             }
 
             // Evalute batch of boards.
@@ -263,8 +267,8 @@ impl<E: Eval> SpSearch for MtSpMcts<E> {
             depth: max_depth,
             total_eval_time: eval_time,
             total_search_time: search_start.elapsed(),
-            avg_move_gen_time: Duration::ZERO,
-            max_move_gen_time: Duration::ZERO,
+            avg_move_gen_time: total_move_gen_time / nodes_expanded,
+            max_move_gen_time,
         };
         self.tree_search.update_root_from_index(best_node.index);
         Ok(result)

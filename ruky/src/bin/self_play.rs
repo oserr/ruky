@@ -30,9 +30,12 @@ fn main() {
         println!(
             "i={} color={:?} prior={} value={} move={:?}
             \tnodes_expanded={} nodes_visited={} depth={}
-            \teval_time_per_expansion_millis={} search_time_per_expansion_millis={}
-            \ttotal_eval_time: mins={} secs={}
-            \ttotal_search_time: mins={} secs={}",
+            \teval_time_per_expansion_millis={}
+            \tsearch_time_per_expansion_millis={}
+            \ttotal_eval_time: mins={} secs={} ns={},
+            \ttotal_search_time: mins={} secs={} ns={},
+            \tavg_move_gen_time: ns={}
+            \tmax_move_gen_time: ns={}",
             i,
             color,
             search_result.best.prior,
@@ -45,8 +48,12 @@ fn main() {
             search_time_per_expansion.as_millis(),
             as_mins(&search_result.total_eval_time),
             search_result.total_eval_time.as_secs_f32(),
+            search_result.total_eval_time.as_nanos(),
             as_mins(&search_result.total_search_time),
             search_result.total_search_time.as_secs_f32(),
+            search_result.total_search_time.as_nanos(),
+            search_result.avg_move_gen_time.as_nanos(),
+            search_result.max_move_gen_time.as_nanos(),
         );
         if verbose {
             for mp in &search_result.moves {

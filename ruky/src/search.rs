@@ -72,6 +72,10 @@ impl SearchResult {
         }
     }
 
+    pub fn avg_eval_time(&self) -> Duration {
+        self.total_eval_time / self.total_evals
+    }
+
     pub fn eval_time_per_expansion(&self) -> Duration {
         self.total_eval_time / self.nodes_expanded
     }

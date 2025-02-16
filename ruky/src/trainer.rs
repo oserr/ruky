@@ -82,4 +82,9 @@ impl<B: Backend> TrainerBuilder<B> {
             training_batch_size: num_threads,
         }
     }
+
+    pub fn board(mut self, board: Board) -> Self {
+        self.board.replace(board);
+        self
+    }
 }

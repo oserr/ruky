@@ -63,3 +63,22 @@ pub struct TrainerBuilder<B: Backend> {
     // The batch size to use during training.
     training_batch_size: usize,
 }
+
+impl<B: Backend> TrainerBuilder<B> {
+    pub fn new() -> Self {
+        Self {
+            board: None,
+            device: None,
+            sims: 800,
+            max_moves: 300,
+            use_noise: true,
+            sample_action: true,
+            inference_batch_size: 30,
+            num_workers: 30,
+            num_games: None,
+            check_point_dir: None,
+            check_point_step: None,
+            training_batch_size: 30,
+        }
+    }
+}

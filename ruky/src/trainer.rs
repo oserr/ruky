@@ -1,5 +1,6 @@
 // This module contains components for a trainer.
 
+use crate::err::RukyErr;
 use crate::Board;
 use burn::prelude::{Backend, Device};
 use std::path::PathBuf;
@@ -141,5 +142,32 @@ impl<B: Backend> TrainerBuilder<B> {
     pub fn training_batch_size(mut self, batch_size: usize) -> Self {
         self.training_batch_size = batch_size;
         self
+    }
+
+    pub fn build(self) -> Result<Trainer<B>, RukyErr> {
+        if self.board.is_none() || self.device.is_none() || self.num_games.is_none() {
+            return Err(RukyErr::PreconditionErr);
+        }
+
+        if (self.check_point_dir.is_some() && self.check_point_step.is_none())
+            || (self.check_point_dir.is_none() && self.check_point_step.is_some())
+        {
+            return Err(RukyErr::PreconditionErr);
+        }
+
+        Ok(Trainer {
+            board: self.board.unwrap(),
+            device: self.device.unwrap(),
+            sims: self.sims,
+            max_moves: self.max_moves,
+            use_noise: self.use_noise,
+            sample_action: self.sample_action,
+            inference_batch_size: self.inference_batch_size,
+            num_workers: self.num_workers,
+            num_games: self.num_games.unwrap(),
+            check_point_dir: self.check_point_dir,
+            check_point_step: self.check_point_step,
+            training_batch_size: self.training_batch_size,
+        })
     }
 }

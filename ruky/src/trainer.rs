@@ -66,6 +66,7 @@ pub struct TrainerBuilder<B: Backend> {
 
 impl<B: Backend> TrainerBuilder<B> {
     pub fn new() -> Self {
+        let num_threads = num_cpus::get();
         Self {
             board: None,
             device: None,
@@ -73,12 +74,12 @@ impl<B: Backend> TrainerBuilder<B> {
             max_moves: 300,
             use_noise: true,
             sample_action: true,
-            inference_batch_size: 30,
-            num_workers: 30,
+            inference_batch_size: num_threads,
+            num_workers: num_threads,
             num_games: None,
             check_point_dir: None,
             check_point_step: None,
-            training_batch_size: 30,
+            training_batch_size: num_threads,
         }
     }
 }

@@ -92,4 +92,54 @@ impl<B: Backend> TrainerBuilder<B> {
         self.device.replace(device);
         self
     }
+
+    pub fn sims(mut self, sims: u32) -> Self {
+        self.sims = sims;
+        self
+    }
+
+    pub fn max_moves(mut self, max_moves: u32) -> Self {
+        self.max_moves = max_moves;
+        self
+    }
+
+    pub fn use_noise(mut self, use_noise: bool) -> Self {
+        self.use_noise = use_noise;
+        self
+    }
+
+    pub fn sample_action(mut self, sample_action: bool) -> Self {
+        self.sample_action = sample_action;
+        self
+    }
+
+    pub fn inference_batch_size(mut self, batch_size: usize) -> Self {
+        self.inference_batch_size = batch_size;
+        self
+    }
+
+    pub fn num_workers(mut self, num_workers: usize) -> Self {
+        self.num_workers = num_workers;
+        self
+    }
+
+    pub fn num_games(mut self, num_games: usize) -> Self {
+        self.num_games.replace(num_games);
+        self
+    }
+
+    pub fn check_point_dir(mut self, check_point_dir: PathBuf) -> Self {
+        self.check_point_dir.replace(check_point_dir);
+        self
+    }
+
+    pub fn check_point_step(mut self, check_point_step: usize) -> Self {
+        self.check_point_step.replace(check_point_step);
+        self
+    }
+
+    pub fn training_batch_size(mut self, batch_size: usize) -> Self {
+        self.training_batch_size = batch_size;
+        self
+    }
 }

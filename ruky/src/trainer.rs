@@ -31,7 +31,7 @@ pub struct Trainer<B: Backend> {
     // The number of training steps to run before creating a checkpoint.
     check_point_step: usize,
     // The batch size to use during training.
-    batch_size: usize,
+    training_batch_size: usize,
 }
 
 // The purpose of the Trainer is to play games of self-play to generate training

@@ -88,7 +88,7 @@ impl<B: Backend> TrainerBuilder<B> {
         self
     }
 
-    pub fn device<B: Backend>(mut self, device: Device<B>) -> Self {
+    pub fn device(mut self, device: Device<B>) -> Self {
         self.device.replace(device);
         self
     }

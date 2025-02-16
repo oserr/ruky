@@ -29,7 +29,7 @@ pub struct Trainer<B: Backend> {
     // The path to the directory to use for checkpoints.
     check_point_dir: Option<PathBuf>,
     // The number of training steps to run before creating a checkpoint.
-    check_point_step: usize,
+    check_point_step: Option<usize>,
     // The batch size to use during training.
     training_batch_size: usize,
 }

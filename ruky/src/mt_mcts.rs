@@ -61,9 +61,9 @@ pub struct MtSpMcts<E: Eval> {
     // with the highest visit count.
     sample_action: bool,
     // The maximum number of boards that are sent for eval to the evaluator.
-    batch_size: u32,
+    batch_size: usize,
     // The number of workers to use for encoding and decoding board positions.
-    num_workers: u32,
+    num_workers: usize,
 }
 
 impl<E: Eval> MtSpMcts<E> {
@@ -75,11 +75,11 @@ impl<E: Eval> MtSpMcts<E> {
         sims: u32,
         use_noise: bool,
         sample_action: bool,
-        batch_size: u32,
-        num_workers: u32,
+        batch_size: usize,
+        num_workers: usize,
     ) -> Self {
         let work_pool = ThreadPoolBuilder::new()
-            .num_threads(num_workers as usize)
+            .num_threads(num_workers)
             .build()
             .expect("Expecting thread pool.");
 
@@ -165,7 +165,7 @@ impl<E: Eval> SpSearch for MtSpMcts<E> {
 
         while completed_sims < self.sims {
             let mut batch_count = 0;
-            let total_batch_count = min(self.sims - completed_sims, self.batch_size.into());
+            let total_batch_count = min(self.sims - completed_sims, self.batch_size);
 
             // Run enough rollouts to collect enough samples for a full batch.
             while batch_count < total_batch_count && completed_sims < self.sims {

@@ -22,8 +22,8 @@ pub struct ParTrGameBuilder<B: Backend> {
     max_moves: u32,
     use_noise: bool,
     sample_action: bool,
-    batch_size: Option<u32>,
-    num_workers: Option<u32>,
+    batch_size: Option<usize>,
+    num_workers: Option<usize>,
 }
 
 impl<B: Backend> ParTrGameBuilder<B> {
@@ -70,12 +70,12 @@ impl<B: Backend> ParTrGameBuilder<B> {
         self
     }
 
-    pub fn batch_size(mut self, batch_size: u32) -> Self {
+    pub fn batch_size(mut self, batch_size: usize) -> Self {
         self.batch_size.replace(batch_size);
         self
     }
 
-    pub fn num_workers(mut self, num_workers: u32) -> Self {
+    pub fn num_workers(mut self, num_workers: usize) -> Self {
         self.num_workers.replace(num_workers);
         self
     }

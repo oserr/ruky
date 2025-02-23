@@ -1,6 +1,7 @@
 // This module contains components for a trainer.
 
 use crate::err::RukyErr;
+use crate::game::ParTrGameBuilder;
 use crate::Board;
 use burn::prelude::{Backend, Device};
 use std::path::PathBuf;
@@ -13,9 +14,9 @@ pub struct Trainer<B: Backend> {
     // The device to use for neural network computations.
     device: Device<B>,
     // The total number of simulations per move.
-    sims: u32,
+    sims: usize,
     // The maximum number of moves to play before declaring draw.
-    max_moves: u32,
+    max_moves: usize,
     // If true, noise is added to the root node priors.
     use_noise: bool,
     // If true, the best move is selected by sampling, otherwise visit count
@@ -43,9 +44,9 @@ pub struct TrainerBuilder<B: Backend> {
     // The device to use for neural network computations.
     device: Option<Device<B>>,
     // The total number of simulations per move.
-    sims: u32,
+    sims: usize,
     // The maximum number of moves to play before declaring draw.
-    max_moves: u32,
+    max_moves: usize,
     // If true, noise is added to the root node priors.
     use_noise: bool,
     // If true, the best move is selected by sampling, otherwise visit count
@@ -99,12 +100,12 @@ impl<B: Backend> TrainerBuilder<B> {
         self
     }
 
-    pub fn sims(mut self, sims: u32) -> Self {
+    pub fn sims(mut self, sims: usize) -> Self {
         self.sims = sims;
         self
     }
 
-    pub fn max_moves(mut self, max_moves: u32) -> Self {
+    pub fn max_moves(mut self, max_moves: usize) -> Self {
         self.max_moves = max_moves;
         self
     }

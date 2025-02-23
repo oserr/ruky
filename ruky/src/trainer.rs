@@ -36,6 +36,31 @@ pub struct Trainer<B: Backend> {
     training_batch_size: usize,
 }
 
+impl<B: Backend> Trainer<B> {
+    fn train(&self) -> Result<(), RukyErr> {
+        let mut training_game = ParTrGameBuilder::<B>::new()
+            .board(self.board.clone())
+            .device(self.device.clone())
+            .sims(self.sims)
+            .max_moves(self.max_moves)
+            .use_noise(self.use_noise)
+            .sample_action(self.sample_action)
+            .batch_size(self.inference_batch_size)
+            .num_workers(self.num_workers)
+            .build()?;
+
+        let mut game_results = Vec::new();
+
+        for _ in 0..self.num_games {
+            let game_result = training_game.play()?;
+            game_results.push(game_result);
+            training_game.reset();
+        }
+
+        Ok(())
+    }
+}
+
 // The purpose of the Trainer is to play games of self-play to generate training
 // data, and to train the model with the data generated during self-play.
 pub struct TrainerBuilder<B: Backend> {

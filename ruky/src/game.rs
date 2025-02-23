@@ -18,8 +18,8 @@ use std::sync::Arc;
 pub struct ParTrGameBuilder<B: Backend> {
     board: Option<Board>,
     device: Option<Device<B>>,
-    sims: u32,
-    max_moves: u32,
+    sims: usize,
+    max_moves: usize,
     use_noise: bool,
     sample_action: bool,
     batch_size: Option<usize>,
@@ -50,12 +50,12 @@ impl<B: Backend> ParTrGameBuilder<B> {
         self
     }
 
-    pub fn sims(mut self, sims: u32) -> Self {
+    pub fn sims(mut self, sims: usize) -> Self {
         self.sims = sims;
         self
     }
 
-    pub fn max_moves(mut self, max_moves: u32) -> Self {
+    pub fn max_moves(mut self, max_moves: usize) -> Self {
         self.max_moves = max_moves;
         self
     }
@@ -106,8 +106,8 @@ impl<B: Backend> ParTrGameBuilder<B> {
 pub struct TrGameBuilder<B: Backend> {
     board: Option<Board>,
     device: Option<Device<B>>,
-    sims: u32,
-    max_moves: u32,
+    sims: usize,
+    max_moves: usize,
     use_noise: bool,
     sample_action: bool,
 }
@@ -134,12 +134,12 @@ impl<B: Backend> TrGameBuilder<B> {
         self
     }
 
-    pub fn sims(mut self, sims: u32) -> Self {
+    pub fn sims(mut self, sims: usize) -> Self {
         self.sims = sims;
         self
     }
 
-    pub fn max_moves(mut self, max_moves: u32) -> Self {
+    pub fn max_moves(mut self, max_moves: usize) -> Self {
         self.max_moves = max_moves;
         self
     }
@@ -180,11 +180,11 @@ pub struct TrainingGame<S: SpSearch + TreeSize> {
     board: Board,
     // Search is used for white and black pieces.
     wb_search: S,
-    max_moves: u32,
+    max_moves: usize,
 }
 
 impl<S: SpSearch + TreeSize> TrainingGame<S> {
-    pub fn create(board: Board, wb_search: S, max_moves: u32) -> Self {
+    pub fn create(board: Board, wb_search: S, max_moves: usize) -> Self {
         Self {
             board,
             wb_search,
@@ -221,9 +221,9 @@ impl<S: SpSearch + TreeSize> TrainingGame<S> {
 pub struct GameBuilder<B: Backend> {
     board: Option<Board>,
     device: Option<Device<B>>,
-    white_sims: u32,
-    black_sims: u32,
-    max_moves: u32,
+    white_sims: usize,
+    black_sims: usize,
+    max_moves: usize,
     use_noise: bool,
 }
 
@@ -249,13 +249,13 @@ impl<B: Backend> GameBuilder<B> {
         self
     }
 
-    pub fn sims(mut self, sims: u32) -> Self {
+    pub fn sims(mut self, sims: usize) -> Self {
         self.white_sims = sims;
         self.black_sims = sims;
         self
     }
 
-    pub fn max_moves(mut self, max_moves: u32) -> Self {
+    pub fn max_moves(mut self, max_moves: usize) -> Self {
         self.max_moves = max_moves;
         self
     }
@@ -297,11 +297,11 @@ pub struct Game<S: Search> {
     board: Board,
     white_search: S,
     black_search: S,
-    max_moves: u32,
+    max_moves: usize,
 }
 
 impl<S: Search> Game<S> {
-    pub fn create(board: Board, white_search: S, black_search: S, max_moves: u32) -> Self {
+    pub fn create(board: Board, white_search: S, black_search: S, max_moves: usize) -> Self {
         Self {
             board,
             white_search,

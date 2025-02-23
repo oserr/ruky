@@ -13,7 +13,7 @@ use std::time::{Duration, Instant};
 pub struct SpMcts<E: Eval> {
     evaluator: Arc<E>,
     search_tree: TreeSearch,
-    sims: u32,
+    sims: usize,
     use_noise: bool,
     sample_action: bool,
 }
@@ -96,7 +96,7 @@ impl<E: Eval> SpSearch for SpMcts<E> {
 pub struct SpMctsBuilder<E: Eval> {
     eval: Option<Arc<E>>,
     board: Option<Board>,
-    sims: u32,
+    sims: usize,
     use_noise: bool,
     sample_action: bool,
 }
@@ -122,7 +122,7 @@ impl<E: Eval> SpMctsBuilder<E> {
         self
     }
 
-    pub fn sims(mut self, sims: u32) -> Self {
+    pub fn sims(mut self, sims: usize) -> Self {
         self.sims = sims;
         self
     }
@@ -155,13 +155,13 @@ impl<E: Eval> SpMctsBuilder<E> {
 pub struct Mcts<E: Eval> {
     evaluator: Arc<E>,
     search_tree: TreeSearch,
-    sims: u32,
+    sims: usize,
     use_noise: bool,
     sample_action: bool,
 }
 
 impl<E: Eval> Mcts<E> {
-    pub fn create(evaluator: Arc<E>, sims: u32) -> Self {
+    pub fn create(evaluator: Arc<E>, sims: usize) -> Self {
         Self {
             evaluator,
             search_tree: TreeSearch::new(),
@@ -171,7 +171,7 @@ impl<E: Eval> Mcts<E> {
         }
     }
 
-    pub fn create_with_noise(evaluator: Arc<E>, sims: u32) -> Self {
+    pub fn create_with_noise(evaluator: Arc<E>, sims: usize) -> Self {
         Self {
             evaluator,
             search_tree: TreeSearch::new(),

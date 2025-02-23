@@ -54,7 +54,7 @@ pub struct MtSpMcts<E: Eval> {
     // Receives decoded work from the workers.
     decoded_rx: Receiver<DecResult>,
     // The total number of simulations to run.
-    sims: u32,
+    sims: usize,
     // If true, noise is added to the move priors for the root node.
     use_noise: bool,
     // If true, the MCTS samples from the moves, rather than returning the move
@@ -72,7 +72,7 @@ impl<E: Eval> MtSpMcts<E> {
     pub fn create(
         evaluator: Arc<E>,
         board: Board,
-        sims: u32,
+        sims: usize,
         use_noise: bool,
         sample_action: bool,
         batch_size: usize,
@@ -202,17 +202,13 @@ impl<E: Eval> SpSearch for MtSpMcts<E> {
             }
 
             // Create a data vector where board state is encoded.
-            let mut data = get_batch_vec(batch_count as usize);
+            let mut data = get_batch_vec(batch_count);
 
             // Collect the results from the encoded tasks. This blocks until all
             // tasks are encoded.
-            let enc_results = self
-                .encoded_rx
-                .iter()
-                .take(batch_count as usize)
-                .collect::<Vec<_>>();
+            let enc_results = self.encoded_rx.iter().take(batch_count).collect::<Vec<_>>();
 
-            assert_eq!(enc_results.len(), batch_count as usize);
+            assert_eq!(enc_results.len(), batch_count);
 
             // Copy the encoded data to the input vector.
             for (data_batch, enc_result) in data
@@ -226,8 +222,7 @@ impl<E: Eval> SpSearch for MtSpMcts<E> {
 
             // Evalute batch of boards.
             let eval_start = Instant::now();
-            let (mv_data, value_data) =
-                self.evaluator.eval_batch_data(batch_count as usize, data)?;
+            let (mv_data, value_data) = self.evaluator.eval_batch_data(batch_count, data)?;
             eval_time += eval_start.elapsed();
             total_evals += 1;
 
@@ -253,7 +248,7 @@ impl<E: Eval> SpSearch for MtSpMcts<E> {
             for DecResult {
                 node_id,
                 eval_boards,
-            } in self.decoded_rx.iter().take(batch_count as usize)
+            } in self.decoded_rx.iter().take(batch_count)
             {
                 self.tree_search.complete_expand(node_id, eval_boards);
                 nodes_expanded += 1;

@@ -428,7 +428,7 @@ impl PieceSet {
     }
 
     // Returns an iterator to iterate over each piece as a BitBoard.
-    pub fn iter(&self) -> PieceIter {
+    pub fn iter(&self) -> PieceIter<'_> {
         PieceIter::from(self)
     }
 

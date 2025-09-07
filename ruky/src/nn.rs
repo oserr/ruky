@@ -21,8 +21,8 @@ use burn::{
 struct ResBlockNet<B: Backend> {
     conv1: Conv2d<B>,
     conv2: Conv2d<B>,
-    batch_norm1: BatchNorm<B, 2>,
-    batch_norm2: BatchNorm<B, 2>,
+    batch_norm1: BatchNorm<B>,
+    batch_norm2: BatchNorm<B>,
 }
 
 impl<B: Backend> ResBlockNet<B> {
@@ -72,7 +72,7 @@ impl<B: Backend> ResBlockNet<B> {
 struct PolicyNet<B: Backend> {
     conv1: Conv2d<B>,
     conv2: Conv2d<B>,
-    batch_norm: BatchNorm<B, 2>,
+    batch_norm: BatchNorm<B>,
 }
 
 impl<B: Backend> PolicyNet<B> {
@@ -113,7 +113,7 @@ impl<B: Backend> PolicyNet<B> {
 #[derive(Debug, Module)]
 struct ValueNet<B: Backend> {
     conv: Conv2d<B>,
-    batch_norm: BatchNorm<B, 2>,
+    batch_norm: BatchNorm<B>,
     fc1: Linear<B>,
     fc2: Linear<B>,
 }
@@ -163,7 +163,7 @@ impl<B: Backend> ValueNet<B> {
 #[derive(Debug, Module)]
 pub struct AlphaZeroNet<B: Backend> {
     conv: Conv2d<B>,
-    batch_norm: BatchNorm<B, 2>,
+    batch_norm: BatchNorm<B>,
     res_blocks: Vec<ResBlockNet<B>>,
     policy_net: PolicyNet<B>,
     value_net: ValueNet<B>,

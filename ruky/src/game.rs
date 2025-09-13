@@ -348,10 +348,10 @@ impl GameResult {
         let mut game_stats = GameStats::new();
         game_stats.moves = self.moves.len();
         for result in &self.moves {
-            game_stats.nodes_expanded += result.nodes_expanded;
-            game_stats.nodes_visited += result.nodes_visited;
-            game_stats.max_depth = max(game_stats.max_depth, result.depth);
-            game_stats.total_evals += result.total_evals;
+            game_stats.nodes_expanded += result.nodes_expanded as u128;
+            game_stats.nodes_visited += result.nodes_visited as u128;
+            game_stats.max_depth = max(game_stats.max_depth, result.depth.into());
+            game_stats.total_evals += result.total_evals as u64;
             game_stats.eval_time += result.total_eval_time;
             game_stats.search_time += result.total_search_time;
             game_stats.move_gen_time += result.avg_move_gen_time;
@@ -387,13 +387,13 @@ pub struct GameStats {
     // Total number of moves in the game.
     pub moves: usize,
     // Number of nodes expanded in the game.
-    pub nodes_expanded: u32,
+    pub nodes_expanded: u128,
     // Number of nodes visited in the game.
-    pub nodes_visited: u32,
+    pub nodes_visited: u128,
     // Max depth throught the game.
-    pub max_depth: u32,
+    pub max_depth: u64,
     // Number of evals.
-    pub total_evals: u32,
+    pub total_evals: u64,
     // Total time spent in eval mode - the component of the engine that computes
     // the score for a given position.
     pub eval_time: Duration,

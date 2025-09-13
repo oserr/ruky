@@ -80,6 +80,34 @@ fn main() {
         dur.as_millis(),
         result.total_tree_nodes,
     );
+    let game_stats = result.stats();
+    println!(
+        "======== Game Stats ========
+        moves={}
+        total_nodes_expanded={}
+        nodes_expanded_per_move={}
+        nodes_visited={}
+        nodes_visited_per_move={}
+        max_depth={}
+        total_evals={}
+        evals_per_move={}
+        avg_eval_time: micros={}
+        avg_search_time: micros={}
+        avg_move_gen_time: micros={}
+        max_move_gen_time: micros={}",
+        game_stats.moves,
+        game_stats.nodes_expanded,
+        game_stats.avg_nodes_expanded(),
+        game_stats.nodes_visited,
+        game_stats.avg_nodes_visited(),
+        game_stats.max_depth,
+        game_stats.total_evals,
+        game_stats.evals_per_move(),
+        game_stats.avg_eval_time_micros(),
+        game_stats.avg_search_time_micros(),
+        game_stats.avg_move_gen_time_micros(),
+        game_stats.max_move_gen_time.as_micros(),
+    );
 }
 
 fn as_mins(dur: &Duration) -> f32 {

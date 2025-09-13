@@ -381,8 +381,24 @@ pub struct GameStats {
     pub total_eval_time: Duration,
     // Total time spent in search mode - includes eval mode + search time.
     pub total_search_time: Duration,
-    // The average time to generate moves across all moves in the game.
-    pub avg_move_gen_time: Duration,
+    // The total time spent generate moves across all moves in the game.
+    pub move_gen_time: Duration,
     // The maximum time taken to generate moves across all moves in the game.
     pub max_move_gen_time: Duration,
+}
+
+impl GameStats {
+    pub fn new() -> Self {
+        Self {
+            moves: 0,
+            nodes_expanded: 0,
+            nodes_visited: 0,
+            max_depth: 0,
+            total_evals: 0,
+            total_eval_time: Duration::ZERO,
+            total_search_time: Duration::ZERO,
+            move_gen_time: Duration::ZERO,
+            max_move_gen_time: Duration::ZERO,
+        }
+    }
 }

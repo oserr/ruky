@@ -11,8 +11,7 @@ use crate::search::{Search, SearchResult, SpSearch, TreeSize};
 use crate::tensor_decoder::AzDecoder;
 use crate::tensor_encoder::AzEncoder;
 use burn::prelude::{Backend, Device};
-use std::sync::Arc;
-use std::time::Duration;
+use std::{cmp::max, sync::Arc, time::Duration};
 
 // Parallel training game builder.
 #[derive(Clone, Debug)]
@@ -344,6 +343,25 @@ pub struct GameResult {
     pub total_tree_nodes: usize,
 }
 
+impl GameResult {
+    pub fn stats(&self) -> GameStats {
+        let mut game_stats = GameStats::new();
+        game_stats.moves = self.moves.len();
+        for result in &self.moves {
+            game_stats.nodes_expanded += result.nodes_expanded;
+            game_stats.nodes_visited += result.nodes_visited;
+            game_stats.max_depth = max(game_stats.max_depth, result.depth);
+            game_stats.total_evals += result.total_evals;
+            game_stats.eval_time += result.total_eval_time;
+            game_stats.search_time += result.total_search_time;
+            game_stats.move_gen_time += result.avg_move_gen_time;
+            game_stats.max_move_gen_time =
+                max(game_stats.max_move_gen_time, result.max_move_gen_time);
+        }
+        game_stats
+    }
+}
+
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub enum GameWinner {
     Black,
@@ -367,7 +385,7 @@ impl From<GameState> for GameWinner {
 #[derive(Clone, Debug, Eq, Hash, PartialEq)]
 pub struct GameStats {
     // Total number of moves in the game.
-    pub moves: u32,
+    pub moves: usize,
     // Number of nodes expanded in the game.
     pub nodes_expanded: u32,
     // Number of nodes visited in the game.
@@ -378,9 +396,9 @@ pub struct GameStats {
     pub total_evals: u32,
     // Total time spent in eval mode - the component of the engine that computes
     // the score for a given position.
-    pub total_eval_time: Duration,
+    pub eval_time: Duration,
     // Total time spent in search mode - includes eval mode + search time.
-    pub total_search_time: Duration,
+    pub search_time: Duration,
     // The total time spent generate moves across all moves in the game.
     pub move_gen_time: Duration,
     // The maximum time taken to generate moves across all moves in the game.
@@ -395,8 +413,8 @@ impl GameStats {
             nodes_visited: 0,
             max_depth: 0,
             total_evals: 0,
-            total_eval_time: Duration::ZERO,
-            total_search_time: Duration::ZERO,
+            eval_time: Duration::ZERO,
+            search_time: Duration::ZERO,
             move_gen_time: Duration::ZERO,
             max_move_gen_time: Duration::ZERO,
         }

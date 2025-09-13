@@ -402,3 +402,9 @@ impl GameStats {
         }
     }
 }
+
+impl Default for GameStats {
+    fn default() -> Self {
+        Self::new()
+    }
+}

@@ -12,6 +12,7 @@ use crate::tensor_decoder::AzDecoder;
 use crate::tensor_encoder::AzEncoder;
 use burn::prelude::{Backend, Device};
 use std::sync::Arc;
+use std::time::Duration;
 
 // Parallel training game builder.
 #[derive(Clone, Debug)]
@@ -360,4 +361,28 @@ impl From<GameState> for GameWinner {
             _ => GameWinner::Draw,
         }
     }
+}
+
+// Represents a game's stats.
+#[derive(Clone, Debug, Eq, Hash, PartialEq)]
+pub struct GameStats {
+    // Total number of moves in the game.
+    pub moves: u32,
+    // Number of nodes expanded in the game.
+    pub nodes_expanded: u32,
+    // Number of nodes visited in the game.
+    pub nodes_visited: u32,
+    // Max depth throught the game.
+    pub max_depth: u32,
+    // Number of evals.
+    pub total_evals: u32,
+    // Total time spent in eval mode - the component of the engine that computes
+    // the score for a given position.
+    pub total_eval_time: Duration,
+    // Total time spent in search mode - includes eval mode + search time.
+    pub total_search_time: Duration,
+    // The average time to generate moves across all moves in the game.
+    pub avg_move_gen_time: Duration,
+    // The maximum time taken to generate moves across all moves in the game.
+    pub max_move_gen_time: Duration,
 }

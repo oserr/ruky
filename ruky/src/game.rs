@@ -419,6 +419,30 @@ impl GameStats {
             max_move_gen_time: Duration::ZERO,
         }
     }
+
+    pub fn avg_nodes_expanded(&self) -> f32 {
+        self.nodes_expanded as f32 / self.moves as f32
+    }
+
+    pub fn avg_nodes_visited(&self) -> f32 {
+        self.nodes_visited as f32 / self.moves as f32
+    }
+
+    pub fn evals_per_move(&self) -> f32 {
+        self.total_evals as f32 / self.moves as f32
+    }
+
+    pub fn avg_eval_time_micros(&self) -> u128 {
+        self.eval_time.as_micros() / self.moves as u128
+    }
+
+    pub fn avg_search_time_micros(&self) -> u128 {
+        self.search_time.as_micros() / self.moves as u128
+    }
+
+    pub fn avg_move_gen_time_micros(&self) -> u128 {
+        self.move_gen_time.as_micros() / self.moves as u128
+    }
 }
 
 impl Default for GameStats {

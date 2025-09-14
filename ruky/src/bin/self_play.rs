@@ -30,14 +30,14 @@ fn main() {
         let avg_eval_time = search_result.avg_eval_time();
         println!(
             "i={} color={:?} prior={} value={} move={:?}
-            \tnodes_expanded={} nodes_visited={} depth={}
-            \teval_time_per_expansion: micros={}
-            \tsearch_time_per_expansion: micros={}
-            \ttotal_eval_time: mins={} secs={} millis={}
-            \tavg_eval_time: micros={} ns={}
-            \ttotal_search_time: mins={} secs={} millis={}
-            \tavg_move_gen_time: micros={} ns={}
-            \tmax_move_gen_time: micros={} ns={}",
+            nodes_expanded={} nodes_visited={} depth={}
+            eval_time_per_expansion: micros={}
+            search_time_per_expansion: micros={}
+            total_eval_time: mins={} secs={} millis={}
+            avg_eval_time: micros={} ns={}
+            total_search_time: mins={} secs={} millis={}
+            avg_move_gen_time: micros={} ns={}
+            max_move_gen_time: micros={} ns={}",
             i,
             color,
             search_result.best.prior,

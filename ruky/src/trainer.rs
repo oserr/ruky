@@ -1,7 +1,7 @@
 // This module contains components for a trainer.
 
 use crate::err::RukyErr;
-use crate::game::ParTrGameBuilder;
+use crate::game::{GameResult, ParTrGameBuilder};
 use crate::Board;
 use burn::prelude::{Backend, Device};
 use std::path::PathBuf;
@@ -37,7 +37,7 @@ pub struct Trainer<B: Backend> {
 }
 
 impl<B: Backend> Trainer<B> {
-    fn train(&self) -> Result<(), RukyErr> {
+    fn play_self(&self) -> Result<Vec<GameResult>, RukyErr> {
         let mut training_game = ParTrGameBuilder::<B>::new()
             .board(self.board.clone())
             .device(self.device.clone())
@@ -57,7 +57,7 @@ impl<B: Backend> Trainer<B> {
             training_game.reset();
         }
 
-        Ok(())
+        Ok(game_results)
     }
 }
 

@@ -75,6 +75,7 @@ impl<E: Eval> SpSearch for SpMcts<E> {
 
         let best_node = self.search_tree.select_action();
         let result = SearchResult {
+            board: self.search_tree.root_board().clone(),
             best: Bp::from(best_node),
             moves: self.search_tree.move_probs(),
             value: best_node.value,
@@ -247,6 +248,7 @@ impl<E: Eval> Search for Mcts<E> {
 
         let best_node = self.search_tree.select_action();
         let result = SearchResult {
+            board: self.search_tree.root_board().clone(),
             best: Bp::from(best_node),
             moves: self.search_tree.move_probs(),
             value: best_node.value,

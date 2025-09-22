@@ -30,6 +30,8 @@ pub trait TreeSize {
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct SearchResult {
+    // The position evaluated.
+    pub board: Board,
     // The best move according to the the Search agent.
     pub best: Bp,
     // The vector of probabilities for each move. This includes the best move.
@@ -57,9 +59,10 @@ pub struct SearchResult {
 }
 
 impl SearchResult {
-    pub fn with_best(board: Board) -> Self {
+    pub fn with_best(board: Board, best: Board) -> Self {
         Self {
-            best: Bp::with_board(board),
+            board: board,
+            best: Bp::with_board(best),
             moves: Vec::new(),
             value: 0.0,
             nodes_expanded: 0,

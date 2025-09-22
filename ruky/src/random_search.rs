@@ -16,6 +16,6 @@ impl Search for RandomSearch {
         let mut boards = board.next_boards().ok_or(RukyErr::SearchTerminalBoard)?;
         let index = rand::rng().random_range(0..boards.len());
         let best = boards.swap_remove(index);
-        Ok(SearchResult::with_best(best))
+        Ok(SearchResult::with_best(board.clone(), best))
     }
 }

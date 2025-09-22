@@ -2,6 +2,7 @@
 
 pub mod bitboard;
 pub mod board;
+pub mod dataset;
 mod ecmv;
 pub mod err;
 pub mod eval;

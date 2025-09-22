@@ -1,6 +1,6 @@
 use crate::game::GameResult;
 use burn::{
-    data::dataset::Dataset,
+    data::{dataloader::batcher::Batcher, dataset::Dataset},
     prelude::{Backend, Tensor},
 };
 
@@ -27,4 +27,13 @@ pub struct GamesBatch<B: Backend> {
     // A single target represents two outputs: 1) the tensor of probabilities
     // for moves and 2) the value of a given of the given position.
     pub targets: (Tensor<B, 4>, Tensor<B, 2>),
+}
+
+#[derive(Clone, Copy, Debug)]
+struct GamesBatcher {}
+
+impl<B: Backend> Batcher<B, GameResult, GamesBatch<B>> for GamesBatcher {
+    fn batch(&self, _games: Vec<GameResult>, _device: &B::Device) -> GamesBatch<B> {
+        todo!();
+    }
 }

@@ -255,6 +255,9 @@ impl<E: Eval> SpSearch for MtSpMcts<E> {
             }
         }
 
+        // Avoid divison by zero.
+        nodes_expanded = max(1, nodes_expanded);
+
         let best_node = self.tree_search.select_action();
         let result = SearchResult {
             board: self.tree_search.root_board().clone(),

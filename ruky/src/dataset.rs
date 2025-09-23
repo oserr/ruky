@@ -15,7 +15,7 @@ pub(crate) struct GamePosition {
     // If game winner is White, and player to move is black, then the value for
     // the current move is -1. If white is next to move, then value is 1, and if
     // this is a draw then target valulue is 0.
-    pub game_winner: GameWinner,
+    pub winner: GameWinner,
     // The legal moves in the current positions, with visit counts. These are
     // used to create the target policy tensors.
     pub moves: Vec<Mp>,
@@ -24,15 +24,44 @@ pub(crate) struct GamePosition {
 #[derive(Clone)]
 pub(crate) struct GamesDataset {
     dataset: Vec<GameResult>,
+    game_positions: usize,
 }
 
-impl Dataset<GameResult> for GamesDataset {
-    fn get(&self, index: usize) -> Option<GameResult> {
-        self.dataset.get(index).cloned()
+impl GamesDataset {
+    pub fn new(dataset: Vec<GameResult>) -> Self {
+        let game_positions = dataset
+            .iter()
+            .fold(0, |acc, game_result| acc + game_result.moves.len());
+        Self {
+            dataset,
+            game_positions,
+        }
+    }
+}
+
+impl Dataset<GamePosition> for GamesDataset {
+    fn get(&self, mut index: usize) -> Option<GamePosition> {
+        for game_result in &self.dataset {
+            if index >= game_result.moves.len() {
+                index -= game_result.moves.len();
+                continue;
+            }
+            match game_result.moves.get(index) {
+                None => return None,
+                Some(search_result) => {
+                    return Some(GamePosition {
+                        board: search_result.board.clone(),
+                        winner: game_result.winner,
+                        moves: search_result.moves.clone(),
+                    })
+                }
+            }
+        }
+        None
     }
 
     fn len(&self) -> usize {
-        self.dataset.len()
+        self.game_positions
     }
 }
 
@@ -49,8 +78,8 @@ pub struct GamesBatch<B: Backend> {
 #[derive(Clone, Copy, Debug)]
 struct GamesBatcher {}
 
-impl<B: Backend> Batcher<B, GameResult, GamesBatch<B>> for GamesBatcher {
-    fn batch(&self, _games: Vec<GameResult>, _device: &B::Device) -> GamesBatch<B> {
+impl<B: Backend> Batcher<B, GamePosition, GamesBatch<B>> for GamesBatcher {
+    fn batch(&self, _games: Vec<GamePosition>, _device: &B::Device) -> GamesBatch<B> {
         todo!();
     }
 }

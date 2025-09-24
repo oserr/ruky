@@ -1,9 +1,11 @@
 use crate::board::Board;
 use crate::game::{GameResult, GameWinner};
+use crate::piece::Color;
 use crate::search::Mp;
+use crate::tensor_encoder::{AzEncoder, TensorEncoder};
 use burn::{
     data::{dataloader::batcher::Batcher, dataset::Dataset},
-    prelude::{Backend, Tensor},
+    prelude::{Backend, Tensor, TensorData},
 };
 
 // The game position is a struct with all the information needed to construct
@@ -12,13 +14,13 @@ pub(crate) struct GamePosition {
     // The board represents the board position, including board state, e.g.
     // color to move next.
     pub board: Board,
+    // The legal moves in the current positions, with visit counts. These are
+    // used to create the target policy tensors.
+    pub moves: Vec<Mp>,
     // If game winner is White, and player to move is black, then the value for
     // the current move is -1. If white is next to move, then value is 1, and if
     // this is a draw then target valulue is 0.
     pub winner: GameWinner,
-    // The legal moves in the current positions, with visit counts. These are
-    // used to create the target policy tensors.
-    pub moves: Vec<Mp>,
 }
 
 #[derive(Clone)]
@@ -51,8 +53,8 @@ impl Dataset<GamePosition> for GamesDataset {
                 Some(search_result) => {
                     return Some(GamePosition {
                         board: search_result.board.clone(),
-                        winner: game_result.winner,
                         moves: search_result.moves.clone(),
+                        winner: game_result.winner,
                     })
                 }
             }
@@ -79,7 +81,43 @@ pub struct GamesBatch<B: Backend> {
 struct GamesBatcher {}
 
 impl<B: Backend> Batcher<B, GamePosition, GamesBatch<B>> for GamesBatcher {
-    fn batch(&self, _games: Vec<GamePosition>, _device: &B::Device) -> GamesBatch<B> {
-        todo!();
+    fn batch(&self, games: Vec<GamePosition>, device: &B::Device) -> GamesBatch<B> {
+        let encoder = AzEncoder::new(device.clone());
+
+        let n = games.len();
+        let mut inputs = Vec::with_capacity(n);
+        let mut targets_policy = Vec::with_capacity(n);
+        let mut targets_value = Vec::with_capacity(n);
+
+        for GamePosition {
+            board,
+            moves,
+            winner,
+        } in games
+        {
+            inputs.push(encoder.encode_board(&board));
+            targets_policy.push(encoder.encode_mps(&moves));
+            let value = match winner {
+                GameWinner::Draw => 0.0,
+                GameWinner::White => match board.color() {
+                    Color::White => 1.0,
+                    _ => -1.0,
+                },
+                _ => match board.color() {
+                    Color::Black => 1.0,
+                    _ => -1.0,
+                },
+            };
+            targets_value.push(value);
+        }
+
+        let inputs = Tensor::cat(inputs, 0);
+        let targets_policy = Tensor::cat(targets_policy, 0);
+        let targets_value = Tensor::from_data(TensorData::new(targets_value, [n, 1]), device);
+
+        GamesBatch {
+            inputs,
+            targets: (targets_policy, targets_value),
+        }
     }
 }

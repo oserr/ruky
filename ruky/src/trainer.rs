@@ -202,3 +202,14 @@ impl<B: Backend> TrainerBuilder<B> {
         })
     }
 }
+
+// Splits a vector of game results into two separate sets for use as training
+// and validation sets. The training ratio represents the percent of game resuls
+// that should be used for training, and is expected to be greater than 0 and
+// less than 1, otherwise the function panics.
+fn split_game_results(
+    _games: Vec<GameResult>,
+    _training_ratio: f32,
+) -> (Vec<GameResult>, Vec<GameResult>) {
+    todo!();
+}

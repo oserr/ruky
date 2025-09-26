@@ -4,6 +4,8 @@ use crate::err::RukyErr;
 use crate::game::{GameResult, ParTrGameBuilder};
 use crate::Board;
 use burn::prelude::{Backend, Device};
+use rand::rng;
+use rand::seq::SliceRandom;
 use std::path::PathBuf;
 
 // The purpose of the Trainer is to play games of self-play to generate training
@@ -207,9 +209,22 @@ impl<B: Backend> TrainerBuilder<B> {
 // and validation sets. The training ratio represents the percent of game resuls
 // that should be used for training, and is expected to be greater than 0 and
 // less than 1, otherwise the function panics.
+//
+// The first vector in the tuple represents the training set, and the second the
+// validation set.
 fn split_game_results(
-    _games: Vec<GameResult>,
-    _training_ratio: f32,
+    mut games: Vec<GameResult>,
+    training_ratio: f32,
 ) -> (Vec<GameResult>, Vec<GameResult>) {
-    todo!();
+    assert!(training_ratio > 0.0 && training_ratio < 1.0);
+
+    let index = (training_ratio * games.len() as f32) as usize;
+    let mut rng = rng();
+    games.shuffle(&mut rng);
+
+    // Split the shuffled vector into two parts
+    let validation_set = games.drain(index..).collect();
+    let training_set = games;
+
+    (training_set, validation_set)
 }

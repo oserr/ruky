@@ -80,13 +80,13 @@ impl<B: Backend> ParTrGameBuilder<B> {
         self
     }
 
-    pub fn build(self) -> Result<TrainingGame<MtSpMcts<AzEval<B>>>, RukyErr> {
+    pub fn build(self) -> Result<TrainingGame<MtSpMcts<AzEval<B>>, B>, RukyErr> {
         match (self.board, self.device) {
             (Some(board), Some(device)) => {
                 let encoder = AzEncoder::new(device.clone());
                 let decoder = AzDecoder::new();
                 let net = Arc::new(AlphaZeroNet::new(&device));
-                let eval = Arc::new(AzEval::create(encoder, decoder, net));
+                let eval = Arc::new(AzEval::create(encoder, decoder, net.clone()));
                 let mcts = MtSpMcts::create(
                     eval,
                     board.clone(),
@@ -96,7 +96,7 @@ impl<B: Backend> ParTrGameBuilder<B> {
                     self.batch_size.unwrap_or(16),
                     self.num_workers.unwrap_or(16),
                 );
-                Ok(TrainingGame::create(board, mcts, self.max_moves))
+                Ok(TrainingGame::create(board, mcts, net, self.max_moves))
             }
             (_, _) => Err(RukyErr::PreconditionErr),
         }
@@ -154,13 +154,13 @@ impl<B: Backend> TrGameBuilder<B> {
         self
     }
 
-    pub fn build(self) -> Result<TrainingGame<SpMcts<AzEval<B>>>, RukyErr> {
+    pub fn build(self) -> Result<TrainingGame<SpMcts<AzEval<B>>, B>, RukyErr> {
         match (self.board, self.device) {
             (Some(board), Some(device)) => {
                 let encoder = AzEncoder::new(device.clone());
                 let decoder = AzDecoder::new();
                 let net = Arc::new(AlphaZeroNet::new(&device));
-                let eval = Arc::new(AzEval::create(encoder, decoder, net));
+                let eval = Arc::new(AzEval::create(encoder, decoder, net.clone()));
                 let mcts = SpMctsBuilder::new()
                     .eval(eval)
                     .board(board.clone())
@@ -168,7 +168,7 @@ impl<B: Backend> TrGameBuilder<B> {
                     .use_noise(self.use_noise)
                     .sample_action(self.sample_action)
                     .build()?;
-                Ok(TrainingGame::create(board, mcts, self.max_moves))
+                Ok(TrainingGame::create(board, mcts, net, self.max_moves))
             }
             (_, _) => Err(RukyErr::PreconditionErr),
         }
@@ -176,18 +176,20 @@ impl<B: Backend> TrGameBuilder<B> {
 }
 
 #[derive(Clone, Debug)]
-pub struct TrainingGame<S: SpSearch + TreeSize> {
+pub struct TrainingGame<S: SpSearch + TreeSize, B: Backend> {
     board: Board,
     // Search is used for white and black pieces.
     wb_search: S,
+    net: Arc<AlphaZeroNet<B>>,
     max_moves: usize,
 }
 
-impl<S: SpSearch + TreeSize> TrainingGame<S> {
-    pub fn create(board: Board, wb_search: S, max_moves: usize) -> Self {
+impl<S: SpSearch + TreeSize, B: Backend> TrainingGame<S, B> {
+    pub fn create(board: Board, wb_search: S, net: Arc<AlphaZeroNet<B>>, max_moves: usize) -> Self {
         Self {
             board,
             wb_search,
+            net,
             max_moves,
         }
     }

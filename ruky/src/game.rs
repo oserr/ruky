@@ -180,7 +180,7 @@ pub struct TrainingGame<S: SpSearch + TreeSize, B: Backend> {
     board: Board,
     // Search is used for white and black pieces.
     wb_search: S,
-    net: Arc<AlphaZeroNet<B>>,
+    pub(crate) net: Arc<AlphaZeroNet<B>>,
     max_moves: usize,
 }
 

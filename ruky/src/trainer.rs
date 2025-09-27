@@ -2,11 +2,12 @@
 
 use crate::err::RukyErr;
 use crate::game::{GameResult, ParTrGameBuilder};
+use crate::nn::AlphaZeroNet;
 use crate::Board;
 use burn::prelude::{Backend, Device};
 use rand::rng;
 use rand::seq::SliceRandom;
-use std::path::PathBuf;
+use std::{path::PathBuf, sync::Arc};
 
 // The purpose of the Trainer is to play games of self-play to generate training
 // data, and to train the model with the data generated during self-play.
@@ -39,7 +40,7 @@ pub struct Trainer<B: Backend> {
 }
 
 impl<B: Backend> Trainer<B> {
-    fn play_self(&self) -> Result<Vec<GameResult>, RukyErr> {
+    fn play_self(&self) -> Result<(Arc<AlphaZeroNet<B>>, Vec<GameResult>), RukyErr> {
         let mut training_game = ParTrGameBuilder::<B>::new()
             .board(self.board.clone())
             .device(self.device.clone())
@@ -59,7 +60,7 @@ impl<B: Backend> Trainer<B> {
             training_game.reset();
         }
 
-        Ok(game_results)
+        Ok((training_game.net, game_results))
     }
 }
 

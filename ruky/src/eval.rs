@@ -5,10 +5,7 @@ use crate::err::RukyErr;
 use crate::nn::AlphaZeroNet;
 use crate::tensor_decoder::{AzDecoder, DecBoards, TensorDecoder};
 use crate::tensor_encoder::{AzEncoder, TensorEncoder};
-use burn::{
-    prelude::Backend,
-    tensor::activation::softmax,
-};
+use burn::{prelude::Backend, tensor::activation::softmax};
 use std::sync::Arc;
 
 // Re-use DecBoards and DecMoves as the objects returned by the Eval trait, but

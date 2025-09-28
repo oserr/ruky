@@ -5,7 +5,10 @@ use crate::err::RukyErr;
 use crate::nn::AlphaZeroNet;
 use crate::tensor_decoder::{AzDecoder, DecBoards, TensorDecoder};
 use crate::tensor_encoder::{AzEncoder, TensorEncoder};
-use burn::prelude::Backend;
+use burn::{
+    prelude::Backend,
+    tensor::activation::softmax,
+};
 use std::sync::Arc;
 
 // Re-use DecBoards and DecMoves as the objects returned by the Eval trait, but
@@ -50,6 +53,7 @@ impl<B: Backend> Eval for AzEval<B> {
     ) -> Result<(Vec<f32>, Vec<f32>), RukyErr> {
         let input = self.encoder.encode_batch_data(batch_size, data);
         let (mv_tensor, eval_tensor) = self.net.forward(input);
+        let mv_tensor = softmax(mv_tensor, 3);
         let mv_data = mv_tensor
             .into_data()
             .into_vec()

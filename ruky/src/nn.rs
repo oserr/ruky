@@ -10,7 +10,7 @@ use burn::{
         BatchNorm, BatchNormConfig, Initializer, Linear, LinearConfig, PaddingConfig2d,
     },
     prelude::{Backend, Device, Tensor},
-    tensor::activation::{relu, softmax, tanh},
+    tensor::activation::{relu, tanh},
 };
 
 //---------------
@@ -104,7 +104,7 @@ impl<B: Backend> PolicyNet<B> {
         let x = relu(x);
         let x = self.conv2.forward(x);
         let x = x.reshape([0, 8, 8, 73]);
-        softmax(x, 3)
+        x
     }
 }
 

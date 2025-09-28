@@ -4,6 +4,10 @@ use crate::piece::Piece;
 use crate::piece_move::PieceMove;
 use std::cmp::max;
 
+pub(crate) fn to_index(piece_move: Piece<PieceMove>) -> usize {
+    EcMove::from(piece_move).index()
+}
+
 // Represents the code for a given piece move, i.e, Piece<PieceMove>.
 pub(crate) struct EcMove {
     pub(crate) row: u8,

@@ -1,11 +1,12 @@
 use crate::board::Board;
+use crate::ecmv::to_index;
 use crate::game::{GameResult, GameWinner};
 use crate::piece::Color;
-use crate::search::Mp;
 use crate::tensor_encoder::{AzEncoder, TensorEncoder};
 use burn::{
     data::{dataloader::batcher::Batcher, dataset::Dataset},
     prelude::{Backend, Tensor, TensorData},
+    tensor::Int,
 };
 
 // The game position is a struct with all the information needed to construct
@@ -14,9 +15,9 @@ pub(crate) struct GamePosition {
     // The board represents the board position, including board state, e.g.
     // color to move next.
     pub board: Board,
-    // The legal moves in the current positions, with visit counts. These are
-    // used to create the target policy tensors.
-    pub moves: Vec<Mp>,
+    // The unique code representing the chosen index, i.e. a value in
+    // [0, 8x8x73).
+    pub move_index: usize,
     // If game winner is White, and player to move is black, then the value for
     // the current move is -1. If white is next to move, then value is 1, and if
     // this is a draw then target valulue is 0.
@@ -51,11 +52,16 @@ impl Dataset<GamePosition> for GamesDataset {
             match game_result.moves.get(index) {
                 None => return None,
                 Some(search_result) => {
+                    let piece_move = search_result
+                        .best
+                        .board
+                        .last_move()
+                        .expect("Expecting board to have last move.");
                     return Some(GamePosition {
                         board: search_result.board.clone(),
-                        moves: search_result.moves.clone(),
+                        move_index: to_index(piece_move),
                         winner: game_result.winner,
-                    })
+                    });
                 }
             }
         }
@@ -71,8 +77,8 @@ impl Dataset<GamePosition> for GamesDataset {
 pub struct GamesBatch<B: Backend> {
     // A single input represents a game position.
     pub inputs: Tensor<B, 4>,
-    // The policy tensors representing the move probabilities.
-    pub targets_policy: Tensor<B, 4>,
+    // A tensor with the unique indexes representing the chosen moves.
+    pub targets_policy: Tensor<B, 1, Int>,
     // The value tensors, each with a value in (-1, 1) representing the value of
     // the position from the perspective of the player moving.
     pub targets_values: Tensor<B, 2>,
@@ -92,12 +98,12 @@ impl<B: Backend> Batcher<B, GamePosition, GamesBatch<B>> for GamesBatcher {
 
         for GamePosition {
             board,
-            moves,
+            move_index,
             winner,
         } in games
         {
             inputs.push(encoder.encode_board(&board));
-            targets_policy.push(encoder.encode_mps(&moves));
+            targets_policy.push(move_index);
             let value = match winner {
                 GameWinner::Draw => 0.0,
                 GameWinner::White => match board.color() {
@@ -113,7 +119,7 @@ impl<B: Backend> Batcher<B, GamePosition, GamesBatch<B>> for GamesBatcher {
         }
 
         let inputs = Tensor::cat(inputs, 0);
-        let targets_policy = Tensor::cat(targets_policy, 0);
+        let targets_policy = Tensor::from_ints(&targets_policy[..], device);
         let targets_values = Tensor::from_data(TensorData::new(targets_values, [n, 1]), device);
 
         GamesBatch {

@@ -6,11 +6,14 @@ use burn::{
     module::Module,
     nn::{
         conv::{Conv2d, Conv2dConfig},
-        loss::{MseLoss, Reduction::Mean},
+        loss::{CrossEntropyLossConfig, MseLoss, Reduction::Mean},
         BatchNorm, BatchNormConfig, Initializer, Linear, LinearConfig, PaddingConfig2d,
     },
     prelude::{Backend, Device, Tensor},
-    tensor::activation::{relu, tanh},
+    tensor::{
+        activation::{relu, tanh},
+        Int,
+    },
 };
 
 //---------------
@@ -174,9 +177,9 @@ pub struct AlphaZeroNet<B: Backend> {
 #[derive(Clone, Debug)]
 pub struct AzOutput<B: Backend> {
     pub loss: Tensor<B, 1>,
-    pub out_policy: Tensor<B, 4>,
+    pub out_policy: Tensor<B, 2>,
     pub out_values: Tensor<B, 2>,
-    pub targets_policy: Tensor<B, 4>,
+    pub targets_policy: Tensor<B, 1, Int>,
     pub targets_values: Tensor<B, 2>,
 }
 
@@ -210,22 +213,24 @@ impl<B: Backend> AlphaZeroNet<B> {
     }
 
     pub fn forward_step(&self, batch: GamesBatch<B>) -> AzOutput<B> {
-        let (_out_policy, out_values) = self.forward(batch.inputs);
+        let (out_policy, out_values) = self.forward(batch.inputs);
 
-        let _mse_loss =
+        // Flatten the last dimensions to compute CrossEntropyLoss.
+        let out_policy = out_policy.reshape([0, -1]);
+
+        let mse_loss =
             MseLoss::new().forward(out_values.clone(), batch.targets_values.clone(), Mean);
-        // TODO: Need to compute the cross entropy loss of the policy values, but we
-        // need to change the network to return the logits rather than the
-        // probabilities, and then we'll need to reshape tensor from [8, 8, 73]
-        // -> [8 * 8 * 73].
-        todo!();
 
-        // AzOutput {
-        //     loss,
-        //     out_policy,
-        //     out_values,
-        //     targets.targets_policy,
-        //     targets.targets_values,
-        // }
+        let ce_loss = CrossEntropyLossConfig::new()
+            .init(&out_policy.device())
+            .forward(out_policy.clone(), batch.targets_policy.clone());
+
+        AzOutput {
+            loss: mse_loss + ce_loss,
+            out_policy,
+            out_values,
+            targets_policy: batch.targets_policy,
+            targets_values: batch.targets_values,
+        }
     }
 }

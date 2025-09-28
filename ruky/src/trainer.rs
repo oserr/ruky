@@ -37,6 +37,9 @@ pub struct Trainer<B: Backend> {
     check_point_step: Option<usize>,
     // The batch size to use during training.
     training_batch_size: usize,
+    // The number of games to use as training data. A number between (0,1). The
+    // remaining percent of games are used as validation data.
+    training_percent: f32,
 }
 
 impl<B: Backend> Trainer<B> {
@@ -92,6 +95,9 @@ pub struct TrainerBuilder<B: Backend> {
     check_point_step: Option<usize>,
     // The batch size to use during training.
     training_batch_size: usize,
+    // The number of games to use as training data. A number between (0,1). The
+    // remaining percent of games are used as validation data.
+    training_percent: f32,
 }
 
 impl<B: Backend> TrainerBuilder<B> {
@@ -115,6 +121,7 @@ impl<B: Backend> TrainerBuilder<B> {
             check_point_dir: None,
             check_point_step: None,
             training_batch_size: num_threads,
+            training_percent: 0.95,
         }
     }
 
@@ -178,6 +185,11 @@ impl<B: Backend> TrainerBuilder<B> {
         self
     }
 
+    pub fn training_percent(mut self, percent: f32) -> Self {
+        self.training_percent = percent;
+        self
+    }
+
     pub fn build(self) -> Result<Trainer<B>, RukyErr> {
         if self.board.is_none() || self.device.is_none() || self.num_games.is_none() {
             return Err(RukyErr::PreconditionErr);
@@ -202,6 +214,7 @@ impl<B: Backend> TrainerBuilder<B> {
             check_point_dir: self.check_point_dir,
             check_point_step: self.check_point_step,
             training_batch_size: self.training_batch_size,
+            training_percent: self.training_percent,
         })
     }
 }

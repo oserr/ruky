@@ -1,10 +1,12 @@
 // net is a module containing the building blocks of the neural network used in
 // AlphaZero.
 
+use crate::dataset::GamesBatch;
 use burn::{
     module::Module,
     nn::{
         conv::{Conv2d, Conv2dConfig},
+        loss::{MseLoss, Reduction::Mean},
         BatchNorm, BatchNormConfig, Initializer, Linear, LinearConfig, PaddingConfig2d,
     },
     prelude::{Backend, Device, Tensor},
@@ -169,6 +171,15 @@ pub struct AlphaZeroNet<B: Backend> {
     value_net: ValueNet<B>,
 }
 
+#[derive(Clone, Debug)]
+pub struct AzOutput<B: Backend> {
+    pub loss: Tensor<B, 1>,
+    pub out_policy: Tensor<B, 4>,
+    pub out_values: Tensor<B, 2>,
+    pub targets_policy: Tensor<B, 4>,
+    pub targets_values: Tensor<B, 2>,
+}
+
 impl<B: Backend> AlphaZeroNet<B> {
     pub fn new(device: &Device<B>) -> Self {
         Self {
@@ -196,5 +207,25 @@ impl<B: Backend> AlphaZeroNet<B> {
         let policy = self.policy_net.forward(x.clone());
         let value = self.value_net.forward(x);
         (policy, value)
+    }
+
+    pub fn forward_step(&self, batch: GamesBatch<B>) -> AzOutput<B> {
+        let (_out_policy, out_values) = self.forward(batch.inputs);
+
+        let _mse_loss =
+            MseLoss::new().forward(out_values.clone(), batch.targets_values.clone(), Mean);
+        // TODO: Need to compute the cross entropy loss of the policy values, but we
+        // need to change the network to return the logits rather than the
+        // probabilities, and then we'll need to reshape tensor from [8, 8, 73]
+        // -> [8 * 8 * 73].
+        todo!();
+
+        // AzOutput {
+        //     loss,
+        //     out_policy,
+        //     out_values,
+        //     targets.targets_policy,
+        //     targets.targets_values,
+        // }
     }
 }

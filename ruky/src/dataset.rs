@@ -71,10 +71,11 @@ impl Dataset<GamePosition> for GamesDataset {
 pub struct GamesBatch<B: Backend> {
     // A single input represents a game position.
     pub inputs: Tensor<B, 4>,
-
-    // A single target represents two outputs: 1) the tensor of probabilities
-    // for moves and 2) the value of a given of the given position.
-    pub targets: (Tensor<B, 4>, Tensor<B, 2>),
+    // The policy tensors representing the move probabilities.
+    pub targets_policy: Tensor<B, 4>,
+    // The value tensors, each with a value in (-1, 1) representing the value of
+    // the position from the perspective of the player moving.
+    pub targets_values: Tensor<B, 2>,
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -87,7 +88,7 @@ impl<B: Backend> Batcher<B, GamePosition, GamesBatch<B>> for GamesBatcher {
         let n = games.len();
         let mut inputs = Vec::with_capacity(n);
         let mut targets_policy = Vec::with_capacity(n);
-        let mut targets_value = Vec::with_capacity(n);
+        let mut targets_values = Vec::with_capacity(n);
 
         for GamePosition {
             board,
@@ -108,16 +109,17 @@ impl<B: Backend> Batcher<B, GamePosition, GamesBatch<B>> for GamesBatcher {
                     _ => -1.0,
                 },
             };
-            targets_value.push(value);
+            targets_values.push(value);
         }
 
         let inputs = Tensor::cat(inputs, 0);
         let targets_policy = Tensor::cat(targets_policy, 0);
-        let targets_value = Tensor::from_data(TensorData::new(targets_value, [n, 1]), device);
+        let targets_values = Tensor::from_data(TensorData::new(targets_values, [n, 1]), device);
 
         GamesBatch {
             inputs,
-            targets: (targets_policy, targets_value),
+            targets_policy,
+            targets_values,
         }
     }
 }

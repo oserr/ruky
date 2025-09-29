@@ -4775,6 +4775,7 @@ dependencies = [
  "burn",
  "burn-candle",
  "burn-cuda",
+ "burn-ndarray",
  "clap",
  "crossbeam",
  "lazy_static",

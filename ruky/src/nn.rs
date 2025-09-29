@@ -12,9 +12,12 @@ use burn::{
     prelude::{Backend, Device, Tensor},
     tensor::{
         activation::{relu, tanh},
-        Int,
+        backend::AutodiffBackend,
+        Int, Transaction,
     },
+    train::{metric::ItemLazy, TrainOutput, TrainStep, ValidStep},
 };
+use burn_ndarray::NdArray;
 
 //---------------
 // Residual Block
@@ -183,6 +186,32 @@ pub struct AzOutput<B: Backend> {
     pub targets_values: Tensor<B, 2>,
 }
 
+impl<B: Backend> ItemLazy for AzOutput<B> {
+    type ItemSync = AzOutput<NdArray>;
+
+    fn sync(self) -> Self::ItemSync {
+        let [loss, out_policy, out_values, targets_policy, targets_values] = Transaction::default()
+            .register(self.loss)
+            .register(self.out_policy)
+            .register(self.out_values)
+            .register(self.targets_policy)
+            .register(self.targets_values)
+            .execute()
+            .try_into()
+            .expect("Correct amount of tensor data.");
+
+        let device = &Default::default();
+
+        AzOutput {
+            loss: Tensor::from_data(loss, device),
+            out_policy: Tensor::from_data(out_policy, device),
+            out_values: Tensor::from_data(out_values, device),
+            targets_policy: Tensor::from_data(targets_policy, device),
+            targets_values: Tensor::from_data(targets_values, device),
+        }
+    }
+}
+
 impl<B: Backend> AlphaZeroNet<B> {
     pub fn new(device: &Device<B>) -> Self {
         Self {
@@ -232,5 +261,19 @@ impl<B: Backend> AlphaZeroNet<B> {
             targets_policy: batch.targets_policy,
             targets_values: batch.targets_values,
         }
+    }
+}
+
+impl<B: AutodiffBackend> TrainStep<GamesBatch<B>, AzOutput<B>> for AlphaZeroNet<B> {
+    fn step(&self, games: GamesBatch<B>) -> TrainOutput<AzOutput<B>> {
+        let out = self.forward_step(games);
+
+        TrainOutput::new(self, out.loss.backward(), out)
+    }
+}
+
+impl<B: Backend> ValidStep<GamesBatch<B>, AzOutput<B>> for AlphaZeroNet<B> {
+    fn step(&self, games: GamesBatch<B>) -> AzOutput<B> {
+        self.forward_step(games)
     }
 }

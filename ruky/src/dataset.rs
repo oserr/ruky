@@ -8,9 +8,11 @@ use burn::{
     prelude::{Backend, Tensor, TensorData},
     tensor::Int,
 };
+use std::marker::PhantomData;
 
 // The game position is a struct with all the information needed to construct
 // the inputs and targets used to train the neural network.
+#[derive(Clone, Debug)]
 pub(crate) struct GamePosition {
     // The board represents the board position, including board state, e.g.
     // color to move next.
@@ -84,10 +86,18 @@ pub struct GamesBatch<B: Backend> {
     pub targets_values: Tensor<B, 2>,
 }
 
-#[derive(Clone, Copy, Debug)]
-struct GamesBatcher {}
+#[derive(Clone, Copy, Debug, Default)]
+pub struct GamesBatcher<B: Backend> {
+    _backend: PhantomData<B>,
+}
 
-impl<B: Backend> Batcher<B, GamePosition, GamesBatch<B>> for GamesBatcher {
+impl<B: Backend> GamesBatcher<B> {
+    pub fn new() -> Self {
+        Self::default()
+    }
+}
+
+impl<B: Backend> Batcher<B, GamePosition, GamesBatch<B>> for GamesBatcher<B> {
     fn batch(&self, games: Vec<GamePosition>, device: &B::Device) -> GamesBatch<B> {
         let encoder = AzEncoder::new(device.clone());
 

@@ -1,13 +1,26 @@
 // This module contains components for a trainer.
 
+use crate::dataset::{GamesBatcher, GamesDataset};
 use crate::err::RukyErr;
 use crate::game::{GameResult, ParTrGameBuilder};
 use crate::nn::AlphaZeroNet;
 use crate::Board;
-use burn::prelude::{Backend, Device};
+use burn::{
+    backend::Autodiff,
+    data::dataloader::DataLoaderBuilder,
+    module::Module,
+    optim::SgdConfig,
+    prelude::{Backend, Device},
+    record::{CompactRecorder, NoStdTrainingRecorder},
+    train::{LearnerBuilder, LearningStrategy},
+};
 use rand::rng;
 use rand::seq::SliceRandom;
-use std::{path::PathBuf, sync::Arc};
+use std::{
+    fs::{create_dir_all, remove_dir_all},
+    path::PathBuf,
+    sync::Arc,
+};
 
 // The purpose of the Trainer is to play games of self-play to generate training
 // data, and to train the model with the data generated during self-play.
@@ -32,7 +45,7 @@ pub struct Trainer<B: Backend> {
     // The number of games to play for training.
     num_games: usize,
     // The path to the directory to use for checkpoints.
-    check_point_dir: Option<PathBuf>,
+    check_point_dir: PathBuf,
     // The number of training steps to run before creating a checkpoint.
     check_point_step: Option<usize>,
     // The batch size to use during training.
@@ -40,6 +53,8 @@ pub struct Trainer<B: Backend> {
     // The number of games to use as training data. A number between (0,1). The
     // remaining percent of games are used as validation data.
     training_percent: f32,
+    // The number of epochs used for training.
+    num_epochs: usize,
 }
 
 impl<B: Backend> Trainer<B> {
@@ -65,6 +80,55 @@ impl<B: Backend> Trainer<B> {
 
         Ok((training_game.net, game_results))
     }
+
+    fn train_net(&self, games: Vec<GameResult>) -> Result<AlphaZeroNet<B>, RukyErr> {
+        remove_dir_all(&self.check_point_dir).ok();
+        create_dir_all(&self.check_point_dir).ok();
+
+        let (games_training, games_validation) = split_game_results(games, self.training_percent);
+        let data_training = GamesDataset::new(games_training);
+        let data_validation = GamesDataset::new(games_validation);
+
+        let dataloader_train = DataLoaderBuilder::new(GamesBatcher::<Autodiff<B>>::new())
+            .batch_size(self.training_batch_size)
+            .shuffle(0) // TODO: make seed configurable.
+            .num_workers(self.num_workers)
+            .build(data_training);
+
+        let dataloader_test = DataLoaderBuilder::new(GamesBatcher::<B>::new())
+            .batch_size(self.training_batch_size)
+            .shuffle(0) // TODO: make seed configurable.
+            .num_workers(self.num_workers)
+            .build(data_validation);
+
+        let model = AlphaZeroNet::<Autodiff<B>>::new(&self.device);
+
+        // TODO: configure learner to log metrics and to use a learning rate
+        // scheduler.
+        let learner = LearnerBuilder::new(&self.check_point_dir)
+            .with_file_checkpointer(CompactRecorder::new())
+            .learning_strategy(LearningStrategy::SingleDevice(self.device.clone()))
+            .num_epochs(self.num_epochs)
+            .build(model, SgdConfig::new().init(), 1e-3);
+
+        let model_trained = learner.fit(dataloader_train, dataloader_test);
+
+        let mut model_path = self.check_point_dir.clone();
+        model_path.push("model");
+
+        model_trained
+            .model
+            .save_file(
+                format!("{}", model_path.display()),
+                &NoStdTrainingRecorder::new(),
+            )
+            .expect("Failed to save trained model");
+
+        // We'll want to return a non-auto-diff version of the trained model. It
+        // would be ideal if we can create directly from the trained network,
+        // but otherwise we can instantiate it from the save data.
+        todo!();
+    }
 }
 
 // The purpose of the Trainer is to play games of self-play to generate training
@@ -89,7 +153,8 @@ pub struct TrainerBuilder<B: Backend> {
     num_workers: usize,
     // The number of games to play for training.
     num_games: Option<usize>,
-    // The path to the directory to use for checkpoints.
+    // The path to the directory to use for checkpoints. If none is provided,
+    // ./check_point_dir is used as the default location.
     check_point_dir: Option<PathBuf>,
     // The number of training steps to run before creating a checkpoint.
     check_point_step: Option<usize>,
@@ -98,6 +163,8 @@ pub struct TrainerBuilder<B: Backend> {
     // The number of games to use as training data. A number between (0,1). The
     // remaining percent of games are used as validation data.
     training_percent: f32,
+    // The number of epochs used for training. If not set, 100 is used.
+    num_epochs: Option<usize>,
 }
 
 impl<B: Backend> TrainerBuilder<B> {
@@ -122,6 +189,7 @@ impl<B: Backend> TrainerBuilder<B> {
             check_point_step: None,
             training_batch_size: num_threads,
             training_percent: 0.95,
+            num_epochs: None,
         }
     }
 
@@ -190,6 +258,11 @@ impl<B: Backend> TrainerBuilder<B> {
         self
     }
 
+    pub fn num_epochs(mut self, num_epochs: usize) -> Self {
+        self.num_epochs.replace(num_epochs);
+        self
+    }
+
     pub fn build(self) -> Result<Trainer<B>, RukyErr> {
         if self.board.is_none() || self.device.is_none() || self.num_games.is_none() {
             return Err(RukyErr::PreconditionErr);
@@ -211,10 +284,13 @@ impl<B: Backend> TrainerBuilder<B> {
             inference_batch_size: self.inference_batch_size,
             num_workers: self.num_workers,
             num_games: self.num_games.unwrap(),
-            check_point_dir: self.check_point_dir,
+            check_point_dir: self
+                .check_point_dir
+                .unwrap_or(PathBuf::from("./check_point_dir")),
             check_point_step: self.check_point_step,
             training_batch_size: self.training_batch_size,
             training_percent: self.training_percent,
+            num_epochs: self.num_epochs.unwrap_or(100),
         })
     }
 }

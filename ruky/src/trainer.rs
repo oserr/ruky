@@ -131,6 +131,17 @@ impl<B: Backend> Trainer<B> {
         let model = AlphaZeroNet::<B>::new(&self.device).load_record(record);
         Ok(Arc::new(model))
     }
+
+    // TODO: Play multiple games with the networks. If the new network wins more
+    // then a percentage of games, then update then use the new network to play
+    // self-play games to generate training games.
+    fn play_match(
+        &self,
+        _new_net: Arc<AlphaZeroNet<B>>,
+        _old_net: Arc<AlphaZeroNet<B>>,
+    ) -> Result<Arc<AlphaZeroNet<B>>, RukyErr> {
+        todo!();
+    }
 }
 
 // The purpose of the Trainer is to play games of self-play to generate training

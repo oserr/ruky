@@ -3,7 +3,7 @@
 use crate::dataset::{GamesBatcher, GamesDataset};
 use crate::err::RukyErr;
 use crate::game::{GameResult, ParTrGameBuilder};
-use crate::nn::AlphaZeroNet;
+use crate::nn::{AlphaZeroNet, AlphaZeroNetRecord};
 use crate::Board;
 use burn::{
     backend::Autodiff,
@@ -11,7 +11,7 @@ use burn::{
     module::Module,
     optim::SgdConfig,
     prelude::{Backend, Device},
-    record::{CompactRecorder, NoStdTrainingRecorder},
+    record::{CompactRecorder, NoStdTrainingRecorder, Recorder},
     train::{LearnerBuilder, LearningStrategy},
 };
 use rand::rng;
@@ -81,7 +81,7 @@ impl<B: Backend> Trainer<B> {
         Ok((training_game.net, game_results))
     }
 
-    fn train_net(&self, games: Vec<GameResult>) -> Result<AlphaZeroNet<B>, RukyErr> {
+    fn train_net(&self, games: Vec<GameResult>) -> Result<Arc<AlphaZeroNet<B>>, RukyErr> {
         remove_dir_all(&self.check_point_dir).ok();
         create_dir_all(&self.check_point_dir).ok();
 
@@ -122,12 +122,14 @@ impl<B: Backend> Trainer<B> {
                 format!("{}", model_path.display()),
                 &NoStdTrainingRecorder::new(),
             )
-            .expect("Failed to save trained model");
+            .expect("Failed to save trained model.");
 
-        // We'll want to return a non-auto-diff version of the trained model. It
-        // would be ideal if we can create directly from the trained network,
-        // but otherwise we can instantiate it from the save data.
-        todo!();
+        let record: AlphaZeroNetRecord<B> = NoStdTrainingRecorder::new()
+            .load(format!("{}", model_path.display()).into(), &self.device)
+            .expect("Model just saved - should exist.");
+
+        let model = AlphaZeroNet::<B>::new(&self.device).load_record(record);
+        Ok(Arc::new(model))
     }
 }
 

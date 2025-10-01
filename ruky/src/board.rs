@@ -4,17 +4,26 @@ use crate::piece::{Color, Piece, Piece::*};
 use crate::piece_move::{PieceMove, PieceMove::*};
 use crate::piece_set::{AttackSquares, PieceSet, PiecesErr, PsBuilder};
 use crate::sq::Sq;
-use std::sync::Arc;
+use std::{
+    hash::{DefaultHasher, Hash, Hasher},
+    sync::Arc,
+};
 
 // Represents a chess board, and encodes the rules for moving pieces and
 // determining the current game state, e.g. whether the game is drawn.
 #[derive(Clone)]
 pub struct Board {
-    // The board state. We use a Box for it because this makes it much cheaper to move a board.
+    // The board state. We use a Box for it because this makes it much cheaper
+    // to move a board.
     state: Box<BoardState>,
 
-    // We use an Arc for ChessMagics, because ChessMagics are expensive to compute, and hence we
-    // want to share one instance of chess magics where ever they are needed, and between threads.
+    // The state hash is computed over the state of the board, can be used to
+    // compare boards, e.g. to test for repetitions.
+    state_hash: u64,
+
+    // We use an Arc for ChessMagics, because ChessMagics are expensive to
+    // compute, and hence we want to share one instance of chess magics where
+    // ever they are needed, and between threads.
     magics: Arc<ChessMagics>,
 }
 
@@ -22,6 +31,11 @@ impl Board {
     ///////////////////////////
     // Getters for board state.
     ///////////////////////////
+
+    #[inline]
+    pub fn state_hash(&self) -> u64 {
+        self.state_hash
+    }
 
     #[inline]
     pub fn white_king(&self) -> BitBoard {
@@ -194,6 +208,14 @@ impl Board {
         self.state.partial_update(piece_move, self.magics.as_ref());
         self.update_game_state(Some(piece_move.val()));
         self.state.prev_moves.push(piece_move);
+        self.update_hash();
+    }
+
+    // Updates the game hash.
+    fn update_hash(&mut self) {
+        let mut hasher = DefaultHasher::new();
+        self.state.hash(&mut hasher);
+        self.state_hash = hasher.finish();
     }
 
     // Returns boards representing all the valid positions that are reachable from
@@ -493,7 +515,13 @@ impl Board {
 impl From<Arc<ChessMagics>> for Board {
     fn from(magics: Arc<ChessMagics>) -> Board {
         let state = Box::<BoardState>::default();
-        Board { state, magics }
+        let mut board = Board {
+            state,
+            state_hash: 0,
+            magics,
+        };
+        board.update_hash();
+        board
     }
 }
 
@@ -839,10 +867,12 @@ impl BoardBuilder {
                 passant_sq: self.passant_sq,
                 prev_moves: Vec::new(),
             }),
+            state_hash: 0,
             magics: self.magics.clone(),
         };
 
         board.update_game_state(None);
+        board.update_hash();
 
         Ok(board)
     }

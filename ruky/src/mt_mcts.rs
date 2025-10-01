@@ -125,16 +125,8 @@ impl<E: Eval> ParallelMcts<E> {
             num_workers,
         }
     }
-}
 
-impl<E: Eval> TreeSize for ParallelMcts<E> {
-    fn total_tree_nodes(&self) -> usize {
-        self.tree_search.total_tree_nodes()
-    }
-}
-
-impl<E: Eval> SpSearch for ParallelMcts<E> {
-    fn search(&mut self) -> Result<SearchResult, RukyErr> {
+    fn run_search(&mut self) -> Result<SearchResult, RukyErr> {
         let search_start = Instant::now();
         let mut total_evals = 0;
 
@@ -275,6 +267,18 @@ impl<E: Eval> SpSearch for ParallelMcts<E> {
         };
         self.tree_search.update_root_from_index(best_node.index);
         Ok(result)
+    }
+}
+
+impl<E: Eval> TreeSize for ParallelMcts<E> {
+    fn total_tree_nodes(&self) -> usize {
+        self.tree_search.total_tree_nodes()
+    }
+}
+
+impl<E: Eval> SpSearch for ParallelMcts<E> {
+    fn search(&mut self) -> Result<SearchResult, RukyErr> {
+        self.run_search()
     }
 
     fn reset(&mut self) {

@@ -4,7 +4,7 @@ use crate::board::{Board, GameState};
 use crate::err::RukyErr;
 use crate::eval::AzEval;
 use crate::mcts::{Mcts, SpMcts, SpMctsBuilder};
-use crate::mt_mcts::MtSpMcts;
+use crate::mt_mcts::ParallelMcts;
 use crate::nn::AlphaZeroNet;
 use crate::piece::Color;
 use crate::search::{Search, SearchResult, SpSearch, TreeSize};
@@ -80,14 +80,14 @@ impl<B: Backend> ParTrGameBuilder<B> {
         self
     }
 
-    pub fn build(self) -> Result<TrainingGame<MtSpMcts<AzEval<B>>, B>, RukyErr> {
+    pub fn build(self) -> Result<TrainingGame<ParallelMcts<AzEval<B>>, B>, RukyErr> {
         match (self.board, self.device) {
             (Some(board), Some(device)) => {
                 let encoder = AzEncoder::new(device.clone());
                 let decoder = AzDecoder::new();
                 let net = Arc::new(AlphaZeroNet::new(&device));
                 let eval = Arc::new(AzEval::create(encoder, decoder, net.clone()));
-                let mcts = MtSpMcts::create(
+                let mcts = ParallelMcts::create(
                     eval,
                     board.clone(),
                     self.sims,

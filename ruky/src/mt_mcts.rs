@@ -14,7 +14,7 @@ use std::iter::zip;
 use std::sync::Arc;
 use std::time::{Duration, Instant};
 
-// Represents a Multi-thread self-play MCTS.
+// Represents a Multi-thread MCTS.
 //
 // The parallel MCTS uses a leader-worker architecture, with three different
 // types of workers:
@@ -43,7 +43,7 @@ use std::time::{Duration, Instant};
 //
 // TODO: flesh out implemention.
 #[derive(Debug)]
-pub struct MtSpMcts<E: Eval> {
+pub struct ParallelMcts<E: Eval> {
     evaluator: Arc<E>,
     tree_search: TreeSearch,
     work_pool: ThreadPool,
@@ -66,7 +66,7 @@ pub struct MtSpMcts<E: Eval> {
     num_workers: usize,
 }
 
-impl<E: Eval> MtSpMcts<E> {
+impl<E: Eval> ParallelMcts<E> {
     // Initialiazes the MCTS by creating a pool of worker threads to parallelize
     // encoding and decoding tasks.
     pub fn create(
@@ -127,13 +127,13 @@ impl<E: Eval> MtSpMcts<E> {
     }
 }
 
-impl<E: Eval> TreeSize for MtSpMcts<E> {
+impl<E: Eval> TreeSize for ParallelMcts<E> {
     fn total_tree_nodes(&self) -> usize {
         self.tree_search.total_tree_nodes()
     }
 }
 
-impl<E: Eval> SpSearch for MtSpMcts<E> {
+impl<E: Eval> SpSearch for ParallelMcts<E> {
     fn search(&mut self) -> Result<SearchResult, RukyErr> {
         let search_start = Instant::now();
         let mut total_evals = 0;

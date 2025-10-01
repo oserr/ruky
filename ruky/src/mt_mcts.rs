@@ -2,7 +2,7 @@
 
 use crate::err::RukyErr;
 use crate::eval::{Eval, EvalBoards};
-use crate::search::{Bp, SearchResult, SpSearch, TreeSize};
+use crate::search::{Bp, Search, SearchResult, SpSearch, TreeSize};
 use crate::tensor_decoder::{dec_boards, N_POSSIBLE_MOVES};
 use crate::tensor_encoder::{enc_boards, get_batch_vec, single_batch_size};
 use crate::tree_search::TreeSearch;
@@ -273,6 +273,13 @@ impl<E: Eval> ParallelMcts<E> {
 impl<E: Eval> TreeSize for ParallelMcts<E> {
     fn total_tree_nodes(&self) -> usize {
         self.tree_search.total_tree_nodes()
+    }
+}
+
+impl<E: Eval> Search for ParallelMcts<E> {
+    fn search_board(&mut self, board: &Board) -> Result<SearchResult, RukyErr> {
+        self.tree_search.update_root_from_board(board);
+        self.run_search()
     }
 }
 

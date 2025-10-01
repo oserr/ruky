@@ -284,7 +284,7 @@ impl TreeSearch {
         let (first, last) = current_root.children;
         match self.children[first..last]
             .iter()
-            .find(|node| node.board == *board)
+            .find(|node| node.board.state_hash() == board.state_hash())
         {
             Some(ref node) => {
                 self.root = node.index;

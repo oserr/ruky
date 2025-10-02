@@ -43,7 +43,7 @@ use std::time::{Duration, Instant};
 //
 // TODO: flesh out implemention.
 #[derive(Debug)]
-pub struct ParallelMcts<E: Eval> {
+pub struct ParMcts<E: Eval> {
     evaluator: Arc<E>,
     tree_search: TreeSearch,
     work_pool: ThreadPool,
@@ -66,7 +66,7 @@ pub struct ParallelMcts<E: Eval> {
     num_workers: usize,
 }
 
-impl<E: Eval> ParallelMcts<E> {
+impl<E: Eval> ParMcts<E> {
     // Initialiazes the MCTS by creating a pool of worker threads to parallelize
     // encoding and decoding tasks.
     pub fn create(
@@ -270,20 +270,20 @@ impl<E: Eval> ParallelMcts<E> {
     }
 }
 
-impl<E: Eval> TreeSize for ParallelMcts<E> {
+impl<E: Eval> TreeSize for ParMcts<E> {
     fn total_tree_nodes(&self) -> usize {
         self.tree_search.total_tree_nodes()
     }
 }
 
-impl<E: Eval> Search for ParallelMcts<E> {
+impl<E: Eval> Search for ParMcts<E> {
     fn search_board(&mut self, board: &Board) -> Result<SearchResult, RukyErr> {
         self.tree_search.update_root_from_board(board);
         self.run_search()
     }
 }
 
-impl<E: Eval> SpSearch for ParallelMcts<E> {
+impl<E: Eval> SpSearch for ParMcts<E> {
     fn search(&mut self) -> Result<SearchResult, RukyErr> {
         self.run_search()
     }

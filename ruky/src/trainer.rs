@@ -44,6 +44,10 @@ pub struct Trainer<B: Backend> {
     num_workers: usize,
     // The number of games to play for training.
     num_games: usize,
+    // The number of sessions to train. 1 session includes 1 round of self play
+    // for num_games, plus a round of training with the games generated from
+    // self play.
+    num_sessions: usize,
     // The path to the directory to use for checkpoints.
     check_point_dir: PathBuf,
     // The number of training steps to run before creating a checkpoint.
@@ -166,6 +170,8 @@ pub struct TrainerBuilder<B: Backend> {
     num_workers: usize,
     // The number of games to play for training.
     num_games: Option<usize>,
+    // The number of sessions to train for.
+    num_sessions: usize,
     // The path to the directory to use for checkpoints. If none is provided,
     // ./check_point_dir is used as the default location.
     check_point_dir: Option<PathBuf>,
@@ -198,6 +204,7 @@ impl<B: Backend> TrainerBuilder<B> {
             inference_batch_size: num_threads,
             num_workers: num_workers,
             num_games: None,
+            num_sessions: 100,
             check_point_dir: None,
             check_point_step: None,
             training_batch_size: num_threads,
@@ -251,6 +258,11 @@ impl<B: Backend> TrainerBuilder<B> {
         self
     }
 
+    pub fn num_sessions(mut self, num_sessions: usize) -> Self {
+        self.num_sessions = num_sessions;
+        self
+    }
+
     pub fn check_point_dir(mut self, check_point_dir: PathBuf) -> Self {
         self.check_point_dir.replace(check_point_dir);
         self
@@ -297,6 +309,7 @@ impl<B: Backend> TrainerBuilder<B> {
             inference_batch_size: self.inference_batch_size,
             num_workers: self.num_workers,
             num_games: self.num_games.unwrap(),
+            num_sessions: self.num_sessions,
             check_point_dir: self
                 .check_point_dir
                 .unwrap_or(PathBuf::from("./check_point_dir")),

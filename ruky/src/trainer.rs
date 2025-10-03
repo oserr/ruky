@@ -146,6 +146,18 @@ impl<B: Backend> Trainer<B> {
     ) -> Result<Arc<AlphaZeroNet<B>>, RukyErr> {
         todo!();
     }
+
+    pub fn run_training(&self) -> Result<(), RukyErr> {
+        for _ in 0..self.num_sessions {
+            // TODO: pass in the current session number so we can use the
+            // session number in the checkpoint dir name.
+            let (_net, game_results) = self.play_self()?;
+            let _net = self.train_net(game_results)?;
+            // TODO: now we need to play a match between the newly trained net
+            // and the old net.
+        }
+        Ok(())
+    }
 }
 
 // The purpose of the Trainer is to play games of self-play to generate training

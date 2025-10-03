@@ -105,6 +105,10 @@ impl<B: Backend> Trainer<B> {
             .num_workers(self.num_workers)
             .build(data_validation);
 
+        // TODO: once we have trained models, we'll need to be able to load the
+        // current best trained model. This could be an older model trained in a
+        // previously, or it could be one from one of the current training
+        // sessions.
         let model = AlphaZeroNet::<Autodiff<B>>::new(&self.device);
 
         // TODO: configure learner to log metrics and to use a learning rate

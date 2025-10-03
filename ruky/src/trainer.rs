@@ -85,6 +85,8 @@ impl<B: Backend> Trainer<B> {
         Ok((training_game.net, game_results))
     }
 
+    // TODO: pass in the current training session ID so we can keep better track
+    // of trained models.
     fn train_net(&self, games: Vec<GameResult>) -> Result<Arc<AlphaZeroNet<B>>, RukyErr> {
         remove_dir_all(&self.check_point_dir).ok();
         create_dir_all(&self.check_point_dir).ok();

@@ -337,7 +337,7 @@ impl<B: Backend> TrainerBuilder<B> {
             num_sessions: self.num_sessions,
             check_point_dir: self
                 .check_point_dir
-                .unwrap_or(PathBuf::from("./check_point_dir")),
+                .unwrap_or(PathBuf::from("check_points")),
             check_point_step: self.check_point_step,
             training_batch_size: self.training_batch_size,
             training_percent: self.training_percent,

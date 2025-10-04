@@ -319,12 +319,6 @@ impl<B: Backend> TrainerBuilder<B> {
             return Err(RukyErr::PreconditionErr);
         }
 
-        if (self.check_point_dir.is_some() && self.check_point_step.is_none())
-            || (self.check_point_dir.is_none() && self.check_point_step.is_some())
-        {
-            return Err(RukyErr::PreconditionErr);
-        }
-
         Ok(Trainer {
             board: self.board.unwrap(),
             device: self.device.unwrap(),

@@ -18,7 +18,7 @@ use rand::rng;
 use rand::seq::SliceRandom;
 use std::{
     fs::{create_dir_all, remove_dir_all},
-    path::PathBuf,
+    path::{Path, PathBuf},
     sync::Arc,
 };
 
@@ -288,8 +288,9 @@ impl<B: Backend> TrainerBuilder<B> {
         self
     }
 
-    pub fn check_point_dir(mut self, check_point_dir: PathBuf) -> Self {
-        self.check_point_dir.replace(check_point_dir);
+    pub fn check_point_dir<P: AsRef<Path>>(mut self, check_point_dir: &P) -> Self {
+        self.check_point_dir
+            .replace(check_point_dir.as_ref().to_path_buf());
         self
     }
 

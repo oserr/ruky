@@ -87,7 +87,11 @@ impl<B: Backend> Trainer<B> {
 
     // TODO: pass in the current training session ID so we can keep better track
     // of trained models.
-    fn train_net(&self, games: Vec<GameResult>) -> Result<Arc<AlphaZeroNet<B>>, RukyErr> {
+    fn train_net(
+        &self,
+        games: Vec<GameResult>,
+        session_id: usize,
+    ) -> Result<Arc<AlphaZeroNet<B>>, RukyErr> {
         remove_dir_all(&self.check_point_dir).ok();
         create_dir_all(&self.check_point_dir).ok();
 
@@ -129,13 +133,16 @@ impl<B: Backend> Trainer<B> {
         model_trained
             .model
             .save_file(
-                format!("{}", model_path.display()),
+                format!("{}-{}", model_path.display(), session_id),
                 &NoStdTrainingRecorder::new(),
             )
             .expect("Failed to save trained model.");
 
         let record: AlphaZeroNetRecord<B> = NoStdTrainingRecorder::new()
-            .load(format!("{}", model_path.display()).into(), &self.device)
+            .load(
+                format!("{}-{}", model_path.display(), session_id).into(),
+                &self.device,
+            )
             .expect("Model just saved - should exist.");
 
         let model = AlphaZeroNet::<B>::new(&self.device).load_record(record);
@@ -154,11 +161,11 @@ impl<B: Backend> Trainer<B> {
     }
 
     pub fn run_training(&self) -> Result<(), RukyErr> {
-        for _ in 0..self.num_sessions {
+        for i in 0..self.num_sessions {
             // TODO: pass in the current session number so we can use the
             // session number in the checkpoint dir name.
             let (_net, game_results) = self.play_self()?;
-            let _net = self.train_net(game_results)?;
+            let _net = self.train_net(game_results, i)?;
             // TODO: now we need to play a match between the newly trained net
             // and the old net.
         }

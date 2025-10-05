@@ -544,7 +544,7 @@ impl MatchPlayerResult {
 
 #[derive(Clone, Copy, Debug, Default)]
 pub struct WinsRecord {
-    pub wins: usize,
-    pub lost: usize,
-    pub draw: usize,
+    pub wins: u64,
+    pub lost: u64,
+    pub draw: u64,
 }

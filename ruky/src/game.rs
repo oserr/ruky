@@ -488,8 +488,8 @@ impl<S: Search> MatchGames<S> {
 
 #[derive(Clone, Debug)]
 pub struct MatchResult {
-    result_player1: MatchPlayerResult,
-    result_player2: MatchPlayerResult,
+    pub result_player1: MatchPlayerResult,
+    pub result_player2: MatchPlayerResult,
 }
 
 impl MatchResult {
@@ -503,9 +503,9 @@ impl MatchResult {
 
 #[derive(Clone, Debug)]
 pub struct MatchPlayerResult {
-    name_player: String,
-    record_white: WinsRecord,
-    record_black: WinsRecord,
+    pub name_player: String,
+    pub record_white: WinsRecord,
+    pub record_black: WinsRecord,
 }
 
 impl MatchPlayerResult {
@@ -520,7 +520,7 @@ impl MatchPlayerResult {
 
 #[derive(Clone, Copy, Debug, Default)]
 pub struct WinsRecord {
-    wins: usize,
-    lost: usize,
-    draw: usize,
+    pub wins: usize,
+    pub lost: usize,
+    pub draw: usize,
 }

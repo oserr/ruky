@@ -15,6 +15,7 @@ fn main() {
         .check_point_dir(&args.out_dir)
         .training_batch_size(args.training_batch_size)
         .training_percent(args.training_percent)
+        .num_epochs(args.epochs)
         .build()
         .expect("Expecting a trainer.");
     println!("Running the training pipeline...");
@@ -58,4 +59,8 @@ struct Args {
     /// used as a validation set.
     #[arg(short, long, default_value_t = 0.9)]
     training_percent: f32,
+
+    /// The number of epochs to use for training.
+    #[arg(short, long, default_value_t = 50)]
+    epochs: usize,
 }

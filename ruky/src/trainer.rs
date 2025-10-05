@@ -166,8 +166,6 @@ impl<B: Backend> Trainer<B> {
 
     pub fn run_training(&self) -> Result<(), RukyErr> {
         for i in 0..self.num_sessions {
-            // TODO: pass in the current session number so we can use the
-            // session number in the checkpoint dir name.
             let (_net, game_results) = self.play_self()?;
             let _net = self.train_net(game_results, i)?;
             // TODO: now we need to play a match between the newly trained net

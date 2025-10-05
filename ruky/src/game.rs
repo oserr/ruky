@@ -482,7 +482,31 @@ pub struct MatchGames<S: Search> {
 
 impl<S: Search> MatchGames<S> {
     pub fn play(&mut self) -> Result<MatchResult, RukyErr> {
-        todo!();
+        let mut match_result = MatchResult::with_names(&self.name_player1, &self.name_player2);
+        let mut results_white = &mut match_result.result_player1;
+        let mut results_black = &mut match_result.result_player2;
+
+        for _ in 0..self.num_games {
+            let game_result = self.game.play()?;
+            match game_result.winner {
+                GameWinner::Draw => {
+                    results_white.record_white.draw += 1;
+                    results_black.record_black.draw += 1;
+                }
+                GameWinner::Black => {
+                    results_white.record_white.lost += 1;
+                    results_black.record_black.wins += 1;
+                }
+                GameWinner::White => {
+                    results_white.record_white.wins += 1;
+                    results_black.record_black.lost += 1;
+                }
+            };
+            self.game.flip();
+            swap(&mut results_white, &mut results_black);
+        }
+
+        Ok(match_result)
     }
 }
 

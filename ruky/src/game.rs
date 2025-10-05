@@ -490,16 +490,16 @@ impl<S: Search> MatchGames<S> {
             let game_result = self.game.play()?;
             match game_result.winner {
                 GameWinner::Draw => {
-                    results_white.record_white.draw += 1;
-                    results_black.record_black.draw += 1;
+                    results_white.record_white.draws += 1;
+                    results_black.record_black.draws += 1;
                 }
                 GameWinner::Black => {
-                    results_white.record_white.lost += 1;
+                    results_white.record_white.losses += 1;
                     results_black.record_black.wins += 1;
                 }
                 GameWinner::White => {
                     results_white.record_white.wins += 1;
-                    results_black.record_black.lost += 1;
+                    results_black.record_black.losses += 1;
                 }
             };
             self.game.flip();
@@ -546,17 +546,17 @@ impl MatchPlayerResult {
     }
 
     fn losses(&self) -> u64 {
-        self.record_white.lost + self.record_black.lost
+        self.record_white.losses + self.record_black.losses
     }
 
     fn draws(&self) -> u64 {
-        self.record_white.draw + self.record_black.draw
+        self.record_white.draws + self.record_black.draws
     }
 }
 
 #[derive(Clone, Copy, Debug, Default)]
 pub struct WinsRecord {
     pub wins: u64,
-    pub lost: u64,
-    pub draw: u64,
+    pub losses: u64,
+    pub draws: u64,
 }

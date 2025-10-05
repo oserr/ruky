@@ -492,6 +492,15 @@ pub struct MatchResult {
     result_player2: MatchPlayerResult,
 }
 
+impl MatchResult {
+    fn with_names(name_player1: &str, name_player2: &str) -> Self {
+        Self {
+            result_player1: MatchPlayerResult::new(name_player1),
+            result_player2: MatchPlayerResult::new(name_player2),
+        }
+    }
+}
+
 #[derive(Clone, Debug)]
 pub struct MatchPlayerResult {
     name_player: String,

@@ -479,3 +479,12 @@ pub struct MatchGames<S: Search> {
     // The number of games to be played in the match.
     num_games: usize,
 }
+
+#[derive(Debug)]
+pub struct MatchResult {}
+
+impl<S: Search> MatchGames<S> {
+    pub fn play(&mut self) -> Result<MatchResult, RukyErr> {
+        todo!();
+    }
+}

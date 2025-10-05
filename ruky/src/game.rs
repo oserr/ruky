@@ -297,6 +297,7 @@ impl<B: Backend> GameBuilder<B> {
 }
 
 // A struct to represent a game between two players.
+#[derive(Debug)]
 pub struct Game<S: Search> {
     board: Board,
     white_search: Box<S>,

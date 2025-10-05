@@ -480,8 +480,10 @@ pub struct MatchGames<S: Search> {
     num_games: usize,
 }
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct MatchResult {
+    result_player1: MatchPlayerResult,
+    result_player2: MatchPlayerResult,
 }
 
 #[derive(Clone, Debug)]

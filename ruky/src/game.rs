@@ -481,7 +481,22 @@ pub struct MatchGames<S: Search> {
 }
 
 #[derive(Debug)]
-pub struct MatchResult {}
+pub struct MatchResult {
+}
+
+#[derive(Clone, Debug)]
+pub struct MatchPlayerResult {
+    name_player: String,
+    record_white: WinsRecord,
+    record_black: WinsRecord,
+}
+
+#[derive(Clone, Copy, Debug)]
+pub struct WinsRecord {
+    wins: usize,
+    lost: usize,
+    draw: usize,
+}
 
 impl<S: Search> MatchGames<S> {
     pub fn play(&mut self) -> Result<MatchResult, RukyErr> {

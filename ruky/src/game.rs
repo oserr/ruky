@@ -11,7 +11,7 @@ use crate::search::{Search, SearchResult, SpSearch, TreeSize};
 use crate::tensor_decoder::AzDecoder;
 use crate::tensor_encoder::AzEncoder;
 use burn::prelude::{Backend, Device};
-use std::{cmp::max, sync::Arc, time::Duration};
+use std::{cmp::max, mem::swap, sync::Arc, time::Duration};
 
 // Parallel training game builder.
 #[derive(Clone, Debug)]
@@ -341,6 +341,11 @@ impl<S: Search> Game<S> {
             winner,
             total_tree_nodes: 0,
         })
+    }
+
+    // Flips the players.
+    pub fn flip(&mut self) {
+        swap(&mut self.white_search, &mut self.black_search);
     }
 }
 

@@ -464,3 +464,12 @@ impl Default for GameStats {
         Self::new()
     }
 }
+
+// A struct for playing a series of games between two players.
+#[derive(Debug)]
+pub struct MatchGames<S: Search> {
+    game: Game<S>,
+    name_player1: String,
+    name_player2: String,
+    num_games: usize,
+}

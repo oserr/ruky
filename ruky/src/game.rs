@@ -493,7 +493,17 @@ pub struct MatchPlayerResult {
     record_black: WinsRecord,
 }
 
-#[derive(Clone, Copy, Debug)]
+impl MatchPlayerResult {
+    fn new(name_player: &str) -> Self {
+        Self {
+            name_player: name_player.into(),
+            record_white: WinsRecord::default(),
+            record_black: WinsRecord::default(),
+        }
+    }
+}
+
+#[derive(Clone, Copy, Debug, Default)]
 pub struct WinsRecord {
     wins: usize,
     lost: usize,

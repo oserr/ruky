@@ -14,6 +14,7 @@ use burn::{
     record::{CompactRecorder, NoStdTrainingRecorder, Recorder},
     train::{LearnerBuilder, LearningStrategy},
 };
+use log;
 use rand::rng;
 use rand::seq::SliceRandom;
 use std::{
@@ -63,6 +64,7 @@ pub struct Trainer<B: Backend> {
 
 impl<B: Backend> Trainer<B> {
     fn play_self(&self) -> Result<(Arc<AlphaZeroNet<B>>, Vec<GameResult>), RukyErr> {
+        log::info!("Trainer::play_self()...");
         let mut training_game = ParTrGameBuilder::<B>::new()
             .board(self.board.clone())
             .device(self.device.clone())
@@ -76,8 +78,9 @@ impl<B: Backend> Trainer<B> {
 
         let mut game_results = Vec::new();
 
-        for _ in 0..self.num_games {
+        for i in 0..self.num_games {
             let game_result = training_game.play()?;
+            log::info!("game={} winner={:?}", i, game_result.winner);
             game_results.push(game_result);
             training_game.reset();
         }
@@ -92,6 +95,7 @@ impl<B: Backend> Trainer<B> {
         games: Vec<GameResult>,
         session_id: usize,
     ) -> Result<Arc<AlphaZeroNet<B>>, RukyErr> {
+        log::info!("Trainer::train_net()...");
         remove_dir_all(&self.check_point_dir).ok();
         create_dir_all(&self.check_point_dir).ok();
 
@@ -150,8 +154,8 @@ impl<B: Backend> Trainer<B> {
     }
 
     // TODO: Play multiple games with the networks. If the new network wins more
-    // then a percentage of games, then update then use the new network to play
-    // self-play games to generate training games.
+    // then a percentage of games, then use the new network to play self-play
+    // games to generate training games.
     fn play_match(
         &self,
         _new_net: Arc<AlphaZeroNet<B>>,

@@ -540,6 +540,18 @@ impl MatchPlayerResult {
             record_black: WinsRecord::default(),
         }
     }
+
+    fn wins(&self) -> u64 {
+        self.record_white.wins + self.record_black.wins
+    }
+
+    fn losses(&self) -> u64 {
+        self.record_white.lost + self.record_black.lost
+    }
+
+    fn draws(&self) -> u64 {
+        self.record_white.draw + self.record_black.draw
+    }
 }
 
 #[derive(Clone, Copy, Debug, Default)]

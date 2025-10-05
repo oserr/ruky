@@ -284,7 +284,12 @@ impl<B: Backend> GameBuilder<B> {
                 };
                 white_mcts.enable_sample_action(true);
                 black_mcts.enable_sample_action(true);
-                Ok(Game::create(board, white_mcts, black_mcts, self.max_moves))
+                Ok(Game::create(
+                    board,
+                    Box::new(white_mcts),
+                    Box::new(black_mcts),
+                    self.max_moves,
+                ))
             }
             (_, _) => Err(RukyErr::PreconditionErr),
         }
@@ -294,13 +299,18 @@ impl<B: Backend> GameBuilder<B> {
 // A struct to represent a game between two players.
 pub struct Game<S: Search> {
     board: Board,
-    white_search: S,
-    black_search: S,
+    white_search: Box<S>,
+    black_search: Box<S>,
     max_moves: usize,
 }
 
 impl<S: Search> Game<S> {
-    pub fn create(board: Board, white_search: S, black_search: S, max_moves: usize) -> Self {
+    pub fn create(
+        board: Board,
+        white_search: Box<S>,
+        black_search: Box<S>,
+        max_moves: usize,
+    ) -> Self {
         Self {
             board,
             white_search,

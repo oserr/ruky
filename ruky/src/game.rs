@@ -480,6 +480,12 @@ pub struct MatchGames<S: Search> {
     num_games: usize,
 }
 
+impl<S: Search> MatchGames<S> {
+    pub fn play(&mut self) -> Result<MatchResult, RukyErr> {
+        todo!();
+    }
+}
+
 #[derive(Clone, Debug)]
 pub struct MatchResult {
     result_player1: MatchPlayerResult,
@@ -508,10 +514,4 @@ pub struct WinsRecord {
     wins: usize,
     lost: usize,
     draw: usize,
-}
-
-impl<S: Search> MatchGames<S> {
-    pub fn play(&mut self) -> Result<MatchResult, RukyErr> {
-        todo!();
-    }
 }

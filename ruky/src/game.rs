@@ -470,7 +470,12 @@ impl Default for GameStats {
 #[derive(Debug)]
 pub struct MatchGames<S: Search> {
     game: Game<S>,
+    // The name of the first player. This corresponds to the player playing as
+    // white the first game, black the second game, and so on.
     name_player1: String,
+    // The name of the second player, who plays black the first game, white the
+    // second, and so on.
     name_player2: String,
+    // The number of games to be played in the match.
     num_games: usize,
 }

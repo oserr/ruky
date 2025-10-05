@@ -223,8 +223,7 @@ impl<S: SpSearch + TreeSize, B: Backend> TrainingGame<S, B> {
 pub struct GameBuilder<B: Backend> {
     board: Option<Board>,
     device: Option<Device<B>>,
-    white_sims: usize,
-    black_sims: usize,
+    sims: usize,
     max_moves: usize,
     use_noise: bool,
 }
@@ -234,8 +233,7 @@ impl<B: Backend> GameBuilder<B> {
         Self {
             board: None,
             device: None,
-            white_sims: 800,
-            black_sims: 800,
+            sims: 800,
             max_moves: 300,
             use_noise: false,
         }
@@ -252,8 +250,7 @@ impl<B: Backend> GameBuilder<B> {
     }
 
     pub fn sims(mut self, sims: usize) -> Self {
-        self.white_sims = sims;
-        self.black_sims = sims;
+        self.sims = sims;
         self
     }
 
@@ -276,13 +273,13 @@ impl<B: Backend> GameBuilder<B> {
                 let evaluator = Arc::new(AzEval::create(encoder, decoder, net));
                 let (mut white_mcts, mut black_mcts) = if self.use_noise {
                     (
-                        Mcts::create_with_noise(evaluator.clone(), self.white_sims),
-                        Mcts::create_with_noise(evaluator, self.black_sims),
+                        Mcts::create_with_noise(evaluator.clone(), self.sims),
+                        Mcts::create_with_noise(evaluator, self.sims),
                     )
                 } else {
                     (
-                        Mcts::create(evaluator.clone(), self.white_sims),
-                        Mcts::create(evaluator, self.black_sims),
+                        Mcts::create(evaluator.clone(), self.sims),
+                        Mcts::create(evaluator, self.sims),
                     )
                 };
                 white_mcts.enable_sample_action(true);

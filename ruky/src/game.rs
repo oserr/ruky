@@ -560,3 +560,21 @@ pub struct WinsRecord {
     pub losses: u64,
     pub draws: u64,
 }
+
+#[derive(Clone, Debug)]
+struct MatchGamesBuilder<B: Backend> {
+    // The name of the first player.
+    name_player1: String,
+    // The name of the second player.
+    name_player2: String,
+    // The number of games to be played in the match.
+    num_games: usize,
+    // The maximum number of moves to play before game is declared a draw.
+    max_moves: usize,
+    // The device.
+    device: Option<Device<B>>,
+    // The max inference batch size.
+    batch_size: usize,
+    // The number of workers for the MCTS.
+    num_workers: usize,
+}

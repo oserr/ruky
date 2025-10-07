@@ -567,6 +567,10 @@ struct MatchGamesBuilder<B: Backend> {
     name_player1: String,
     // The name of the second player.
     name_player2: String,
+    // The neural network for the first player.
+    net_player1: Option<Arc<AlphaZeroNet<B>>>,
+    // The neural network for the second player.
+    net_player2: Option<Arc<AlphaZeroNet<B>>>,
     // The number of games to be played in the match.
     num_games: usize,
     // The maximum number of moves to play before game is declared a draw.

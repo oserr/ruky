@@ -575,6 +575,8 @@ struct MatchGamesBuilder<B: Backend> {
     net_player2: Option<Arc<AlphaZeroNet<B>>>,
     // The number of games to be played in the match.
     num_games: usize,
+    // The max number of simulations per move.
+    sims: usize,
     // The maximum number of moves to play before game is declared a draw.
     max_moves: usize,
     // The device.
@@ -583,4 +585,77 @@ struct MatchGamesBuilder<B: Backend> {
     batch_size: usize,
     // The number of workers for the MCTS.
     num_workers: usize,
+}
+
+impl<B: Backend> MatchGamesBuilder<B> {
+    pub fn new() -> Self {
+        Self {
+            board: None,
+            name_player1: "Player1".into(),
+            name_player2: "Player2".into(),
+            net_player1: None,
+            net_player2: None,
+            num_games: 1,
+            sims: 800,
+            max_moves: 300,
+            batch_size: 16,
+            num_workers: 16,
+            device: None,
+        }
+    }
+
+    pub fn board(mut self, board: Board) -> Self {
+        self.board.replace(board);
+        self
+    }
+
+    pub fn name_player1(mut self, name: &str) -> Self {
+        self.name_player1 = name.into();
+        self
+    }
+
+    pub fn name_player2(mut self, name: &str) -> Self {
+        self.name_player2 = name.into();
+        self
+    }
+
+    pub fn net_player1(mut self, net: Arc<AlphaZeroNet<B>>) -> Self {
+        self.net_player1.replace(net);
+        self
+    }
+
+    pub fn net_player2(mut self, net: Arc<AlphaZeroNet<B>>) -> Self {
+        self.net_player2.replace(net);
+        self
+    }
+
+    pub fn num_games(mut self, num_games: usize) -> Self {
+        self.num_games = num_games;
+        self
+    }
+
+    pub fn sims(mut self, sims: usize) -> Self {
+        self.sims = sims;
+        self
+    }
+
+    pub fn max_moves(mut self, max_moves: usize) -> Self {
+        self.max_moves = max_moves;
+        self
+    }
+
+    pub fn batch_size(mut self, batch_size: usize) -> Self {
+        self.batch_size = batch_size;
+        self
+    }
+
+    pub fn num_workers(mut self, num_workers: usize) -> Self {
+        self.num_workers = num_workers;
+        self
+    }
+
+    pub fn device(mut self, device: Device<B>) -> Self {
+        self.device.replace(device);
+        self
+    }
 }

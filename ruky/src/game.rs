@@ -658,4 +658,57 @@ impl<B: Backend> MatchGamesBuilder<B> {
         self.device.replace(device);
         self
     }
+
+    pub fn build(self) -> Result<MatchGames<ParMcts<AzEval<B>>>, RukyErr> {
+        if self.board.is_none()
+            || self.device.is_none()
+            || self.net_player1.is_none()
+            || self.net_player2.is_none()
+        {
+            return Err(RukyErr::PreconditionErr);
+        }
+
+        let encoder = AzEncoder::new(self.device.unwrap());
+        let decoder = AzDecoder::new();
+
+        let eval_player1 = Arc::new(AzEval::create(
+            encoder.clone(),
+            decoder.clone(),
+            self.net_player1.unwrap(),
+        ));
+        let mcts_player1 = Box::new(ParMcts::create(
+            eval_player1,
+            self.board.clone().unwrap(),
+            self.sims,
+            true,
+            true,
+            self.batch_size,
+            self.num_workers,
+        ));
+
+        let eval_player2 = Arc::new(AzEval::create(encoder, decoder, self.net_player2.unwrap()));
+        let mcts_player2 = Box::new(ParMcts::create(
+            eval_player2,
+            self.board.clone().unwrap(),
+            self.sims,
+            true,
+            true,
+            self.batch_size,
+            self.num_workers,
+        ));
+
+        let game = Game::create(
+            self.board.unwrap(),
+            mcts_player1,
+            mcts_player2,
+            self.max_moves,
+        );
+
+        Ok(MatchGames {
+            game,
+            name_player1: self.name_player1,
+            name_player2: self.name_player2,
+            num_games: self.num_games,
+        })
+    }
 }

@@ -2,7 +2,7 @@
 
 use crate::dataset::{GamesBatcher, GamesDataset};
 use crate::err::RukyErr;
-use crate::game::{GameResult, ParTrGameBuilder};
+use crate::game::{GameResult, MatchGamesBuilder, ParTrGameBuilder};
 use crate::nn::{AlphaZeroNet, AlphaZeroNetRecord};
 use crate::Board;
 use burn::{
@@ -158,9 +158,27 @@ impl<B: Backend> Trainer<B> {
     // games to generate training games.
     fn play_match(
         &self,
-        _new_net: Arc<AlphaZeroNet<B>>,
-        _old_net: Arc<AlphaZeroNet<B>>,
+        new_net: Arc<AlphaZeroNet<B>>,
+        old_net: Arc<AlphaZeroNet<B>>,
     ) -> Result<Arc<AlphaZeroNet<B>>, RukyErr> {
+        let mut match_games = MatchGamesBuilder::new()
+            .board(self.board.clone())
+            .name_player1(&"NewNet")
+            .name_player2(&"OldNet")
+            .net_player1(new_net.clone())
+            .net_player2(old_net.clone())
+            .num_games(10)
+            .sims(self.sims)
+            .max_moves(self.max_moves)
+            .batch_size(self.inference_batch_size)
+            .num_workers(self.num_workers)
+            .device(self.device.clone())
+            .build()?;
+        let match_result = match_games.play()?;
+        log::info!("MatchResult={:?}", match_result);
+        // TODO: Determine match winner and winrate. If win rate is above a
+        // given threshold for the new network, then return the new network,
+        // otherwise return the old network.
         todo!();
     }
 

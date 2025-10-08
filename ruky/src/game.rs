@@ -562,7 +562,7 @@ pub struct WinsRecord {
 }
 
 #[derive(Clone, Debug)]
-struct MatchGamesBuilder<B: Backend> {
+pub struct MatchGamesBuilder<B: Backend> {
     // The board position.
     board: Option<Board>,
     // The name of the first player.

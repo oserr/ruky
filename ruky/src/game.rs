@@ -508,6 +508,10 @@ impl<S: Search> MatchGames<S> {
 
         Ok(match_result)
     }
+
+    pub fn is_player1(&self, name: &str) -> bool {
+        self.name_player1 == name
+    }
 }
 
 #[derive(Clone, Debug)]

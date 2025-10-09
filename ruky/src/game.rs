@@ -552,6 +552,10 @@ impl MatchPlayerResult {
     fn draws(&self) -> u64 {
         self.record_white.draws + self.record_black.draws
     }
+
+    fn total_games(&self) -> u64 {
+        self.wins() + self.losses() + self.draws()
+    }
 }
 
 #[derive(Clone, Copy, Debug, Default)]

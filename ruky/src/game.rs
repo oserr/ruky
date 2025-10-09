@@ -517,14 +517,14 @@ pub struct MatchResult {
 }
 
 impl MatchResult {
-    fn with_names(name_player1: &str, name_player2: &str) -> Self {
+    pub fn with_names(name_player1: &str, name_player2: &str) -> Self {
         Self {
             result_player1: MatchPlayerResult::new(name_player1),
             result_player2: MatchPlayerResult::new(name_player2),
         }
     }
 
-    fn winner(&self) -> Option<&MatchPlayerResult> {
+    pub fn winner(&self) -> Option<&MatchPlayerResult> {
         let wins_player1 = self.result_player1.wins();
         let wins_player2 = self.result_player2.wins();
         if wins_player1 > wins_player2 {

@@ -174,12 +174,22 @@ impl<B: Backend> Trainer<B> {
             .num_workers(self.num_workers)
             .device(self.device.clone())
             .build()?;
+
         let match_result = match_games.play()?;
+        let winner = match_result.winner();
+
         log::info!("MatchResult={:?}", match_result);
-        // TODO: Determine match winner and winrate. If win rate is above a
-        // given threshold for the new network, then return the new network,
-        // otherwise return the old network.
-        todo!();
+        log::info!("winner={:?}", winner);
+
+        // TODO: Add some thresholding logic to only update to new network when
+        // player wins with at least some winning rate, e.g. wins at least 55%
+        // of games.
+        let net = match winner {
+            Some(ref player) if match_games.is_player1(&player.name_player) => new_net,
+            _ => old_net,
+        };
+
+        Ok(net)
     }
 
     pub fn run_training(&self) -> Result<(), RukyErr> {

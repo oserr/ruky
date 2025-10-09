@@ -556,6 +556,10 @@ impl MatchPlayerResult {
     fn total_games(&self) -> u64 {
         self.wins() + self.losses() + self.draws()
     }
+
+    fn win_rate(&self) -> f32 {
+        self.wins() as f32 / self.total_games() as f32
+    }
 }
 
 #[derive(Clone, Copy, Debug, Default)]

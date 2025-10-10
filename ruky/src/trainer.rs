@@ -60,6 +60,9 @@ pub struct Trainer<B: Backend> {
     training_percent: f32,
     // The number of epochs used for training.
     num_epochs: usize,
+    // The minimum winning rate required from a newly trained net to begin using
+    // it to generate games by playing against itself.
+    min_win_rate: f32,
 }
 
 impl<B: Backend> Trainer<B> {
@@ -239,6 +242,9 @@ pub struct TrainerBuilder<B: Backend> {
     training_percent: f32,
     // The number of epochs used for training. If not set, 100 is used.
     num_epochs: Option<usize>,
+    // The minimum winning rate required from a newly trained net to begin using
+    // it to generate games by playing against itself.
+    min_win_rate: f32,
 }
 
 impl<B: Backend> TrainerBuilder<B> {
@@ -265,6 +271,7 @@ impl<B: Backend> TrainerBuilder<B> {
             training_batch_size: num_threads,
             training_percent: 0.95,
             num_epochs: None,
+            min_win_rate: 0.55,
         }
     }
 
@@ -344,6 +351,11 @@ impl<B: Backend> TrainerBuilder<B> {
         self
     }
 
+    pub fn min_win_rate(mut self, min_win_rate: f32) -> Self {
+        self.min_win_rate = min_win_rate;
+        self
+    }
+
     pub fn build(self) -> Result<Trainer<B>, RukyErr> {
         if self.board.is_none() || self.device.is_none() || self.num_games.is_none() {
             return Err(RukyErr::PreconditionErr);
@@ -367,6 +379,7 @@ impl<B: Backend> TrainerBuilder<B> {
             training_batch_size: self.training_batch_size,
             training_percent: self.training_percent,
             num_epochs: self.num_epochs.unwrap_or(100),
+            min_win_rate: self.min_win_rate,
         })
     }
 }

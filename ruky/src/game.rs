@@ -557,23 +557,23 @@ impl MatchPlayerResult {
         }
     }
 
-    fn wins(&self) -> u64 {
+    pub fn wins(&self) -> u64 {
         self.record_white.wins + self.record_black.wins
     }
 
-    fn losses(&self) -> u64 {
+    pub fn losses(&self) -> u64 {
         self.record_white.losses + self.record_black.losses
     }
 
-    fn draws(&self) -> u64 {
+    pub fn draws(&self) -> u64 {
         self.record_white.draws + self.record_black.draws
     }
 
-    fn total_games(&self) -> u64 {
+    pub fn total_games(&self) -> u64 {
         self.wins() + self.losses() + self.draws()
     }
 
-    fn win_rate(&self) -> f32 {
+    pub fn win_rate(&self) -> f32 {
         self.wins() as f32 / self.total_games() as f32
     }
 }

@@ -24,6 +24,8 @@ pub struct TrainingGameBuilder<B: Backend> {
     sample_action: bool,
     batch_size: Option<usize>,
     num_workers: Option<usize>,
+    // If set, this is used to build the MCTS.
+    net: Option<Arc<AlphaZeroNet<B>>>,
 }
 
 impl<B: Backend> TrainingGameBuilder<B> {
@@ -37,6 +39,7 @@ impl<B: Backend> TrainingGameBuilder<B> {
             sample_action: true,
             batch_size: None,
             num_workers: None,
+            net: None,
         }
     }
 
@@ -80,12 +83,19 @@ impl<B: Backend> TrainingGameBuilder<B> {
         self
     }
 
+    pub fn net(mut self, net: Arc<AlphaZeroNet<B>>) -> Self {
+        self.net.replace(net);
+        self
+    }
+
     pub fn build(self) -> Result<TrainingGame<ParMcts<AzEval<B>>, B>, RukyErr> {
         match (self.board, self.device) {
             (Some(board), Some(device)) => {
                 let encoder = AzEncoder::new(device.clone());
                 let decoder = AzDecoder::new();
-                let net = Arc::new(AlphaZeroNet::new(&device));
+                let net = self
+                    .net
+                    .unwrap_or_else(|| Arc::new(AlphaZeroNet::new(&device)));
                 let eval = Arc::new(AzEval::create(encoder, decoder, net.clone()));
                 let mcts = ParMcts::create(
                     eval,

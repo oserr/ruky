@@ -66,7 +66,10 @@ pub struct Trainer<B: Backend> {
 }
 
 impl<B: Backend> Trainer<B> {
-    fn play_self(&self) -> Result<(Arc<AlphaZeroNet<B>>, Vec<GameResult>), RukyErr> {
+    fn play_self(
+        &self,
+        net: Arc<AlphaZeroNet<B>>,
+    ) -> Result<(Arc<AlphaZeroNet<B>>, Vec<GameResult>), RukyErr> {
         log::info!("Trainer::play_self()...");
         let mut training_game = TrainingGameBuilder::<B>::new()
             .board(self.board.clone())
@@ -77,6 +80,7 @@ impl<B: Backend> Trainer<B> {
             .sample_action(self.sample_action)
             .batch_size(self.inference_batch_size)
             .num_workers(self.num_workers)
+            .net(net)
             .build()?;
 
         let mut game_results = Vec::new();
@@ -203,12 +207,11 @@ impl<B: Backend> Trainer<B> {
     }
 
     pub fn run_training(&self) -> Result<(), RukyErr> {
+        let mut net = Arc::new(AlphaZeroNet::new(&self.device));
         for i in 0..self.num_sessions {
-            let (old_net, game_results) = self.play_self()?;
+            let (old_net, game_results) = self.play_self(net)?;
             let new_net = self.train_net(game_results, i)?;
-            let _net = self.play_match(new_net, old_net)?;
-            // TODO: need to pass the new network to self_play to build the Mcts
-            // with it.
+            net = self.play_match(new_net, old_net)?;
         }
         Ok(())
     }

@@ -204,10 +204,11 @@ impl<B: Backend> Trainer<B> {
 
     pub fn run_training(&self) -> Result<(), RukyErr> {
         for i in 0..self.num_sessions {
-            let (_net, game_results) = self.play_self()?;
-            let _net = self.train_net(game_results, i)?;
-            // TODO: now we need to play a match between the newly trained net
-            // and the old net.
+            let (old_net, game_results) = self.play_self()?;
+            let new_net = self.train_net(game_results, i)?;
+            let _net = self.play_match(new_net, old_net)?;
+            // TODO: need to pass the new network to self_play to build the Mcts
+            // with it.
         }
         Ok(())
     }

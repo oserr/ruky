@@ -1,7 +1,7 @@
 // To use Candle backend with Cuda:
 // use burn::backend::candle::{Candle, CandleDevice};
 use burn::backend::cuda::{Cuda, CudaDevice};
-use ruky::game::ParTrGameBuilder;
+use ruky::game::TrainingGameBuilder;
 use ruky::Ruky;
 use std::time::{Duration, Instant};
 
@@ -10,9 +10,9 @@ fn main() {
     let ruky = Ruky::new();
     // To use Candle backend with Cuda support:
     //   let device =  CandleDevice::cuda(0);
-    //   let game = ParTrGameBuilder::<Candle>::new()...;
+    //   let game = TrainingGameBuilder::<Candle>::new()...;
     let device = CudaDevice::new(0);
-    let mut game = ParTrGameBuilder::<Cuda>::new()
+    let mut game = TrainingGameBuilder::<Cuda>::new()
         .device(device)
         .board(ruky.new_board())
         .sims(800)

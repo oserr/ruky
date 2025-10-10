@@ -2,7 +2,7 @@
 
 use crate::dataset::{GamesBatcher, GamesDataset};
 use crate::err::RukyErr;
-use crate::game::{GameResult, MatchGamesBuilder, ParTrGameBuilder};
+use crate::game::{GameResult, MatchGamesBuilder, TrainingGameBuilder};
 use crate::nn::{AlphaZeroNet, AlphaZeroNetRecord};
 use crate::Board;
 use burn::{
@@ -68,7 +68,7 @@ pub struct Trainer<B: Backend> {
 impl<B: Backend> Trainer<B> {
     fn play_self(&self) -> Result<(Arc<AlphaZeroNet<B>>, Vec<GameResult>), RukyErr> {
         log::info!("Trainer::play_self()...");
-        let mut training_game = ParTrGameBuilder::<B>::new()
+        let mut training_game = TrainingGameBuilder::<B>::new()
             .board(self.board.clone())
             .device(self.device.clone())
             .sims(self.sims)

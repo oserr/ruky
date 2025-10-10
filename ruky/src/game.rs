@@ -15,7 +15,7 @@ use std::{cmp::max, mem::swap, sync::Arc, time::Duration};
 
 // Parallel training game builder.
 #[derive(Clone, Debug)]
-pub struct ParTrGameBuilder<B: Backend> {
+pub struct TrainingGameBuilder<B: Backend> {
     board: Option<Board>,
     device: Option<Device<B>>,
     sims: usize,
@@ -26,7 +26,7 @@ pub struct ParTrGameBuilder<B: Backend> {
     num_workers: Option<usize>,
 }
 
-impl<B: Backend> ParTrGameBuilder<B> {
+impl<B: Backend> TrainingGameBuilder<B> {
     pub fn new() -> Self {
         Self {
             board: None,

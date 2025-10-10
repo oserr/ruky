@@ -179,17 +179,24 @@ impl<B: Backend> Trainer<B> {
             .build()?;
 
         let match_result = match_games.play()?;
-        let winner = match_result.winner();
-
         log::info!("MatchResult={:?}", match_result);
-        log::info!("winner={:?}", winner);
 
-        // TODO: Add some thresholding logic to only update to new network when
-        // player wins with at least some winning rate, e.g. wins at least 55%
-        // of games.
-        let net = match winner {
-            Some(ref player) if match_games.is_player1(&player.name_player) => new_net,
-            _ => old_net,
+        let net = match match_result.winner() {
+            Some(ref winner) => {
+                log::info!("winner={:?} with win rate={}", winner, winner.win_rate());
+                if match_games.is_player1(&winner.name_player)
+                    && winner.win_rate() >= self.min_win_rate
+                {
+                    log::info!("using new network to for self-play");
+                    new_net
+                } else {
+                    old_net
+                }
+            }
+            _ => {
+                log::info!("match ended in a draw");
+                old_net
+            }
         };
 
         Ok(net)

@@ -18,10 +18,6 @@ pub struct Board {
     // to move a board.
     state: Box<BoardState>,
 
-    // The state hash is computed over the state of the board, can be used to
-    // compare boards, e.g. to test for repetitions.
-    state_hash: u64,
-
     // We use an Arc for ChessMagics, because ChessMagics are expensive to
     // compute, and hence we want to share one instance of chess magics where
     // ever they are needed, and between threads.
@@ -35,7 +31,7 @@ impl Board {
 
     #[inline]
     pub fn state_hash(&self) -> u64 {
-        self.state_hash
+        self.state.state_hash
     }
 
     #[inline]
@@ -214,14 +210,6 @@ impl Board {
         self.state.partial_update(piece_move, self.magics.as_ref());
         self.update_game_state(Some(piece_move.val()));
         self.state.prev_moves.push(piece_move);
-        self.update_hash();
-    }
-
-    // Updates the game hash.
-    fn update_hash(&mut self) {
-        let mut hasher = DefaultHasher::new();
-        self.state.hash(&mut hasher);
-        self.state_hash = hasher.finish();
     }
 
     // Returns boards representing all the valid positions that are reachable from
@@ -521,13 +509,10 @@ impl Board {
 impl From<Arc<ChessMagics>> for Board {
     fn from(magics: Arc<ChessMagics>) -> Board {
         let state = Box::<BoardState>::default();
-        let mut board = Board {
+        Self {
             state,
-            state_hash: 0,
             magics,
-        };
-        board.update_hash();
-        board
+        }
     }
 }
 
@@ -922,12 +907,10 @@ impl BoardBuilder {
                 state_hash,
                 hash_count: HashMap::from([(state_hash, 1)]),
             }),
-            state_hash: 0,
             magics: self.magics.clone(),
         };
 
         board.update_game_state(None);
-        board.update_hash();
 
         Ok(board)
     }

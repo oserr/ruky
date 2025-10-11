@@ -207,6 +207,8 @@ impl<B: Backend> Trainer<B> {
     }
 
     pub fn run_training(&self) -> Result<(), RukyErr> {
+        // TODO: an option to be able to begin training with an already trained
+        // model.
         let mut net = Arc::new(AlphaZeroNet::new(&self.device));
         for i in 0..self.num_sessions {
             let (old_net, game_results) = self.play_self(net)?;

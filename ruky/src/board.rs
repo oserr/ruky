@@ -659,6 +659,7 @@ impl BoardState {
         let mv = piece_move.val();
         let is_pawn = piece_move.is_pawn();
         let is_cap = mv.is_capture();
+        let is_castle = mv.is_castle();
 
         self.mine
             .apply_move(piece_move)
@@ -690,6 +691,21 @@ impl BoardState {
 
         std::mem::swap(&mut self.mine, &mut self.other);
         self.update_attacks(magics);
+
+        // Update the position hash and hash count.
+        if is_pawn || is_cap || is_castle {
+            self.hash_count.clear();
+        }
+        self.state_hash = self.compute_hash();
+        self.hash_count
+            .entry(self.state_hash)
+            .and_modify(|count| *count += 1)
+            .or_insert(1);
+    }
+
+    // Computes the hash of the current board position.
+    fn compute_hash(&self) -> u64 {
+        position_hash(&self.mine, &self.other, &self.passant_sq)
     }
 }
 

@@ -71,6 +71,11 @@ impl PieceMove {
         }
     }
 
+    // Returns true if the move represents castling.
+    pub fn is_castle(&self) -> bool {
+        matches!(*self, PieceMove::Castle { .. })
+    }
+
     // Returns source and destination squares.
     pub fn from_to(&self) -> (Sq, Sq) {
         match *self {

@@ -717,7 +717,7 @@ impl Default for BoardState {
             passant_sq: None,
             prev_moves: Vec::new(),
             state_hash,
-            hash_count: HashMap::new(),
+            hash_count: HashMap::from([(state_hash, 1)]),
         }
     }
 }
@@ -899,7 +899,7 @@ impl BoardBuilder {
                 passant_sq: self.passant_sq,
                 prev_moves: Vec::new(),
                 state_hash,
-                hash_count: HashMap::new(),
+                hash_count: HashMap::from([(state_hash, 1)]),
             }),
             state_hash: 0,
             magics: self.magics.clone(),

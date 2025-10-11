@@ -5,6 +5,7 @@ use crate::piece_move::{PieceMove, PieceMove::*};
 use crate::piece_set::{AttackSquares, PieceSet, PiecesErr, PsBuilder};
 use crate::sq::Sq;
 use std::{
+    collections::HashMap,
     hash::{DefaultHasher, Hash, Hasher},
     sync::Arc,
 };
@@ -585,6 +586,9 @@ struct BoardState {
 
     // The previous moves leading up to the current board state.
     prev_moves: Vec<Piece<PieceMove>>,
+
+    // A hash-to-count map to be able to identify 3-fold repetition draw.
+    hash_count: HashMap<u64, u8>,
 }
 
 impl BoardState {
@@ -705,6 +709,7 @@ impl Default for BoardState {
             full_move: 1,
             passant_sq: None,
             prev_moves: Vec::new(),
+            hash_count: HashMap::new(),
         }
     }
 }
@@ -875,6 +880,7 @@ impl BoardBuilder {
                 full_move: self.full_move,
                 passant_sq: self.passant_sq,
                 prev_moves: Vec::new(),
+                hash_count: HashMap::new(),
             }),
             state_hash: 0,
             magics: self.magics.clone(),

@@ -175,6 +175,11 @@ impl Board {
             return;
         }
 
+        if self.state.hash_count.values().find(|&x| *x >= 3).is_some() {
+            self.state.game_state = GameState::Draw;
+            return;
+        }
+
         let moves = self.all_moves();
         if moves.is_none() {
             self.state.game_state = GameState::Draw;

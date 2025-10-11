@@ -194,6 +194,7 @@ impl<B: Backend> Trainer<B> {
                     log::info!("using new network to for self-play");
                     new_net
                 } else {
+                    log::info!("continue with old new network for self-play");
                     old_net
                 }
             }

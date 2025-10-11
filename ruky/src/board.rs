@@ -620,8 +620,8 @@ impl BoardState {
     }
 
     // Returns true if there is enough material on either side for a win, or false
-    // if neither side can win given the material. The
-    // following scenarios are a draw:
+    // if neither side can win given the material. The following scenarios are a
+    // draw:
     // - only king per side
     // - bishop or knight vs bishop or knight
     fn is_enough_material(&self) -> bool {

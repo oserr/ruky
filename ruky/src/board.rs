@@ -587,6 +587,9 @@ struct BoardState {
     // The previous moves leading up to the current board state.
     prev_moves: Vec<Piece<PieceMove>>,
 
+    // A hash of the current board state.
+    state_hash: u64,
+
     // A hash-to-count map to be able to identify 3-fold repetition draw.
     hash_count: HashMap<u64, u8>,
 }
@@ -693,9 +696,13 @@ impl BoardState {
 // Initializes the BoardState for a new game.
 impl Default for BoardState {
     fn default() -> Self {
+        let mine = Box::new(PieceSet::init_white());
+        let other = Box::new(PieceSet::init_black());
+        let state_hash = position_hash(&mine, &other, &None);
+
         BoardState {
-            mine: Box::new(PieceSet::init_white()),
-            other: Box::new(PieceSet::init_black()),
+            mine,
+            other,
             my_attacks: AttackSquares {
                 pieces: BitBoard::new(),
                 no_pieces: RANK_3,
@@ -709,6 +716,7 @@ impl Default for BoardState {
             full_move: 1,
             passant_sq: None,
             prev_moves: Vec::new(),
+            state_hash,
             hash_count: HashMap::new(),
         }
     }
@@ -721,6 +729,14 @@ impl std::hash::Hash for BoardState {
         self.other.hash(state);
         self.passant_sq.hash(state);
     }
+}
+
+fn position_hash(white: &PieceSet, black: &PieceSet, passant_sq: &Option<PassantSq>) -> u64 {
+    let mut hasher = DefaultHasher::new();
+    white.hash(&mut hasher);
+    black.hash(&mut hasher);
+    passant_sq.hash(&mut hasher);
+    hasher.finish()
 }
 
 // A helper class to build chess boards.
@@ -869,6 +885,8 @@ impl BoardBuilder {
         let my_attacks = mine.attacks(&other, self.magics.as_ref());
         let other_attacks = other.attacks(&mine, self.magics.as_ref());
 
+        let state_hash = position_hash(&mine, &other, &self.passant_sq);
+
         let mut board = Board {
             state: Box::new(BoardState {
                 mine,
@@ -880,6 +898,7 @@ impl BoardBuilder {
                 full_move: self.full_move,
                 passant_sq: self.passant_sq,
                 prev_moves: Vec::new(),
+                state_hash,
                 hash_count: HashMap::new(),
             }),
             state_hash: 0,

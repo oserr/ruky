@@ -546,9 +546,10 @@ impl std::fmt::Debug for Board {
 // Note that castling rights are encoded in the PieceSets.
 #[derive(Clone, Debug, Eq, PartialEq)]
 struct BoardState {
-    // The pieces that are moving next. We use a Box for the pieces other because this
-    // makes it much cheaper to swap the pieces after a move is made. This simplifies a lot of code
-    // because we can do things in terms of the player moving next.
+    // The pieces that are moving next. We use a Box for the pieces other
+    // because this makes it much cheaper to swap the pieces after a move is
+    // made. This simplifies a lot of code because we can do things in terms of
+    // the player moving next.
     mine: Box<PieceSet>,
 
     // The pieces that are not moving next.
@@ -563,12 +564,13 @@ struct BoardState {
     // The current game state.
     game_state: GameState,
 
-    // The number of half moves, which is used to determine if a game should be drawn because of
-    // insufficient progress, i.e. no pawn moves or captures.
+    // The number of half moves, which is used to determine if a game should be
+    // drawn because of insufficient progress, i.e. no pawn moves or captures.
     half_move: u16,
 
-    // The number of full moves. In theory, you can have an infinite number of moves in a game, but
-    // in practice the game is drawn at some point of there is no progress.
+    // The number of full moves. In theory, you can have an infinite number of
+    // moves in a game, but in practice the game is drawn at some point of there
+    // is no progress.
     full_move: u16,
 
     // If set, represents the square where capture by en-passant is possible.

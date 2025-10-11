@@ -553,7 +553,7 @@ impl std::fmt::Debug for Board {
 // attacked, the current game state, the number of half moves, the number of
 // full moves, and whether there is an opportunity to capture by en passant.
 // Note that castling rights are encoded in the PieceSets.
-#[derive(Clone, Debug, Eq, Hash, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 struct BoardState {
     // The pieces that are moving next. We use a Box for the pieces other because this
     // makes it much cheaper to swap the pieces after a move is made. This simplifies a lot of code
@@ -706,6 +706,15 @@ impl Default for BoardState {
             passant_sq: None,
             prev_moves: Vec::new(),
         }
+    }
+}
+
+// Only hash what is necessary to uniquely identify 3-fold repetition.
+impl std::hash::Hash for BoardState {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.mine.hash(state);
+        self.other.hash(state);
+        self.passant_sq.hash(state);
     }
 }
 

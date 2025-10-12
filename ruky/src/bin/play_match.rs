@@ -1,7 +1,9 @@
 use burn::backend::cuda::{Cuda, CudaDevice};
-use clap::Parser;
+use clap::{Parser, ValueEnum};
 use ruky::{game::MatchGamesBuilder, nn::AlphaZeroNet, Ruky};
 use std::{
+    fmt::{Display, Formatter},
+    path::PathBuf,
     sync::Arc,
     time::{Duration, Instant},
 };
@@ -49,6 +51,45 @@ struct Args {
     /// The number of workers used by each MCTS.
     #[arg(short, long)]
     workers: Option<usize>,
+
+    /// The initialization strategy for player 1. If ModelPath is set, then
+    /// model_path1 must be set.
+    #[arg(long, default_value_t = InitStrategy::New)]
+    init_player1: InitStrategy,
+
+    /// The path to the model for player 1 when the init strategy is ModelPath.
+    #[arg(long)]
+    model_path1: Option<PathBuf>,
+
+    /// The initialization strategy for player 2. If ModelPath is set, then
+    /// model_path2 must be set.
+    #[arg(long, default_value_t = InitStrategy::New)]
+    init_player2: InitStrategy,
+
+    /// The path to the model for player 2 when the init strategy is ModelPath.
+    #[arg(long)]
+    model_path2: Option<PathBuf>,
+}
+
+#[derive(Clone, Copy, Debug, ValueEnum)]
+enum InitStrategy {
+    New,
+    ModelPath,
+}
+
+impl InitStrategy {
+    fn as_str(&self) -> &str {
+        match *self {
+            InitStrategy::New => &"New",
+            InitStrategy::ModelPath => &"ModelPath",
+        }
+    }
+}
+
+impl Display for InitStrategy {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.as_str())
+    }
 }
 
 fn as_mins(dur: &Duration) -> f32 {

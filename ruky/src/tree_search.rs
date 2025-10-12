@@ -279,7 +279,13 @@ impl TreeSearch {
             self.children.push(Node::from(board));
             return;
         }
+
         let current_root = &self.children[self.root];
+        if current_root.board.state_hash() == board.state_hash() {
+            // Don't do anything if root is the intended board.
+            return;
+        }
+
         assert!(!current_root.is_leaf);
         let (first, last) = current_root.children;
         match self.children[first..last]

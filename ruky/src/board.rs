@@ -509,10 +509,7 @@ impl Board {
 impl From<Arc<ChessMagics>> for Board {
     fn from(magics: Arc<ChessMagics>) -> Board {
         let state = Box::<BoardState>::default();
-        Self {
-            state,
-            magics,
-        }
+        Self { state, magics }
     }
 }
 

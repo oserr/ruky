@@ -63,6 +63,8 @@ pub struct Trainer<B: Backend> {
     // The minimum winning rate required from a newly trained net to begin using
     // it to generate games by playing against itself.
     min_win_rate: f32,
+    // The number of games to play between newly trained and older network.
+    match_games: usize,
 }
 
 impl<B: Backend> Trainer<B> {
@@ -174,7 +176,7 @@ impl<B: Backend> Trainer<B> {
             .name_player2(&"OldNet")
             .net_player1(new_net.clone())
             .net_player2(old_net.clone())
-            .num_games(10)
+            .num_games(self.match_games)
             .sims(self.sims)
             .max_moves(self.max_moves)
             .batch_size(self.inference_batch_size)
@@ -259,6 +261,8 @@ pub struct TrainerBuilder<B: Backend> {
     // The minimum winning rate required from a newly trained net to begin using
     // it to generate games by playing against itself.
     min_win_rate: f32,
+    // The number of games to play between newly trained and older network.
+    match_games: usize,
 }
 
 impl<B: Backend> TrainerBuilder<B> {
@@ -286,6 +290,7 @@ impl<B: Backend> TrainerBuilder<B> {
             training_percent: 0.95,
             num_epochs: None,
             min_win_rate: 0.55,
+            match_games: 50,
         }
     }
 
@@ -394,6 +399,7 @@ impl<B: Backend> TrainerBuilder<B> {
             training_percent: self.training_percent,
             num_epochs: self.num_epochs.unwrap_or(100),
             min_win_rate: self.min_win_rate,
+            match_games: self.match_games,
         })
     }
 }

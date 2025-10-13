@@ -89,8 +89,8 @@ enum InitStrategy {
 impl InitStrategy {
     fn as_str(&self) -> &str {
         match *self {
-            InitStrategy::New => &"New",
-            InitStrategy::ModelPath => &"ModelPath",
+            InitStrategy::New => &"new",
+            InitStrategy::ModelPath => &"model-path",
         }
     }
 

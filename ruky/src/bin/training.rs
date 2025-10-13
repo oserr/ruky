@@ -11,7 +11,8 @@ fn main() {
     let trainer = TrainerBuilder::<Cuda>::new()
         .device(CudaDevice::new(0))
         .board(ruky.new_board())
-        .num_games(args.games)
+        .num_games(args.training_games)
+        .match_games(args.match_games)
         .num_sessions(args.sessions)
         .check_point_dir(&args.out_dir)
         .training_batch_size(args.training_batch_size)
@@ -43,8 +44,13 @@ fn as_mins(dur: &Duration) -> f32 {
 struct Args {
     /// The number of games to self-play for one session. These games are
     /// subsequently used in a round of training.
-    #[arg(short, long)]
-    games: usize,
+    #[arg(long, default_value_t = 50)]
+    training_games: usize,
+
+    /// The number of games to between newly trained and an old network to
+    /// determine which network to use for self-play.
+    #[arg(long, default_value_t = 20)]
+    match_games: usize,
 
     /// The number of sessions to train for. 1 session includes one round of
     /// self-play, a round of training, and a tournament match between the old
@@ -67,6 +73,6 @@ struct Args {
     training_percent: f32,
 
     /// The number of epochs to use for training.
-    #[arg(short, long, default_value_t = 50)]
+    #[arg(short, long, default_value_t = 75)]
     epochs: usize,
 }

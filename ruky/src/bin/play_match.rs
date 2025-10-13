@@ -1,6 +1,15 @@
-use burn::backend::cuda::{Cuda, CudaDevice};
+use burn::{
+    backend::cuda::{Cuda, CudaDevice},
+    module::Module,
+    prelude::{Backend, Device},
+    record::{NoStdTrainingRecorder, Recorder},
+};
 use clap::{Parser, ValueEnum};
-use ruky::{game::MatchGamesBuilder, nn::AlphaZeroNet, Ruky};
+use ruky::{
+    game::MatchGamesBuilder,
+    nn::{AlphaZeroNet, AlphaZeroNetRecord},
+    Ruky,
+};
 use std::{
     fmt::{Display, Formatter},
     path::PathBuf,
@@ -12,12 +21,12 @@ fn main() {
     let args = Args::parse();
     let ruky = Ruky::new();
     let device = CudaDevice::new(0);
-    let net = Arc::new(AlphaZeroNet::new(&device));
+    let (net1, net2) = build_nets(&args, &device);
     let mut match_games = MatchGamesBuilder::<Cuda>::new()
         .device(device)
         .board(ruky.new_board())
-        .net_player1(net.clone())
-        .net_player2(net)
+        .net_player1(net1)
+        .net_player2(net2)
         .num_games(args.games)
         .batch_size(args.batch_size)
         .num_workers(args.workers.unwrap_or(32))
@@ -84,11 +93,54 @@ impl InitStrategy {
             InitStrategy::ModelPath => &"ModelPath",
         }
     }
+
+    fn is_new(&self) -> bool {
+        matches!(*self, InitStrategy::New)
+    }
 }
 
 impl Display for InitStrategy {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.as_str())
+    }
+}
+
+fn build_nets<B: Backend>(
+    args: &Args,
+    device: &Device<B>,
+) -> (Arc<AlphaZeroNet<B>>, Arc<AlphaZeroNet<B>>) {
+    if args.init_player1.is_new() && args.init_player2.is_new() {
+        let net_first = Arc::new(AlphaZeroNet::new(device));
+        let net_second = net_first.clone();
+        return (net_first, net_second);
+    }
+
+    let net_first = init_net(args.init_player1, &args.model_path1, device);
+    let net_second = init_net(args.init_player2, &args.model_path2, device);
+
+    (net_first, net_second)
+}
+
+fn init_net<B: Backend>(
+    init_strategy: InitStrategy,
+    model_path: &Option<PathBuf>,
+    device: &Device<B>,
+) -> Arc<AlphaZeroNet<B>> {
+    match init_strategy {
+        InitStrategy::New => Arc::new(AlphaZeroNet::new(device)),
+        InitStrategy::ModelPath => match model_path {
+            None => {
+                eprintln!("Expecting the model path to be set, but is not.");
+                std::process::exit(1);
+            }
+            Some(model_path) => {
+                let record: AlphaZeroNetRecord<B> = NoStdTrainingRecorder::new()
+                    .load(model_path.clone(), device)
+                    .expect("Expecting to read model");
+                let model = AlphaZeroNet::<B>::new(device).load_record(record);
+                Arc::new(model)
+            }
+        },
     }
 }
 

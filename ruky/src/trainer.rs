@@ -375,6 +375,11 @@ impl<B: Backend> TrainerBuilder<B> {
         self
     }
 
+    pub fn match_games(mut self, match_games: usize) -> Self {
+        self.match_games = match_games;
+        self
+    }
+
     pub fn build(self) -> Result<Trainer<B>, RukyErr> {
         if self.board.is_none() || self.device.is_none() || self.num_games.is_none() {
             return Err(RukyErr::PreconditionErr);

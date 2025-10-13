@@ -1,5 +1,6 @@
 use burn::backend::cuda::{Cuda, CudaDevice};
 use clap::Parser;
+use log::LevelFilter;
 use ruky::trainer::TrainerBuilder;
 use ruky::Ruky;
 use std::time::{Duration, Instant};
@@ -18,6 +19,11 @@ fn main() {
         .num_epochs(args.epochs)
         .build()
         .expect("Expecting a trainer.");
+
+    if let Err(_) = simple_logging::log_to_file("training.log", LevelFilter::max()) {
+        eprintln!("Unable to initialize logging.");
+    }
+
     println!("Running the training pipeline...");
     let now = Instant::now();
     if let Err(_) = trainer.run_training() {

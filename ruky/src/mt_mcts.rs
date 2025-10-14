@@ -69,6 +69,9 @@ pub struct ParMcts<E: Eval> {
 impl<E: Eval> ParMcts<E> {
     // Initialiazes the MCTS by creating a pool of worker threads to parallelize
     // encoding and decoding tasks.
+    //
+    // TODO: Create another function or builder to allow creating the MCTS
+    // without a board, which doesn't make much sense in a match scenario.
     pub fn create(
         evaluator: Arc<E>,
         board: Board,

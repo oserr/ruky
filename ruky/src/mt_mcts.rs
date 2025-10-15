@@ -158,6 +158,8 @@ impl<E: Eval> ParMcts<E> {
         let mut nodes_visited = 0;
         let mut completed_sims = 0;
 
+        // TODO: increase throughput by doing more rollouts while we wait for evaluator
+        // to return.
         while completed_sims < self.sims {
             let mut batch_count = 0;
             let total_batch_count = min(self.sims - completed_sims, self.batch_size);

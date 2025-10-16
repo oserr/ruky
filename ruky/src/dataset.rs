@@ -12,6 +12,10 @@ use std::marker::PhantomData;
 
 // The game position is a struct with all the information needed to construct
 // the inputs and targets used to train the neural network.
+//
+// TODO: Update this struct or create new type to allow creating a training
+// input with up to the last N board positions, which is what the evaluator does
+// during play.
 #[derive(Clone, Debug)]
 pub(crate) struct GamePosition {
     // The board represents the board position, including board state, e.g.

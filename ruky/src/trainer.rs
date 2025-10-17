@@ -2,7 +2,7 @@
 
 use crate::dataset::{GamesBatcher, GamesDataset};
 use crate::err::RukyErr;
-use crate::game::{GameResult, MatchGamesBuilder, TrainingGameBuilder};
+use crate::game::{GameResult, GameWinner, MatchGamesBuilder, TrainingGameBuilder};
 use crate::nn::{AlphaZeroNet, AlphaZeroNetRecord};
 use crate::Board;
 use burn::{
@@ -86,13 +86,28 @@ impl<B: Backend> Trainer<B> {
             .build()?;
 
         let mut game_results = Vec::new();
+        let mut wins_white = 0;
+        let mut wins_black = 0;
+        let mut draws = 0;
 
         for i in 0..self.num_games {
             let game_result = training_game.play()?;
             log::info!("game={} winner={:?}", i, game_result.winner);
+            match game_result.winner {
+                GameWinner::White => wins_white += 1,
+                GameWinner::Black => wins_black += 1,
+                GameWinner::Draw => draws += 1,
+            };
             game_results.push(game_result);
             training_game.reset();
         }
+
+        log::info!(
+            "Wins: white={} black={} Draws: {}",
+            wins_white,
+            wins_black,
+            draws
+        );
 
         Ok((training_game.net, game_results))
     }

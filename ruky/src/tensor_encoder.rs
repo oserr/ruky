@@ -100,6 +100,31 @@ pub fn enc_boards(boards: &[Board]) -> Vec<f32> {
     data
 }
 
+// Encodes the pieces and repetition count.
+fn enc_pieces_and_rep(board: &Board, data: &mut [f32]) {
+    assert!(data.len() >= 14 * BOARD_SIZE);
+    let first = N_PIECE_TYPES * BOARD_SIZE;
+    let last = 2 * first;
+
+    // TODO: For black, might want to flip the board so it's from the player's
+    // perspective.
+    let (next_to_play, after_to_play) = if board.is_white_next() {
+        (board.white(), board.black())
+    } else {
+        (board.black(), board.white())
+    };
+
+    encode_pieces(next_to_play, &mut data[..first]);
+    encode_pieces(after_to_play, &mut data[first..last]);
+
+    let rep_count = board.rep_count().into();
+    let first = last;
+    let last = first + BOARD_SIZE;
+
+    data[first..last].fill(rep_count);
+    data[last..last + BOARD_SIZE].fill(rep_count);
+}
+
 pub trait TensorEncoder<B: Backend> {
     fn encode_board(&self, board: &Board) -> Tensor<B, 4>;
     fn encode_boards(&self, boards: &[Board]) -> Tensor<B, 4>;

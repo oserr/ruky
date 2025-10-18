@@ -159,6 +159,11 @@ impl Board {
         self.state.prev_moves.last().copied()
     }
 
+    // Returns the current repetition count.
+    pub fn rep_count(&self) -> u8 {
+        self.state.hash_count.values().max().copied().unwrap_or(0)
+    }
+
     // Updates the game state.
     fn update_game_state(&mut self, piece_move: Option<PieceMove>) {
         if piece_move.is_some() && piece_move.unwrap().is_king_capture() {

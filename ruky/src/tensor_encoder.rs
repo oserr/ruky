@@ -29,26 +29,8 @@ pub const fn single_batch_size() -> usize {
 // Encodes a single board as a vector of floats.
 pub fn enc_board(board: &Board) -> Vec<f32> {
     let mut data = vec![0.0; N_PLANES * BOARD_SIZE];
-    let first = N_PIECE_TYPES * BOARD_SIZE;
-    let last = 2 * first;
 
-    // TODO: For black, might want to flip the board so it's from the player's
-    // perspective.
-    let (next_to_play, after_to_play) = if board.is_white_next() {
-        (board.white(), board.black())
-    } else {
-        (board.black(), board.white())
-    };
-
-    encode_pieces(next_to_play, &mut data[..first]);
-    encode_pieces(after_to_play, &mut data[first..last]);
-
-    let rep_count = board.rep_count().into();
-    let first = last;
-    let last = first + BOARD_SIZE;
-
-    data[first..last].fill(rep_count);
-    data[last..last + BOARD_SIZE].fill(rep_count);
+    enc_pieces_and_rep(board, &mut data);
 
     let state_features = get_state_features(&board);
     for (val, chunk) in zip(

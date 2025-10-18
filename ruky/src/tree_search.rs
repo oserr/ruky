@@ -324,8 +324,8 @@ impl TreeSearch {
         }
     }
 
-    // Collects the last |num_boards| leading up to board at |node_index|, starting
-    // with the board at |node_index|.
+    // Collects up to last |MAX_ENC_BOARDS| leading up and including the board at
+    // |node_index|, starting with the board at |node_index|.
     pub fn collect_last_boards(&self, node_index: usize) -> Vec<Board> {
         let mut boards: Vec<Board> = Vec::new();
         let node = &self.children[node_index];

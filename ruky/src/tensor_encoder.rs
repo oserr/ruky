@@ -44,7 +44,8 @@ pub fn enc_board(board: &Board) -> Vec<f32> {
 }
 
 // Encodes a slice of boards as a vector of floats. Panics if the slice is
-// empty. Encodes at most eight boards.
+// empty. Encodes at most eight boards. It assumes that the first board is the
+// one being evaluated.
 pub fn enc_boards(boards: &[Board]) -> Vec<f32> {
     assert!(!boards.is_empty());
     let mut data = vec![0.0; N_PLANES * BOARD_SIZE];
@@ -57,7 +58,7 @@ pub fn enc_boards(boards: &[Board]) -> Vec<f32> {
     }
 
     let board = boards
-        .last()
+        .first()
         .expect("boards should have at least one board.");
     let state_features = get_state_features(&board);
 

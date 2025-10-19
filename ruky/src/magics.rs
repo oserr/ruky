@@ -132,8 +132,7 @@ fn find_all_magics(
 ///
 /// * `mask_fn`: A function to compute the full mask for a piece given a square.
 /// * `attacks_fn`: A function to compute the attack mask for a piece given a
-///   square and a given
-/// set of blockers.
+///   square and a given set of blockers.
 /// * `magic_iter`: An iterator over magic numbers.
 fn find_magic(
     sq: Sq,

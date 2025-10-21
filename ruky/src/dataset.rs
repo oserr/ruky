@@ -18,9 +18,10 @@ use std::marker::PhantomData;
 // during play.
 #[derive(Clone, Debug)]
 pub(crate) struct GamePosition {
-    // The board represents the board position, including board state, e.g.
-    // color to move next.
-    pub board: Board,
+    // The Board at index 0 represents the current board position, and
+    // subsequent boards represent prior positions. Each board contains all
+    // necessary game state, e.g. color to move next.
+    pub boards: Vec<Board>,
     // The unique code representing the chosen index, i.e. a value in
     // [0, 8x8x73).
     pub move_index: usize,
@@ -55,6 +56,9 @@ impl Dataset<GamePosition> for GamesDataset {
                 index -= game_result.moves.len();
                 continue;
             }
+
+            let first = if index <= 7 { 0 } else { index - 7 };
+
             match game_result.moves.get(index) {
                 None => return None,
                 Some(search_result) => {
@@ -63,8 +67,13 @@ impl Dataset<GamePosition> for GamesDataset {
                         .board
                         .last_move()
                         .expect("Expecting board to have last move.");
+
                     return Some(GamePosition {
-                        board: search_result.board.clone(),
+                        boards: game_result.moves[first..=index]
+                            .iter()
+                            .rev()
+                            .map(|result| result.best.board.clone())
+                            .collect(),
                         move_index: to_index(piece_move),
                         winner: game_result.winner,
                     });
@@ -111,20 +120,21 @@ impl<B: Backend> Batcher<B, GamePosition, GamesBatch<B>> for GamesBatcher<B> {
         let mut targets_values = Vec::with_capacity(n);
 
         for GamePosition {
-            board,
+            boards,
             move_index,
             winner,
         } in games
         {
-            inputs.push(encoder.encode_board(&board));
+            let color = boards[0].color();
+            inputs.push(encoder.encode_boards(&boards));
             targets_policy.push(move_index);
             let value = match winner {
                 GameWinner::Draw => 0.0,
-                GameWinner::White => match board.color() {
+                GameWinner::White => match color {
                     Color::White => 1.0,
                     _ => -1.0,
                 },
-                _ => match board.color() {
+                _ => match color {
                     Color::Black => 1.0,
                     _ => -1.0,
                 },

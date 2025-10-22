@@ -159,6 +159,11 @@ impl Board {
         self.state.prev_moves.last().copied()
     }
 
+    #[inline]
+    pub fn num_prev_moves(&self) -> usize {
+        self.state.prev_moves.len()
+    }
+
     // Returns the current repetition count.
     pub fn rep_count(&self) -> u8 {
         self.state.hash_count.values().max().copied().unwrap_or(0)

@@ -60,6 +60,8 @@ pub struct ParMcts<E: Eval> {
     // If true, the MCTS samples from the moves, rather than returning the move
     // with the highest visit count.
     sample_action: bool,
+    // The number of moves up to the nth move where sampling should be enabled.
+    sample_action_n: Option<usize>,
     // The maximum number of boards that are sent for eval to the evaluator.
     batch_size: usize,
     // The number of workers to use for encoding and decoding board positions.
@@ -78,6 +80,7 @@ impl<E: Eval> ParMcts<E> {
         sims: usize,
         use_noise: bool,
         sample_action: bool,
+        sample_action_n: Option<usize>,
         batch_size: usize,
         num_workers: usize,
     ) -> Self {
@@ -124,6 +127,7 @@ impl<E: Eval> ParMcts<E> {
             sims,
             use_noise,
             sample_action,
+            sample_action_n,
             batch_size,
             num_workers,
         }
@@ -134,7 +138,10 @@ impl<E: Eval> ParMcts<E> {
         let mut total_evals = 0;
 
         let root_index = self.tree_search.root_index();
-        self.tree_search.sample_action = self.sample_action;
+        self.tree_search.sample_action = match self.sample_action_n {
+            None => false,
+            Some(n) => n < self.tree_search.root_board().num_prev_moves(),
+        };
 
         let mut eval_time = if self.tree_search.is_root_leaf() {
             let eval_time = Instant::now();

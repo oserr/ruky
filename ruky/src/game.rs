@@ -22,6 +22,7 @@ pub struct TrainingGameBuilder<B: Backend> {
     max_moves: usize,
     use_noise: bool,
     sample_action: bool,
+    sample_action_n: Option<usize>,
     batch_size: Option<usize>,
     num_workers: Option<usize>,
     // If set, this is used to build the MCTS.
@@ -37,6 +38,7 @@ impl<B: Backend> TrainingGameBuilder<B> {
             max_moves: 300,
             use_noise: true,
             sample_action: true,
+            sample_action_n: Some(30),
             batch_size: None,
             num_workers: None,
             net: None,
@@ -103,6 +105,7 @@ impl<B: Backend> TrainingGameBuilder<B> {
                     self.sims,
                     self.use_noise,
                     self.sample_action,
+                    self.sample_action_n,
                     self.batch_size.unwrap_or(16),
                     self.num_workers.unwrap_or(16),
                 );
@@ -716,6 +719,7 @@ impl<B: Backend> MatchGamesBuilder<B> {
             self.sims,
             true,
             true,
+            None,
             self.batch_size,
             self.num_workers,
         ));
@@ -727,6 +731,7 @@ impl<B: Backend> MatchGamesBuilder<B> {
             self.sims,
             true,
             true,
+            None,
             self.batch_size,
             self.num_workers,
         ));

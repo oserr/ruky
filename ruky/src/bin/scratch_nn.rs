@@ -7,7 +7,7 @@ use burn::record::{FullPrecisionSettings, NamedMpkFileRecorder};
 use ruky::nn::AlphaZeroNet;
 
 fn main() {
-    let device = CudaDevice::cuda(0);
+    let device = CudaDevice::new(0);
     let alpha_zero = AlphaZeroNet::<Cuda>::new(&device);
     let recorder = NamedMpkFileRecorder::<FullPrecisionSettings>::new();
     alpha_zero

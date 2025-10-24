@@ -26,12 +26,15 @@ use crate::sq::Sq;
 
 const NUM_FIELDS: usize = 6;
 
-// from_fen constructs a Board from a fen string.
-//
-// @param fen The fen string.
-// @param builder A board builder for building the board.
-// @return a Result with a Board or a FenErr if there is an error either parsing
-// the string or building the board.
+/// `from_fen` constructs a Board from a fen string.
+///
+/// # Arguments
+///
+/// * `fen` - The fen string.
+/// * `builder` - A board builder for building the board.
+///
+/// Returns a Result with a Board or a FenErr if there is an error either
+/// parsing the string or building the board.
 pub(crate) fn from_fen(fen: &str, mut builder: BoardBuilder) -> Result<Board, FenErr> {
     let split_iter = fen.trim().split(' ');
     let num_fields = split_iter.clone().count();

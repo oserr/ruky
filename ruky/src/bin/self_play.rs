@@ -1,18 +1,33 @@
 // To use Candle backend with Cuda:
 // use burn::backend::candle::{Candle, CandleDevice};
+#[cfg(feature = "cuda")]
 use burn::backend::cuda::{Cuda, CudaDevice};
+
+#[cfg(feature = "wgpu")]
+use burn::backend::wgpu::{Wgpu, WgpuDevice};
+
 use ruky::game::TrainingGameBuilder;
 use ruky::Ruky;
 use std::time::{Duration, Instant};
 
+#[cfg(feature = "cuda")]
+type Backend = Cuda;
+#[cfg(feature = "wgpu")]
+type Backend = Wgpu;
+
 // TODO: flesh this out into something more usable and configurable.
 fn main() {
     let ruky = Ruky::new();
+
     // To use Candle backend with Cuda support:
     //   let device =  CandleDevice::cuda(0);
     //   let game = TrainingGameBuilder::<Candle>::new()...;
+    #[cfg(feature = "cuda")]
     let device = CudaDevice::new(0);
-    let mut game = TrainingGameBuilder::<Cuda>::new()
+    #[cfg(feature = "wgpu")]
+    let device = WgpuDevice::DefaultDevice;
+
+    let mut game = TrainingGameBuilder::<Backend>::new()
         .device(device)
         .board(ruky.new_board())
         .sims(800)

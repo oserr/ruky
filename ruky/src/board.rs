@@ -10,8 +10,8 @@ use std::{
     sync::Arc,
 };
 
-// Represents a chess board, and encodes the rules for moving pieces and
-// determining the current game state, e.g. whether the game is drawn.
+/// Represents a chess board, and encodes the rules for moving pieces and
+/// determining the current game state, e.g. whether the game is drawn.
 #[derive(Clone)]
 pub struct Board {
     // The board state. We use a Box for it because this makes it much cheaper

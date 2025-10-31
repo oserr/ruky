@@ -4742,6 +4742,7 @@ dependencies = [
  "burn",
  "burn-cuda",
  "burn-ndarray",
+ "burn-wgpu",
  "clap",
  "crossbeam",
  "lazy_static",

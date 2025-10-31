@@ -112,8 +112,6 @@ impl<B: Backend> Trainer<B> {
         Ok((training_game.net, game_results))
     }
 
-    // TODO: pass in the current training session ID so we can keep better track
-    // of trained models.
     fn train_net(
         &self,
         games: Vec<GameResult>,
@@ -177,9 +175,6 @@ impl<B: Backend> Trainer<B> {
         Ok(Arc::new(model))
     }
 
-    // TODO: Play multiple games with the networks. If the new network wins more
-    // then a percentage of games, then use the new network to play self-play
-    // games to generate training games.
     fn play_match(
         &self,
         new_net: Arc<AlphaZeroNet<B>>,

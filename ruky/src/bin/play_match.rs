@@ -1,5 +1,10 @@
+#[cfg(feature = "cuda")]
+use burn::backend::cuda::{Cuda, CudaDevice};
+
+#[cfg(feature = "wgpu")]
+use burn::backend::wgpu::{Wgpu, WgpuDevice};
+
 use burn::{
-    backend::cuda::{Cuda, CudaDevice},
     module::Module,
     prelude::{Backend, Device},
     record::{NoStdTrainingRecorder, Recorder},
@@ -17,12 +22,22 @@ use std::{
     time::{Duration, Instant},
 };
 
+#[cfg(feature = "cuda")]
+type BackendType = Cuda;
+#[cfg(feature = "wgpu")]
+type BackendType = Wgpu;
+
 fn main() {
     let args = Args::parse();
     let ruky = Ruky::new();
+
+    #[cfg(feature = "cuda")]
     let device = CudaDevice::new(0);
+    #[cfg(feature = "wgpu")]
+    let device = WgpuDevice::DefaultDevice;
+
     let (net1, net2) = build_nets(&args, &device);
-    let mut match_games = MatchGamesBuilder::<Cuda>::new()
+    let mut match_games = MatchGamesBuilder::<BackendType>::new()
         .device(device)
         .board(ruky.new_board())
         .net_player1(net1)

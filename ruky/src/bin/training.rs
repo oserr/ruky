@@ -1,15 +1,31 @@
+#[cfg(feature = "cuda")]
 use burn::backend::cuda::{Cuda, CudaDevice};
+
+#[cfg(feature = "wgpu")]
+use burn::backend::wgpu::{Wgpu, WgpuDevice};
+
 use clap::Parser;
 use log::LevelFilter;
 use ruky::trainer::TrainerBuilder;
 use ruky::Ruky;
 use std::time::{Duration, Instant};
 
+#[cfg(feature = "cuda")]
+type Backend = Cuda;
+#[cfg(feature = "wgpu")]
+type Backend = Wgpu;
+
 fn main() {
     let args = Args::parse();
     let ruky = Ruky::new();
-    let trainer = TrainerBuilder::<Cuda>::new()
-        .device(CudaDevice::new(0))
+
+    #[cfg(feature = "cuda")]
+    let device = CudaDevice::new(0);
+    #[cfg(feature = "wgpu")]
+    let device = WgpuDevice::DefaultDevice;
+
+    let trainer = TrainerBuilder::<Backend>::new()
+        .device(device)
         .board(ruky.new_board())
         .num_games(args.training_games)
         .match_games(args.match_games)

@@ -1,24 +1,25 @@
-// This module contains code to parse FEN strings, i.e. strings in
-// Forsyth-Edwards Notation, which is used to encode the state of a chess
-// position in a one-line ascii string. A fen string consists of 6 fields
-// separated by a whitespace:
-// - the piece placment
-// - the side to move
-// - castling rights
-// - en passant target square
-// - the half move clock
-// - the full move counter
-//
-// For example:
-// - [rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1] describes the
-//   starting position.
-// - [rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1] after 1. e4.
-// - [rnbqkbnr/pp1ppppp/8/2p5/4P3/8/PPPP1PPP/RNBQKBNR w KQkq c6 0 2] after 1. e4
-//   c5.
-// - [rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2] after 1.
-//   e4 c5 2. Nf3.
-//
-// For more background, see https://www.chessprogramming.org/Forsyth-Edwards_Notation.
+/// This module contains code to parse FEN strings, i.e. strings in
+/// Forsyth-Edwards Notation, which is used to encode the state of a chess
+/// position in a one-line ascii string. A fen string consists of 6 fields
+/// separated by a whitespace:
+///
+/// * the piece placment
+/// * the side to move
+/// * castling rights
+/// * en passant target square
+/// * the half move clock
+/// * the full move counter
+///
+/// For example:
+/// * [rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1] describes the
+///   starting position.
+/// * [rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1] after 1. e4.
+/// * [rnbqkbnr/pp1ppppp/8/2p5/4P3/8/PPPP1PPP/RNBQKBNR w KQkq c6 0 2] after 1.
+///   e4 c5.
+/// * [rnbqkbnr/pp1ppppp/8/2p5/4P3/5N2/PPPP1PPP/RNBQKB1R b KQkq - 1 2] after 1.
+///   e4 c5 2. Nf3.
+///
+/// For more background, see https://www.chessprogramming.org/Forsyth-Edwards_Notation.
 use crate::board::{Board, BoardBuilder};
 use crate::piece::Color;
 use crate::piece_set::PiecesErr;

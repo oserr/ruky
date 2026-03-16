@@ -11,10 +11,10 @@ cuda = ["dep:burn-cuda", "burn/cuda"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-burn = { git = "https://github.com/tracel-ai/burn.git", version = "0.19.0", features = ["train"] }
-burn-ndarray = { git = "https://github.com/tracel-ai/burn.git", version = "0.19.0"}
-burn-cuda = { git = "https://github.com/tracel-ai/burn.git", version = "0.19.0", optional = true}
-burn-wgpu = { git = "https://github.com/tracel-ai/burn.git", version = "0.19.0", optional = true}
+burn = { version = "0.20", features = ["train"] }
+burn-ndarray = { version = "0.20" }
+burn-cuda = { version = "0.20", optional = true }
+burn-wgpu = { version = "0.20", optional = true }
 clap = { version = "4.5.27", features = ["derive"] }
 crossbeam = "0.8.4"
 lazy_static = "1.5.0"

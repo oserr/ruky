@@ -12,7 +12,7 @@ use burn::{
     optim::SgdConfig,
     prelude::{Backend, Device},
     record::{CompactRecorder, NoStdTrainingRecorder, Recorder},
-    train::{LearnerBuilder, LearningStrategy},
+    train::{Learner, SupervisedTraining, TrainingStrategy},
 };
 use log;
 use rand::rng;
@@ -145,13 +145,18 @@ impl<B: Backend> Trainer<B> {
 
         // TODO: configure learner to log metrics and to use a learning rate
         // scheduler.
-        let learner = LearnerBuilder::new(&self.check_point_dir)
-            .with_file_checkpointer(CompactRecorder::new())
-            .learning_strategy(LearningStrategy::SingleDevice(self.device.clone()))
-            .num_epochs(self.num_epochs)
-            .build(model, SgdConfig::new().init(), 1e-3);
+        let training = SupervisedTraining::new(
+            &self.check_point_dir,
+            dataloader_train,
+            dataloader_test,
+        )
+        .with_file_checkpointer(CompactRecorder::new())
+        .with_training_strategy(TrainingStrategy::SingleDevice(self.device.clone()))
+        .num_epochs(self.num_epochs);
 
-        let model_trained = learner.fit(dataloader_train, dataloader_test);
+        let learner = Learner::new(model, SgdConfig::new().init(), 1e-3);
+
+        let model_trained = training.launch(learner);
 
         let mut model_path = self.check_point_dir.clone();
         model_path.push("model");

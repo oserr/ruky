@@ -15,7 +15,7 @@ use burn::{
         backend::AutodiffBackend,
         Int, Transaction,
     },
-    train::{metric::ItemLazy, TrainOutput, TrainStep, ValidStep},
+    train::{metric::ItemLazy, InferenceStep, TrainOutput, TrainStep},
 };
 use burn_ndarray::NdArray;
 
@@ -264,7 +264,10 @@ impl<B: Backend> AlphaZeroNet<B> {
     }
 }
 
-impl<B: AutodiffBackend> TrainStep<GamesBatch<B>, AzOutput<B>> for AlphaZeroNet<B> {
+impl<B: AutodiffBackend> TrainStep for AlphaZeroNet<B> {
+    type Input = GamesBatch<B>;
+    type Output = AzOutput<B>;
+
     fn step(&self, games: GamesBatch<B>) -> TrainOutput<AzOutput<B>> {
         let out = self.forward_step(games);
 
@@ -272,7 +275,10 @@ impl<B: AutodiffBackend> TrainStep<GamesBatch<B>, AzOutput<B>> for AlphaZeroNet<
     }
 }
 
-impl<B: Backend> ValidStep<GamesBatch<B>, AzOutput<B>> for AlphaZeroNet<B> {
+impl<B: Backend> InferenceStep for AlphaZeroNet<B> {
+    type Input = GamesBatch<B>;
+    type Output = AzOutput<B>;
+
     fn step(&self, games: GamesBatch<B>) -> AzOutput<B> {
         self.forward_step(games)
     }
